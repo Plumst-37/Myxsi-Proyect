@@ -17,6 +17,11 @@
     <!-- CSS Base de Myxsi Chat -->
     <link rel="stylesheet" href="css/chat.css?v=5.7.0">
 
+    <!-- Configuración y Autenticación Unificada Myxsi & Google Drive -->
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
+
     <script>
         // Sincronización precisa y reactiva de tema con chat.html
         (function() {
@@ -1068,6 +1073,9 @@
                         <span>Redactar con IA</span>
                     </a>
 
+                    <!-- Estado de Google Drive en Cabecera -->
+                    <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
+
                     <!-- Racha diaria (Header Badge) -->
                     <div class="mx-streak" id="headerStreakBadge" title="Racha de estudio diaria" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 9999px;">
                         <span style="display: inline-flex; align-items: center; justify-content: center; font-size: 14px; filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));">🔥</span>
@@ -1082,7 +1090,7 @@
                         <i class="fa-regular fa-folder-open"></i>
                     </a>
 
-                    <button class="btn-header-round-action" id="btnUserDetails" title="Perfil de usuario" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important; color: #ffffff !important; font-weight: 750; border: none !important;">
+                    <button class="btn-header-round-action" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Perfil de usuario" style="background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important; color: #ffffff !important; font-weight: 750; border: none !important; width: 34px; height: 34px; border-radius: 50%; padding: 0;">
                         <span id="userInitialChar">R</span>
                     </button>
                 </div>
@@ -1439,9 +1447,14 @@
                     });
                     if (res.ok) {
                         const driveFile = await res.json();
-                        newFile.id = driveFile.id;
-                        newFile.isLocal = false;
-                        newFile.isCloud = true;
+                        if (driveFile && driveFile.id) {
+                            newFile.id = driveFile.id;
+                            newFile.isLocal = false;
+                            newFile.isCloud = true;
+                            localStorage.setItem('smart_doc_title_' + driveFile.id, docTitle);
+                            localStorage.setItem('smart_doc_content_' + driveFile.id, docContent);
+                            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                        }
                     }
                 } catch(e){}
             }
@@ -1772,20 +1785,17 @@
 
         function syncUserDataAndStreak() {
             try {
+                if (typeof window.renderUserProfile === 'function') {
+                    window.renderUserProfile();
+                }
+                if (typeof window.updateDriveStatusUI === 'function') {
+                    window.updateDriveStatusUI();
+                }
                 const streak = localStorage.getItem('myxsi_duo_streak') || '0';
                 const sNum = document.getElementById('sidebarRachaNum');
                 const hNum = document.getElementById('headerStreakCount');
                 if (sNum) sNum.textContent = streak;
                 if (hNum) hNum.textContent = streak;
-
-                const userStr = localStorage.getItem('myxsi_user');
-                if (userStr) {
-                    const u = JSON.parse(userStr);
-                    const name = u.displayName || u.email || 'R';
-                    const initChar = name.trim().charAt(0).toUpperCase();
-                    const el = document.getElementById('userInitialChar');
-                    if (el) el.textContent = initChar;
-                }
             } catch(e) {}
         }
 

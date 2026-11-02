@@ -13,6 +13,12 @@
     
     <link href="css/chat.css?v=5.7.0" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
+
+    <!-- Configuración y Autenticación Unificada Myxsi & Google Drive -->
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
+
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -610,15 +616,22 @@
             </a>
         </div>
 
-        <div class="topbar-right">
+        <div class="topbar-right" style="display: flex; align-items: center; gap: 8px;">
+            <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
             <button class="btn-sheets-ghost" onclick="createNewSheetBook()" title="Crear libro totalmente nuevo">
                 <i class="fa-solid fa-file-circle-plus"></i> <span>Nuevo</span>
             </button>
             <button class="btn-sheets-ghost" onclick="exportToCSV()" title="Descargar como CSV">
                 <i class="fa-solid fa-file-csv"></i> <span>CSV</span>
             </button>
+            <button class="btn-sheets-ghost" onclick="window.exportSheetToGoogleDrive()" title="Guardar y sincronizar con Google Drive">
+                <i class="fa-brands fa-google-drive" style="color: #34d399;"></i> <span>Drive</span>
+            </button>
             <button class="btn-sheets-green" onclick="openChartModal()" title="Generar Gráficos Estadísticos">
                 <i class="fa-solid fa-chart-pie"></i> <span>Gráficos</span>
+            </button>
+            <button class="header-action-circle" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Perfil de usuario" style="overflow: hidden; padding: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(16,185,129,0.3); background: linear-gradient(135deg, #10b981, #059669); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                <i class="fa-solid fa-circle-user"></i>
             </button>
         </div>
     </header>
@@ -1123,6 +1136,76 @@
         a.download = `${document.getElementById('sheetBookTitle').value}.csv`;
         a.click();
     }
+
+    window.exportSheetToGoogleDrive = async function() {
+        const title = document.getElementById('sheetBookTitle')?.value?.trim() || 'Libro de cálculo Myxsi';
+        let csv = "";
+        for (let r = 1; r <= 35; r++) {
+            let rowVals = [];
+            let hasDataInRow = false;
+            COLS.slice(0, 15).forEach(col => {
+                const raw = gridData[`${col}${r}`]?.raw || gridData[`${col}${r}`]?.val || "";
+                if (raw) hasDataInRow = true;
+                rowVals.push(`"${String(raw).replace(/"/g, '""')}"`);
+            });
+            if (hasDataInRow || r <= 10) {
+                csv += rowVals.join(",") + "\n";
+            }
+        }
+
+        let token = localStorage.getItem('gdrive_access_token');
+        if (!token && typeof window.ensureValidToken === 'function') {
+            const wantConnect = confirm("📂 Guardar en Google Drive:\n\nTu libro de cálculo está protegido localmente. ¿Deseas vincular tu cuenta de Google Drive para sincronizarlo en la nube como una Hoja de Google Sheets?");
+            if (wantConnect) {
+                token = await window.ensureValidToken(true);
+            }
+        }
+
+        if (!token) {
+            exportToCSV();
+            alert("💾 Tu libro de cálculo se ha descargado como archivo CSV y guardado localmente.\n\nPuedes conectar tu Google Drive desde la barra superior cuando desees sincronizarlo en la nube.");
+            return;
+        }
+
+        try {
+            if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast("Subiendo hoja a Google Drive...", "info");
+            const metadata = {
+                name: title,
+                mimeType: 'application/vnd.google-apps.spreadsheet'
+            };
+
+            const boundary = 'foo_bar_boundary_myxsi_sheets';
+            const multipart =
+                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+                JSON.stringify(metadata) +
+                `\r\n--${boundary}\r\nContent-Type: text/csv; charset=UTF-8\r\n\r\n` +
+                csv +
+                `\r\n--${boundary}--`;
+
+            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': `multipart/related; boundary=${boundary}`
+                },
+                body: multipart
+            });
+
+            if (res.ok) {
+                const driveFile = await res.json();
+                const realLink = `https://docs.google.com/spreadsheets/d/${driveFile.id}/edit`;
+                if (typeof window.updateDriveStatusUI === 'function') window.updateDriveStatusUI(true);
+                if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast("¡Libro guardado en Google Drive!", "success");
+                const openNow = confirm("✅ ¡Libro guardado con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Sheets?");
+                if (openNow) window.open(realLink, '_blank');
+            } else {
+                throw new Error(`Error ${res.status}`);
+            }
+        } catch(err) {
+            console.error("Error al sincronizar con Drive:", err);
+            exportToCSV();
+        }
+    };
 
     function exportToJSON() {
         const blob = new Blob([JSON.stringify(gridData, null, 2)], { type: 'application/json' });

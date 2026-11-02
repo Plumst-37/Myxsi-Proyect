@@ -17,6 +17,7 @@
     <link rel="manifest" href="manifest.json">
     <script src="js/config.js"></script>
     <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
       if ('serviceWorker' in navigator) {
@@ -582,10 +583,14 @@
                 <input type="text" id="presentationTitle" class="doc-title-input" value="Diseño sin título: Presentación" style="width: 260px;">
             </div>
 
-            <div class="topbar-right">
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 8px;">
+                <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
                 <button class="dock-btn" onclick="startFullscreenPresentation()"><i class="fa-solid fa-play" style="color: #a78bfa;"></i> Presentar</button>
                 <button class="btn-canva-purple" onclick="exportPresentationToPDF()"><i class="fa-solid fa-download"></i> Compartir / Exportar</button>
                 <button class="btn-canva-white" id="btnSaveToDrive" onclick="savePresentationToDrive()"><i class="fa-brands fa-google-drive"></i> Enviar a Drive</button>
+                <button class="header-action-circle" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Perfil de usuario" style="overflow: hidden; padding: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(236,72,153,0.3); background: linear-gradient(135deg, #ec4899, #8b5cf6); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                    <i class="fa-solid fa-circle-user"></i>
+                </button>
             </div>
         </header>
 
@@ -887,7 +892,8 @@
         }, 600);
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.href = 'index.html'; }
+            const localUser = localStorage.getItem('myxsi_user');
+            if (!user && !localUser) { window.location.href = 'index.html'; }
         });
 
         // ===================================================
@@ -1566,16 +1572,19 @@
 
         window.savePresentationToDrive = async function() {
             savePagesLocal();
-            const token = localStorage.getItem('gdrive_access_token');
+            let token = localStorage.getItem('gdrive_access_token');
             const btn = document.getElementById('btnSaveToDrive');
 
-            if (!token) {
-                const choice = confirm("📂 Integración con Google Drive:\n\nNo se detectó un token activo de Google Drive vinculado en tu sesión local.\n\n• Haz clic en [Aceptar] para descargar tu presentación en formato PDF directamente en tu computadora.\n• Haz clic en [Cancelar] para ir a la sección 'Archivos' y vincular tu cuenta de Google.");
+            if (!token && typeof window.ensureValidToken === 'function') {
+                const choice = confirm("📂 Integración con Google Drive:\n\n¿Deseas vincular tu cuenta de Google Drive ahora para guardar directamente esta presentación en tu nube?");
                 if (choice) {
-                    exportPresentationToPDF();
-                } else {
-                    window.location.href = 'files.html';
+                    token = await window.ensureValidToken(true);
                 }
+            }
+
+            if (!token) {
+                exportPresentationToPDF();
+                alert("💾 Tu presentación se ha descargado como PDF en tu computadora.\n\nPuedes conectar tu Google Drive en cualquier momento desde la cabecera.");
                 return;
             }
 

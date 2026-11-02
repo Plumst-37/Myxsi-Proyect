@@ -18,6 +18,11 @@
     <!-- Motor de Almacenamiento Local Myxsi Video (IndexedDB) -->
     <script src="js/video-db.js"></script>
 
+    <!-- Configuración y Autenticación Unificada Myxsi & Google Drive -->
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
+
     <!-- Redirección automática a la versión de teléfono estilo CapCut -->
     <script>
         (function() {
@@ -2434,7 +2439,8 @@
             <div class="timecode-display" id="timecodeDisplay">00:00.00 / 00:10.00</div>
         </div>
 
-        <div class="topbar-right">
+        <div class="topbar-right" style="display: flex; align-items: center; gap: 8px;">
+            <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
             <a href="video-mobile.html" class="btn-topbar-tool" id="btnToggleCapCutMobile" title="Abrir versión móvil dedicada estilo CapCut">
                 <i class="fa-solid fa-mobile-screen"></i> Versión Móvil CapCut
             </a>
@@ -2443,6 +2449,9 @@
             </button>
             <button class="btn-export-main" onclick="openExportModal()">
                 <i class="fa-solid fa-film"></i> Exportar Video
+            </button>
+            <button class="header-action-circle" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Perfil de usuario" style="overflow: hidden; padding: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(139,92,246,0.3); background: linear-gradient(135deg, #a78bfa, #6d28d9); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                <i class="fa-solid fa-circle-user"></i>
             </button>
         </div>
     </header>

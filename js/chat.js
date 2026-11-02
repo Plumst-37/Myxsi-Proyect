@@ -13,7 +13,11 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
+        googleProvider.addScope('https://www.googleapis.com/auth/drive');
         googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
         window.auth = auth;
         window.googleProvider = googleProvider;
         window.signInWithPopup = signInWithPopup;
@@ -34,6 +38,10 @@
                 const result = await signInWithPopup(auth, googleProvider);
                 if (result?.user) {
                     currentUser = result.user;
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    if (credential && credential.accessToken) {
+                        localStorage.setItem('gdrive_access_token', credential.accessToken);
+                    }
                     const userData = {
                         uid: result.user.uid,
                         email: result.user.email,
@@ -58,6 +66,25 @@
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> <span>Continuar con Google</span>`;
+                }
+            }
+        };
+
+        window.connectGoogleDriveAccount = async function() {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                if (result?.user) {
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    if (credential && credential.accessToken) {
+                        localStorage.setItem('gdrive_access_token', credential.accessToken);
+                    }
+                    personalizeWelcomeUI();
+                    alert("🎉 ¡Google Drive conectado y sincronizado con éxito!");
+                }
+            } catch(e) {
+                if (e.code !== 'auth/popup-closed-by-user') {
+                    console.error("Error connecting Google Drive:", e);
+                    alert("No se pudo conectar con Google Drive: " + (e.message || e));
                 }
             }
         };
@@ -1173,6 +1200,28 @@
                 }
             }
 
+            // Actualizar Badge de Google Drive en Cabecera de Chat
+            const driveContainer = document.getElementById('topbarDriveStatus');
+            if (driveContainer) {
+                const hasDriveToken = Boolean(localStorage.getItem('gdrive_access_token'));
+                if (hasDriveToken) {
+                    driveContainer.innerHTML = `
+                        <div class="gdrive-connected-badge" title="Google Drive conectado y sincronizado">
+                            <span class="drive-pulse-dot"></span>
+                            <svg width="14" height="14" viewBox="0 0 87.3 78"><path fill="#0066da" d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z"/><path fill="#00ac47" d="M43.65 25l13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2H17.4c-1.55 0-3.1.4-4.5 1.2z"/><path fill="#ea4335" d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 10.15z"/><path fill="#00832d" d="M43.65 25L30 50h27.4z"/><path fill="#2684fc" d="M73.55 26.2c-.8-1.4-1.95-2.5-3.3-3.3L56.5 0H43.65l13.75 23.8 16.15 2.4z"/><path fill="#ffba00" d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.9c-.8 1.4-1.2 2.95-1.2 4.5h27.5z"/></svg>
+                            <span>Drive Activo</span>
+                        </div>
+                    `;
+                } else {
+                    driveContainer.innerHTML = `
+                        <button class="btn-action-drive-shared" onclick="window.connectGoogleDriveAccount ? window.connectGoogleDriveAccount() : (window.handleGDriveAuthClick && window.handleGDriveAuthClick())" style="padding: 4px 10px; font-size: 0.75rem; border-radius: 9999px; background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3); color: #c4b5fd; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;" title="Vincular cuenta de Google Drive">
+                            <svg width="13" height="13" viewBox="0 0 87.3 78"><path fill="#0066da" d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8H0c0 1.55.4 3.1 1.2 4.5z"/><path fill="#00ac47" d="M43.65 25l13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2H17.4c-1.55 0-3.1.4-4.5 1.2z"/><path fill="#ea4335" d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.5l5.85 10.15z"/><path fill="#00832d" d="M43.65 25L30 50h27.4z"/><path fill="#2684fc" d="M73.55 26.2c-.8-1.4-1.95-2.5-3.3-3.3L56.5 0H43.65l13.75 23.8 16.15 2.4z"/><path fill="#ffba00" d="M43.65 25L29.9 1.2c-1.35.8-2.5 1.9-3.3 3.3L1.2 47.9c-.8 1.4-1.2 2.95-1.2 4.5h27.5z"/></svg>
+                            <span>Conectar Drive</span>
+                        </button>
+                    `;
+                }
+            }
+
             // Desactivar conversación continua por voz si el usuario empieza a escribir en el teclado
             const inputEl = document.getElementById('userInput');
             if (inputEl) {
@@ -1181,6 +1230,15 @@
                 });
             }
         }
+
+        // Renderizado Inmediato Síncrono de Sesión (0ms de retraso al abrir chat.html)
+        try {
+            const cachedUserStr = localStorage.getItem('myxsi_user');
+            if (cachedUserStr) {
+                currentUser = JSON.parse(cachedUserStr);
+                personalizeWelcomeUI();
+            }
+        } catch(e) {}
 
         // ============================================
         // SISTEMA DE RECONOCIMIENTO DE VOZ HÍBRIDO NEURAL (SPEECH API + WHISPER TURBO)

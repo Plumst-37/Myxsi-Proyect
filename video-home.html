@@ -17,6 +17,11 @@
     <!-- CSS Base de Myxsi Chat -->
     <link rel="stylesheet" href="css/chat.css?v=5.7.0">
 
+    <!-- Configuración y Autenticación Unificada Myxsi & Google Drive -->
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
+
     <script>
         (function() {
             function syncBrowserTheme() {
@@ -45,48 +50,58 @@
     </script>
 
     <style>
+        /* ==========================================================================
+           PALETA CROMÁTICA SUAVE, ELEGANTE Y PROFESIONAL
+           ========================================================================== */
         :root {
-            --mx-bg-base: #f1f4f9;
+            --mx-bg-base: #f8fafc;
             --mx-surface-panel: rgba(255, 255, 255, 0.85);
             --mx-surface-card: #ffffff;
-            --mx-border-subtle: rgba(203, 213, 225, 0.7);
-            --mx-border-focus: rgba(254, 181, 4, 0.5);
-            --mx-brand-grad: linear-gradient(135deg, #feb504 0%, #ea580c 100%);
-            --mx-brand-primary: #feb504;
+            --mx-surface-card-subtle: #f1f5f9;
+            --mx-border-subtle: rgba(226, 232, 240, 0.85);
+            --mx-border-focus: rgba(245, 158, 11, 0.45);
+            --mx-brand-grad: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --mx-brand-primary: #f59e0b;
             --mx-txt-main: #0f172a;
             --mx-txt-sub: #475569;
             --mx-txt-mute: #94a3b8;
             --mx-header-bg: rgba(255, 255, 255, 0.85);
             --mx-sidebar-bg: rgba(255, 255, 255, 0.95);
-            --mx-accent-amber: #feb504;
-            --mx-accent-glow: rgba(254, 181, 4, 0.25);
+            --mx-accent-amber: #f59e0b;
+            --mx-accent-glow: rgba(245, 158, 11, 0.2);
+            --mx-card-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+            --mx-card-hover-shadow: 0 12px 28px rgba(245, 158, 11, 0.15);
         }
 
-        html.dark {
-            --mx-bg-base: #090614;
-            --mx-surface-panel: rgba(18, 12, 36, 0.85);
-            --mx-surface-card: rgba(24, 16, 48, 0.85);
-            --mx-border-subtle: rgba(255, 255, 255, 0.08);
-            --mx-border-focus: rgba(254, 181, 4, 0.5);
-            --mx-brand-grad: linear-gradient(135deg, #feb504 0%, #f97316 100%);
-            --mx-brand-primary: #feb504;
+        :root[data-theme="dark"], html.dark, body.dark {
+            --mx-bg-base: #090714;
+            --mx-surface-panel: rgba(18, 13, 34, 0.75);
+            --mx-surface-card: rgba(22, 16, 42, 0.65);
+            --mx-surface-card-subtle: rgba(16, 11, 30, 0.55);
+            --mx-border-subtle: rgba(255, 255, 255, 0.065);
+            --mx-border-focus: rgba(245, 158, 11, 0.45);
+            --mx-brand-grad: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            --mx-brand-primary: #f59e0b;
             --mx-txt-main: #f8fafc;
             --mx-txt-sub: #94a3b8;
             --mx-txt-mute: #64748b;
-            --mx-header-bg: rgba(13, 8, 28, 0.85);
+            --mx-header-bg: rgba(13, 9, 26, 0.82);
             --mx-sidebar-bg: rgba(16, 10, 34, 0.95);
-            --mx-accent-amber: #feb504;
-            --mx-accent-glow: rgba(254, 181, 4, 0.2);
+            --mx-accent-amber: #fbbf24;
+            --mx-accent-glow: rgba(245, 158, 11, 0.18);
+            --mx-card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+            --mx-card-hover-shadow: 0 18px 36px -6px rgba(245, 158, 11, 0.18), 0 8px 20px rgba(0, 0, 0, 0.4);
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--mx-bg-base);
             color: var(--mx-txt-main);
             overflow: hidden;
@@ -105,7 +120,9 @@
             position: relative;
         }
 
-        /* BARRA LATERAL (SIDEBAR) */
+        /* ==========================================================================
+           BARRA LATERAL (SIDEBAR) — 100% INTACTA SEGÚN TU RECORTE
+           ========================================================================== */
         .myxsi-sidebar, .sidebar {
             width: 280px !important;
             min-width: 280px !important;
@@ -159,6 +176,21 @@
             object-fit: contain !important;
             display: block !important;
             filter: drop-shadow(0 2px 10px rgba(254, 181, 4, 0.25)) !important;
+        }
+
+        .brand-logo-dark { display: none !important; }
+        .brand-logo-light { display: block !important; }
+
+        :root[data-theme="dark"] .brand-logo-light,
+        html.dark .brand-logo-light,
+        body.dark .brand-logo-light {
+            display: none !important;
+        }
+
+        :root[data-theme="dark"] .brand-logo-dark,
+        html.dark .brand-logo-dark,
+        body.dark .brand-logo-dark {
+            display: block !important;
         }
 
         .btn-new-project-main {
@@ -232,65 +264,62 @@
             font-weight: 700;
         }
 
-        .sidebar-divider {
-            height: 1px;
-            background: var(--mx-border-subtle);
-            margin: 8px 0;
-        }
-
-        /* DRIFT ENGINE BADGE IN SIDEBAR */
-        .drift-badge-box {
-            margin-top: auto;
-            background: rgba(254, 181, 4, 0.06);
-            border: 1px solid rgba(254, 181, 4, 0.2);
-            border-radius: 12px;
-            padding: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .drift-badge-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: #feb504;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-weight: 900;
-            font-size: 1rem;
-            flex-shrink: 0;
-        }
-
-        .drift-badge-text h5 {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--mx-txt-main);
-            margin-bottom: 2px;
-        }
-
-        .drift-badge-text p {
-            font-size: 0.68rem;
-            color: var(--mx-txt-sub);
-        }
-
-        /* ÁREA PRINCIPAL DE CONTENIDO */
+        /* ==========================================================================
+           ÁREA PRINCIPAL DE CONTENIDO — SUAVE, ELEGANTE Y PRESENTABLE
+           ========================================================================== */
         .video-viewport-stage {
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 100%;
+            height: 100vh;
+            height: 100dvh;
             overflow-y: auto;
+            overflow-x: hidden;
             position: relative;
-            background: radial-gradient(circle at 80% 10%, rgba(254, 181, 4, 0.05) 0%, transparent 40%),
-                        radial-gradient(circle at 20% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            background: transparent;
+            min-width: 0;
+            z-index: 1;
+            scroll-behavior: smooth;
         }
 
-        /* TOPBAR DEL DASHBOARD */
+        /* NUBES AMBIENTALES DE FONDO — DIFUMINADO ULTRA SUAVE */
+        .mx-bg-clouds {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .mx-cloud {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .mx-cloud-1 {
+            width: 650px;
+            height: 480px;
+            top: -10%;
+            right: 8%;
+            background: radial-gradient(ellipse, rgba(245, 158, 11, 0.18), transparent 70%);
+        }
+
+        .mx-cloud-2 {
+            width: 580px;
+            height: 420px;
+            bottom: 5%;
+            left: 2%;
+            background: radial-gradient(ellipse, rgba(139, 92, 246, 0.14), transparent 70%);
+        }
+
+        /* ==========================================================================
+           TOPBAR DEL DASHBOARD (DELICADA Y PROFESIONAL)
+           ========================================================================== */
         .video-header-bar {
-            height: 64px;
+            height: 58px;
             background: var(--mx-header-bg);
             border-bottom: 1px solid var(--mx-border-subtle);
             display: flex;
@@ -300,7 +329,9 @@
             position: sticky;
             top: 0;
             z-index: 40;
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            gap: 16px;
         }
 
         .header-title-box {
@@ -310,8 +341,8 @@
         }
 
         .btn-toggle-sidebar {
-            background: none;
-            border: none;
+            background: rgba(255, 255, 255, 0.035);
+            border: 1px solid var(--mx-border-subtle);
             color: var(--mx-txt-sub);
             width: 34px;
             height: 34px;
@@ -320,58 +351,51 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
         }
 
         .btn-toggle-sidebar:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: var(--mx-txt-main);
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #fbbf24;
         }
 
         .video-brand-heading {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.35rem;
-            font-weight: 800;
+            font-size: 1.2rem;
+            font-weight: 700;
             letter-spacing: -0.02em;
             color: var(--mx-txt-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .video-brand-heading span {
-            color: #feb504;
-        }
-
-        .badge-drift-tag {
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 3px 9px;
-            border-radius: 6px;
-            background: rgba(254, 181, 4, 0.15);
-            border: 1px solid rgba(254, 181, 4, 0.35);
-            color: #feb504;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
+            color: #fbbf24;
         }
 
         .header-search-container {
             flex: 1;
-            max-width: 520px;
+            max-width: 420px;
             position: relative;
         }
 
         .header-search-box {
             display: flex;
             align-items: center;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.035);
             border: 1px solid var(--mx-border-subtle);
             border-radius: 9999px;
-            padding: 8px 16px;
+            padding: 6px 14px;
             gap: 10px;
-            transition: border-color 0.2s;
+            transition: all 0.22s ease;
         }
 
         .header-search-box:focus-within {
-            border-color: #feb504;
-            box-shadow: 0 0 15px rgba(254, 181, 4, 0.2);
+            border-color: rgba(245, 158, 11, 0.45);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
         }
 
         .header-search-box input {
@@ -379,391 +403,574 @@
             border: none;
             outline: none;
             color: var(--mx-txt-main);
-            font-size: 0.88rem;
+            font-family: inherit;
+            font-size: 0.84rem;
             flex: 1;
+        }
+
+        .header-search-box input::placeholder {
+            color: var(--mx-txt-mute);
         }
 
         .header-right-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+        }
+
+        .btn-header-new-video {
+            padding: 7px 15px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #0b0716;
+            font-weight: 700;
+            font-size: 0.82rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.25);
+        }
+
+        .btn-header-new-video:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+            filter: brightness(1.04);
         }
 
         .btn-round-action {
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.035);
             border: 1px solid var(--mx-border-subtle);
             color: var(--mx-txt-sub);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.88rem;
         }
 
         .btn-round-action:hover {
-            color: var(--mx-txt-main);
-            border-color: #feb504;
-            background: rgba(254, 181, 4, 0.1);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.35);
+            background: rgba(245, 158, 11, 0.08);
         }
 
-        /* CONTENIDO PRINCIPAL */
+        /* ==========================================================================
+           CONTENIDO PRINCIPAL
+           ========================================================================== */
         .video-content-body {
-            padding: 2.2rem 2.5rem 4rem;
-            max-width: 1320px;
+            padding: 2.2rem 2.8rem 4rem;
+            max-width: 1360px;
             margin: 0 auto;
             width: 100%;
             display: flex;
             flex-direction: column;
-            gap: 2.4rem;
+            gap: 2.8rem;
+            box-sizing: border-box;
+            z-index: 2;
         }
 
-        /* HERO BANNER */
+        /* ==========================================================================
+           HERO BANNER (SUAVE, EQUILIBRADO Y ELEGANTE)
+           ========================================================================== */
         .video-hero-banner {
-            background: linear-gradient(135deg, rgba(25, 17, 46, 0.9) 0%, rgba(16, 10, 32, 0.95) 100%);
-            border: 1px solid rgba(254, 181, 4, 0.25);
-            border-radius: 20px;
-            padding: 2.4rem 2.8rem;
-            display: flex;
+            background: linear-gradient(145deg, rgba(22, 16, 42, 0.72) 0%, rgba(13, 9, 24, 0.85) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.075);
+            border-radius: 24px;
+            padding: 2.8rem 3.2rem;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
             align-items: center;
-            justify-content: space-between;
-            gap: 2rem;
+            gap: 2.8rem;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
         }
 
-        .video-hero-banner::before {
+        .video-hero-banner::after {
             content: '';
             position: absolute;
             top: -60px;
-            right: -60px;
-            width: 260px;
-            height: 260px;
-            background: radial-gradient(circle, rgba(254, 181, 4, 0.25) 0%, transparent 70%);
+            right: 20%;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.12) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
         }
 
         .hero-banner-content {
-            max-width: 680px;
             z-index: 2;
         }
 
         .hero-banner-content h1 {
             font-family: 'Outfit', sans-serif;
-            font-size: 2.2rem;
-            font-weight: 850;
-            line-height: 1.15;
-            color: #ffffff;
-            margin-bottom: 0.8rem;
-            letter-spacing: -0.03em;
+            font-size: 2.25rem;
+            font-weight: 750;
+            line-height: 1.2;
+            color: #f8fafc;
+            margin-bottom: 0.9rem;
+            letter-spacing: -0.02em;
         }
 
         .hero-banner-content h1 span {
-            background: linear-gradient(135deg, #feb504 20%, #f97316 100%);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 55%, #f97316 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero-banner-content p {
             font-size: 0.95rem;
-            color: #cbd5e1;
-            line-height: 1.6;
-            margin-bottom: 1.6rem;
+            color: #94a3b8;
+            line-height: 1.65;
+            margin-bottom: 1.8rem;
+            max-width: 520px;
         }
 
         .hero-banner-actions {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 14px;
             flex-wrap: wrap;
         }
 
         .btn-launch-editor {
-            padding: 11px 22px;
+            padding: 13px 28px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #feb504 0%, #ea580c 100%);
-            border: none;
-            color: #000000;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #0b0716;
             font-weight: 750;
             font-size: 0.92rem;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
             text-decoration: none;
-            transition: all 0.2s ease;
-            box-shadow: 0 6px 20px rgba(254, 181, 4, 0.35);
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 18px rgba(245, 158, 11, 0.28);
         }
 
         .btn-launch-editor:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(254, 181, 4, 0.5);
-            filter: brightness(1.05);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.42);
+            filter: brightness(1.04);
         }
 
-        .btn-open-files-action {
-            padding: 11px 20px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            font-weight: 650;
-            font-size: 0.92rem;
-            cursor: pointer;
+        /* ==========================================================================
+           MOCKUP DEL ESTUDIO ANIMADO (SUAVE, ELEGANTE Y FLUIDO)
+           ========================================================================== */
+        @keyframes studioFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .hero-studio-mockup {
+            background: rgba(12, 8, 22, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 15px;
             display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            backdrop-filter: blur(10px);
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            animation: studioFloat 6s ease-in-out infinite;
         }
 
-        .btn-open-files-action:hover {
-            background: rgba(255, 255, 255, 0.14);
-            border-color: rgba(254, 181, 4, 0.5);
-            color: #feb504;
-        }
-
-        .hero-banner-icon-side {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        .drift-logo-hero {
-            width: 140px;
-            height: 140px;
-            object-fit: contain;
-            filter: drop-shadow(0 10px 25px rgba(254, 181, 4, 0.4));
-            animation: heroFloat 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes heroFloat {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(-8px) scale(1.02); }
-        }
-
-        /* FORMAT PRESETS ROW (FORMATOS SOCIALES Y CINEMA) */
-        .section-header {
+        .mockup-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.1rem;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .mockup-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .mockup-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0.85;
+        }
+
+        .mockup-dots .dot.red { background: #ef4444; }
+        .mockup-dots .dot.yellow { background: #f59e0b; }
+        .mockup-dots .dot.green { background: #10b981; }
+
+        .mockup-title {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .mockup-title i {
+            color: #fbbf24;
+        }
+
+        .mockup-badge-live {
+            font-size: 0.64rem;
+            font-weight: 750;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 2px 7px;
+            border-radius: 5px;
+            letter-spacing: 0.03em;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .mockup-live-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 6px #10b981;
+            animation: pulseDot 1.8s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+
+        .mockup-viewport {
+            height: 128px;
+            background: radial-gradient(circle at 50% 35%, #1d1338 0%, #0d081b 100%);
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .mockup-screen-overlay {
+            position: absolute;
+            top: 8px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Inter', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.85);
+            z-index: 2;
+        }
+
+        .screen-res {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 0.62rem;
+            font-weight: 700;
+        }
+
+        .mockup-screen-center {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ANIMACIÓN DE PULSO SUAVE DEL BOTÓN PLAY */
+        @keyframes playPulseRing {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+            }
+            50% {
+                transform: scale(1.06);
+                box-shadow: 0 0 24px rgba(245, 158, 11, 0.65);
+            }
+        }
+
+        .mockup-play-ring {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #0b0716;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            padding-left: 3px;
+            animation: playPulseRing 2.8s ease-in-out infinite;
+        }
+
+        /* ANIMACIÓN DE VÚMETROS */
+        .mockup-vu-meters {
+            position: absolute;
+            bottom: 8px;
+            right: 10px;
+            display: flex;
+            gap: 2px;
+            align-items: flex-end;
+            height: 18px;
+        }
+
+        .vu-bar {
+            width: 3px;
+            background: #10b981;
+            border-radius: 1px;
+        }
+
+        @keyframes vuWave1 { 0%, 100% { height: 25%; } 40% { height: 95%; } 70% { height: 50%; } }
+        @keyframes vuWave2 { 0%, 100% { height: 75%; } 30% { height: 35%; } 80% { height: 100%; } }
+        @keyframes vuWave3 { 0%, 100% { height: 50%; } 50% { height: 85%; } 90% { height: 40%; } }
+        @keyframes vuWave4 { 0%, 100% { height: 20%; } 45% { height: 70%; } 85% { height: 90%; } }
+
+        .vu-bar.bar-1 { animation: vuWave1 0.8s ease infinite alternate; }
+        .vu-bar.bar-2 { animation: vuWave2 0.7s ease infinite alternate; }
+        .vu-bar.bar-3 { animation: vuWave3 1.0s ease infinite alternate; }
+        .vu-bar.bar-4 { animation: vuWave4 0.9s ease infinite alternate; }
+
+        .mockup-tracks {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            position: relative;
+            padding-top: 4px;
+        }
+
+        .mockup-track {
+            height: 24px;
+            background: rgba(255, 255, 255, 0.025);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            gap: 4px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.035);
+        }
+
+        .track-label {
+            font-size: 0.6rem;
+            font-weight: 800;
+            color: #64748b;
+            width: 18px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .track-clip {
+            height: 18px;
+            border-radius: 5px;
+            font-size: 0.58rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            padding: 0 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .clip-amber {
+            background: rgba(245, 158, 11, 0.25);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            color: #fbbf24;
+        }
+
+        .clip-orange {
+            background: rgba(249, 115, 22, 0.25);
+            border: 1px solid rgba(249, 115, 22, 0.5);
+            color: #fdba74;
+        }
+
+        .clip-gold {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.35));
+            border: 1px solid rgba(245, 158, 11, 0.55);
+            color: #ffffff;
+        }
+
+        .clip-purple {
+            background: rgba(139, 92, 246, 0.25);
+            border: 1px solid rgba(139, 92, 246, 0.5);
+            color: #c4b5fd;
+        }
+
+        @keyframes audioShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        .clip-cyan {
+            background: linear-gradient(90deg, rgba(14, 165, 233, 0.22) 0%, rgba(99, 102, 241, 0.28) 50%, rgba(14, 165, 233, 0.22) 100%);
+            background-size: 200% 100%;
+            animation: audioShimmer 3.5s linear infinite;
+            border: 1px solid rgba(14, 165, 233, 0.45);
+            color: #7dd3fc;
+        }
+
+        /* ANIMACIÓN DEL CABEZAL DE REPRODUCCIÓN (PLAYHEAD) */
+        @keyframes playheadScan {
+            0% {
+                left: 8%;
+                opacity: 1;
+            }
+            85% {
+                left: 92%;
+                opacity: 1;
+            }
+            90% {
+                left: 92%;
+                opacity: 0;
+            }
+            92% {
+                left: 8%;
+                opacity: 0;
+            }
+            100% {
+                left: 8%;
+                opacity: 1;
+            }
+        }
+
+        .mockup-playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.7);
+            z-index: 5;
+            pointer-events: none;
+            animation: playheadScan 5.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .mockup-playhead::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -4px;
+            width: 10px;
+            height: 8px;
+            background: #fbbf24;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+        }
+
+        /* ==========================================================================
+           PROYECTOS RECIENTES (SUAVE, ELEGANTE Y PRESENTABLE)
+           ========================================================================== */
+        .projects-toolbar-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .section-title {
             font-family: 'Outfit', sans-serif;
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 750;
             color: var(--mx-txt-main);
-            letter-spacing: -0.01em;
+            letter-spacing: -0.015em;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
         .section-title i {
-            color: #feb504;
+            color: #fbbf24;
         }
 
-        .preset-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-            gap: 16px;
-        }
-
-        .preset-card {
-            background: var(--mx-surface-card);
+        .projects-filter-pills {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.035);
             border: 1px solid var(--mx-border-subtle);
-            border-radius: 16px;
-            padding: 1.4rem 1.2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            text-decoration: none;
-            color: inherit;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-            position: relative;
-            overflow: hidden;
+            padding: 3px;
+            border-radius: 10px;
         }
 
-        .preset-card:hover {
-            border-color: rgba(254, 181, 4, 0.5);
-            box-shadow: 0 10px 25px rgba(254, 181, 4, 0.15);
-            transform: translateY(-4px);
-        }
-
-        .preset-card-preview {
-            width: 68px;
-            height: 68px;
-            border-radius: 14px;
-            background: rgba(254, 181, 4, 0.08);
-            border: 1px solid rgba(254, 181, 4, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #feb504;
-            font-size: 1.6rem;
-            margin-bottom: 1rem;
-            transition: all 0.2s;
-        }
-
-        .preset-card:hover .preset-card-preview {
-            background: #feb504;
-            color: #000000;
-            transform: scale(1.08);
-        }
-
-        .preset-card-title {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--mx-txt-main);
-            margin-bottom: 4px;
-        }
-
-        .preset-card-ratio {
-            font-size: 0.76rem;
-            font-weight: 650;
-            color: #feb504;
-            background: rgba(254, 181, 4, 0.12);
-            padding: 2px 8px;
-            border-radius: 6px;
-            margin-bottom: 6px;
-        }
-
-        .preset-card-desc {
-            font-size: 0.74rem;
-            color: var(--mx-txt-sub);
-            line-height: 1.4;
-        }
-
-        /* ZONA DE CARGA LOCAL DE VIDEOS */
-        .video-local-upload-section {
-            margin: 1.5rem 0 2rem;
-        }
-
-        .video-local-dropzone {
-            background: linear-gradient(135deg, rgba(254, 181, 4, 0.05) 0%, rgba(139, 92, 246, 0.04) 100%);
-            border: 2px dashed rgba(254, 181, 4, 0.35);
-            border-radius: 20px;
-            padding: 2.2rem 2rem;
-            display: flex;
-            align-items: center;
-            gap: 22px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            position: relative;
-        }
-
-        .video-local-dropzone:hover, .video-local-dropzone.drag-over {
-            background: linear-gradient(135deg, rgba(254, 181, 4, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
-            border-color: #feb504;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(254, 181, 4, 0.15);
-        }
-
-        .dropzone-icon-circle {
-            width: 58px;
-            height: 58px;
-            border-radius: 16px;
-            background: rgba(254, 181, 4, 0.15);
-            border: 1px solid rgba(254, 181, 4, 0.4);
-            color: #feb504;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            flex-shrink: 0;
-            transition: all 0.25s ease;
-        }
-
-        .video-local-dropzone:hover .dropzone-icon-circle {
-            transform: scale(1.08);
-            background: #feb504;
-            color: #0b0716;
-        }
-
-        .dropzone-text-group {
-            flex: 1;
-        }
-
-        .dropzone-text-group h3 {
-            font-size: 1.05rem;
-            font-weight: 750;
-            color: var(--mx-txt-main);
-            margin-bottom: 4px;
-        }
-
-        .dropzone-text-group p {
-            font-size: 0.82rem;
-            color: var(--mx-txt-sub);
-            margin-bottom: 6px;
-            line-height: 1.4;
-        }
-
-        .dropzone-formats-tag {
-            display: inline-block;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #feb504;
-            background: rgba(254, 181, 4, 0.1);
-            padding: 2px 10px;
-            border-radius: 6px;
-        }
-
-        .btn-dropzone-browse {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #feb504 0%, #e09b00 100%);
-            color: #0b0716;
+        .btn-filter-pill {
+            background: transparent;
             border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 0.84rem;
-            font-weight: 700;
+            color: var(--mx-txt-sub);
+            padding: 5px 13px;
+            border-radius: 7px;
+            font-size: 0.78rem;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s ease;
-            white-space: nowrap;
         }
 
-        .btn-dropzone-browse:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 15px rgba(254, 181, 4, 0.4);
+        .btn-filter-pill:hover {
+            color: var(--mx-txt-main);
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        /* PROYECTOS RECIENTES */
+        .btn-filter-pill.active {
+            background: #f59e0b;
+            color: #0b0716;
+            font-weight: 750;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+        }
+
+        .badge-project-counter {
+            font-size: 0.74rem;
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+
         .projects-list-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 18px;
+            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            gap: 20px;
         }
 
         .project-card {
             background: var(--mx-surface-card);
             border: 1px solid var(--mx-border-subtle);
-            border-radius: 16px;
+            border-radius: 18px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            transition: all 0.25s ease;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--mx-card-shadow);
+            backdrop-filter: blur(16px);
         }
 
         .project-card:hover {
-            border-color: rgba(254, 181, 4, 0.4);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: translateY(-3px);
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: var(--mx-card-hover-shadow);
+            transform: translateY(-4px);
         }
 
         .project-thumbnail-area {
-            height: 150px;
+            height: 165px;
             background: #0f0a20;
             position: relative;
             display: flex;
@@ -776,29 +983,31 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.65;
-            transition: transform 0.3s ease;
+            opacity: 0.7;
+            transition: transform 0.4s ease, opacity 0.3s ease;
         }
 
         .project-card:hover .project-thumb-bg {
-            transform: scale(1.05);
-            opacity: 0.8;
+            transform: scale(1.06);
+            opacity: 0.85;
         }
 
         .project-play-hover {
             position: absolute;
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: rgba(254, 181, 4, 0.9);
-            color: #000;
+            background: rgba(251, 191, 36, 0.95);
+            color: #0b0716;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             opacity: 0;
-            transform: scale(0.8);
-            transition: all 0.2s ease;
+            transform: scale(0.75);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+            padding-left: 3px;
         }
 
         .project-card:hover .project-play-hover {
@@ -808,38 +1017,44 @@
 
         .project-badge-duration {
             position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.75);
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.78);
             color: #ffffff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            padding: 2px 7px;
+            font-size: 0.68rem;
+            font-weight: 750;
+            padding: 3px 8px;
             border-radius: 6px;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .project-badge-ratio {
             position: absolute;
-            top: 8px;
-            left: 8px;
-            background: rgba(254, 181, 4, 0.9);
-            color: #000;
+            top: 10px;
+            left: 10px;
+            background: rgba(251, 191, 36, 0.95);
+            color: #0b0716;
             font-size: 0.68rem;
             font-weight: 800;
-            padding: 2px 7px;
+            padding: 3px 8px;
             border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .project-info-area {
-            padding: 14px 16px;
+            padding: 16px 18px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            flex: 1;
         }
 
         .project-title {
-            font-size: 0.92rem;
+            font-size: 0.94rem;
             font-weight: 750;
             color: var(--mx-txt-main);
             white-space: nowrap;
@@ -859,78 +1074,309 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-top: 8px;
-            padding-top: 8px;
+            margin-top: 6px;
+            padding-top: 10px;
             border-top: 1px solid var(--mx-border-subtle);
         }
 
         .btn-project-edit {
             flex: 1;
-            padding: 7px 12px;
-            border-radius: 8px;
-            background: rgba(254, 181, 4, 0.12);
-            border: 1px solid rgba(254, 181, 4, 0.25);
-            color: #feb504;
+            padding: 8px 14px;
+            border-radius: 9px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
             font-weight: 700;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             text-decoration: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            transition: all 0.2s;
+            gap: 7px;
+            transition: all 0.2s ease;
         }
 
         .btn-project-edit:hover {
-            background: #feb504;
-            color: #000000;
+            background: #f59e0b;
+            color: #0b0716;
+            border-color: #f59e0b;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
         }
 
         .btn-project-delete {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-            background: rgba(239, 68, 68, 0.1);
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: rgba(239, 68, 68, 0.08);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #ef4444;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            font-size: 0.82rem;
         }
 
         .btn-project-delete:hover {
             background: #ef4444;
             color: #ffffff;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
         }
 
         .empty-projects-state {
             grid-column: 1 / -1;
-            padding: 3rem 2rem;
+            padding: 3.5rem 2rem;
             text-align: center;
             background: var(--mx-surface-card);
             border: 1px dashed var(--mx-border-subtle);
-            border-radius: 20px;
+            border-radius: 22px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .empty-projects-state i {
             font-size: 2.8rem;
-            color: #feb504;
-            margin-bottom: 12px;
+            color: #fbbf24;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.25));
         }
 
         .empty-projects-state h3 {
-            font-size: 1.15rem;
+            font-size: 1.2rem;
             font-weight: 750;
+            color: var(--mx-txt-main);
             margin-bottom: 6px;
         }
 
         .empty-projects-state p {
-            font-size: 0.84rem;
+            font-size: 0.86rem;
             color: var(--mx-txt-sub);
             max-width: 440px;
-            margin: 0 auto 1.4rem;
+            margin: 0 auto 1.6rem;
+            line-height: 1.5;
+        }
+
+        /* ==========================================================================
+           MODAL DE FORMATO DE PROYECTO (SUAVE Y PRESENTABLE)
+           ========================================================================== */
+        .format-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 3, 12, 0.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .format-modal-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .format-modal-container {
+            background: rgba(18, 13, 34, 0.95);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            border-radius: 24px;
+            max-width: 960px;
+            width: 100%;
+            padding: 2.2rem 2.4rem;
+            box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 158, 11, 0.1);
+            transform: scale(0.95) translateY(12px);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .format-modal-backdrop.open .format-modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .format-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--mx-border-subtle);
+            padding-bottom: 1rem;
+        }
+
+        .format-modal-title-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .format-modal-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #fbbf24;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .format-modal-title-box h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 750;
+            color: var(--mx-txt-main);
+            letter-spacing: -0.01em;
+        }
+
+        .format-modal-title-box p {
+            font-size: 0.82rem;
+            color: var(--mx-txt-sub);
+        }
+
+        .btn-close-modal {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--mx-border-subtle);
+            color: var(--mx-txt-sub);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close-modal:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            transform: rotate(90deg);
+        }
+
+        .format-modal-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .format-modal-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .format-modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .preset-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preset-card:hover {
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.14);
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .preset-ratio-viewport {
+            height: 64px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .ratio-box {
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            background: rgba(245, 158, 11, 0.05);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fbbf24;
+            transition: all 0.25s ease;
+        }
+
+        .preset-card:hover .ratio-box {
+            border-color: #fbbf24;
+            background: rgba(245, 158, 11, 0.14);
+            box-shadow: 0 0 16px rgba(245, 158, 11, 0.25);
+            transform: scale(1.05);
+        }
+
+        .ratio-box.r-16-9 { width: 76px; height: 42px; }
+        .ratio-box.r-9-16 { width: 36px; height: 60px; border-radius: 10px; }
+        .ratio-box.r-1-1 { width: 48px; height: 48px; }
+        .ratio-box.r-4-5 { width: 44px; height: 55px; }
+        .ratio-box.r-21-9 { width: 90px; height: 38px; }
+        .ratio-box.r-fx { width: 54px; height: 54px; border-radius: 50%; }
+
+        .preset-card-title {
+            font-size: 0.92rem;
+            font-weight: 750;
+            color: var(--mx-txt-main);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .preset-card-ratio {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.22);
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-family: 'Inter', monospace;
+        }
+
+        .preset-card-desc {
+            font-size: 0.72rem;
+            color: var(--mx-txt-sub);
+            line-height: 1.4;
+        }
+
+        /* ==========================================================================
+           RESPONSIVIDAD
+           ========================================================================== */
+        @media (max-width: 1080px) {
+            .video-hero-banner {
+                grid-template-columns: 1fr;
+                padding: 2rem;
+            }
+            .hero-studio-mockup {
+                max-width: 580px;
+                width: 100%;
+            }
         }
 
         @media (max-width: 900px) {
@@ -944,16 +1390,12 @@
             .myxsi-sidebar.open {
                 transform: translateX(0);
             }
-            .video-hero-banner {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 1.8rem;
-            }
-            .hero-banner-icon-side {
-                display: none;
-            }
             .video-content-body {
-                padding: 1.5rem 1.2rem;
+                padding: 1.4rem 1rem 3rem;
+                gap: 1.8rem;
+            }
+            .video-header-bar {
+                padding: 0 1rem;
             }
         }
     </style>
@@ -961,7 +1403,7 @@
 <body>
     <div class="myxsi-studio-layout">
         
-        <!-- SIDEBAR DE NAVEGACIÓN -->
+        <!-- SIDEBAR DE NAVEGACIÓN (CONSERVADA EXACTA SEGÚN TU RECORTE) -->
         <aside class="sidebar myxsi-sidebar" id="sidebar">
             <div class="main-sidebar-brand-area sidebar-brand-area" style="display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 0.5rem; padding: 2px 0;">
                 <a href="index.html" class="brand-logo sidebar-brand-logo" title="Ir al Inicio de Myxsi" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
@@ -970,7 +1412,7 @@
                 </a>
             </div>
 
-            <button class="sidebar-new-chat-btn btn-new-project-main" onclick="createNewProject('16:9')">
+            <button class="sidebar-new-chat-btn btn-new-project-main" onclick="openFormatModal()">
                 <i class="fa-solid fa-plus" style="font-size: 0.8rem;"></i> <span>Nuevo Proyecto</span>
             </button>
 
@@ -995,163 +1437,136 @@
                     <i class="fa-regular fa-folder" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f59e0b;"></i> <span>Archivos</span>
                 </a>
             </nav>
-
-            <div class="sidebar-divider"></div>
-
-            <!-- DRIFT ENGINE INFO BADGE -->
-            <div class="drift-badge-box">
-                <div class="drift-badge-icon">
-                    <i class="fa-solid fa-bolt"></i>
-                </div>
-                <div class="drift-badge-text">
-                    <h5>Motor Drift Integrado</h5>
-                    <p>Shader FX & Multipista Pro</p>
-                </div>
-            </div>
         </aside>
 
         <!-- ESCENARIO DE VISTA Y CONTENIDO -->
         <main class="video-viewport-stage">
             
-            <!-- TOPBAR ELEGANTE -->
+            <!-- NUBES AMBIENTALES DE FONDO -->
+            <div class="mx-bg-clouds">
+                <div class="mx-cloud mx-cloud-1"></div>
+                <div class="mx-cloud mx-cloud-2"></div>
+            </div>
+
+            <!-- TOPBAR LIMPIA -->
             <header class="video-header-bar">
                 <div class="header-title-box">
                     <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Alternar menú lateral">
                         <i class="fa-solid fa-bars"></i>
                     </button>
                     <span class="video-brand-heading">Myxsi <span>Video</span></span>
-                    <span class="badge-drift-tag">Drift Engine</span>
                 </div>
 
                 <div class="header-search-container">
                     <div class="header-search-box">
-                        <i class="fa-solid fa-magnifying-glass" style="color: var(--mx-txt-mute); font-size: 0.85rem;"></i>
-                        <input type="text" id="videoSearchInput" placeholder="Buscar en tus proyectos de video y plantillas..." oninput="filterProjects(this.value)">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--mx-txt-mute); font-size: 0.82rem;"></i>
+                        <input type="text" id="videoSearchInput" placeholder="Buscar en tus proyectos de video..." oninput="handleSearchInput(this.value)">
                     </div>
                 </div>
 
                 <div class="header-right-actions">
+                    <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
+                    <button class="btn-header-new-video" onclick="openFormatModal()">
+                        <i class="fa-solid fa-plus"></i> <span>Nuevo Video</span>
+                    </button>
                     <button class="btn-round-action" onclick="toggleTheme()" title="Cambiar tema">
                         <i class="fa-solid fa-moon"></i>
                     </button>
                     <a href="chat.html" class="btn-round-action" title="Ir a Chat IA">
                         <i class="fa-regular fa-comment-dots"></i>
                     </a>
+                    <button class="btn-round-action" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Perfil de usuario" style="overflow: hidden; padding: 0; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(139,92,246,0.3); background: linear-gradient(135deg, #a78bfa, #6d28d9); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 800;">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </button>
                 </div>
             </header>
 
-            <!-- CUERPO DEL HUB -->
+            <!-- CUERPO DEL HUB (LIMPIO, SUAVE Y SIN RUIDO VISUAL) -->
             <div class="video-content-body">
                 
-                <!-- HERO BANNER -->
+                <!-- HERO BANNER CON MOCKUP DE ESTUDIO ANIMADO -->
                 <section class="video-hero-banner">
                     <div class="hero-banner-content">
                         <h1>Crea videos extraordinarios. <span>Potenciado por Drift.</span></h1>
                         <p>
-                            Editor de video profesional multipista con más de 70 efectos visuales GLSL, transiciones cinemáticas, animaciones de texto y mezclador de audio integrado. Exporta en Full HD y 4K sin marcas de agua ni suscripciones.
+                            Editor de video multipista profesional con efectos visuales y renderizado en tiempo real. Rápido, privado y sin marcas de agua.
                         </p>
                         <div class="hero-banner-actions">
-                            <a href="video.html" class="btn-launch-editor">
+                            <button type="button" class="btn-launch-editor" onclick="openFormatModal()">
                                 <i class="fa-solid fa-play"></i> Abrir Video Studio
-                            </a>
-                            <button class="btn-open-files-action" onclick="document.getElementById('fileUploadInput').click()">
-                                <i class="fa-solid fa-file-import"></i> Importar Video / Audio
                             </button>
-                            <input type="file" id="fileUploadInput" accept="video/*,audio/*,image/*" style="display: none;" onchange="handleDirectImport(event)">
                         </div>
                     </div>
-                    <div class="hero-banner-icon-side">
-                        <img src="assets/drift_icon.png" alt="Drift Video Engine" class="drift-logo-hero" onerror="this.style.display='none'">
+
+                    <!-- MOCKUP DEL ESTUDIO CON ANIMACIÓN REAL (PLAYHEAD, VÚMETROS Y CÓDIGO DE TIEMPO) -->
+                    <div class="hero-studio-mockup" aria-hidden="true">
+                        <div class="mockup-header">
+                            <div class="mockup-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <div class="mockup-title">
+                                <i class="fa-solid fa-film"></i> Timeline Pro &bull; Drift Engine
+                            </div>
+                            <span class="mockup-badge-live">
+                                <span class="mockup-live-dot"></span> 60 FPS
+                            </span>
+                        </div>
+                        <div class="mockup-viewport">
+                            <div class="mockup-screen-overlay">
+                                <span class="screen-tc" id="liveTimecode">00:01:24:18</span>
+                                <span class="screen-res">4K UHD</span>
+                            </div>
+                            <div class="mockup-screen-center">
+                                <div class="mockup-play-ring">
+                                    <i class="fa-solid fa-play"></i>
+                                </div>
+                            </div>
+                            <div class="mockup-vu-meters">
+                                <span class="vu-bar bar-1"></span>
+                                <span class="vu-bar bar-2"></span>
+                                <span class="vu-bar bar-3"></span>
+                                <span class="vu-bar bar-4"></span>
+                            </div>
+                        </div>
+                        <div class="mockup-tracks">
+                            <div class="mockup-track">
+                                <span class="track-label">V2</span>
+                                <div class="track-clip clip-amber" style="width: 46%;">Títulos &amp; FX</div>
+                                <div class="track-clip clip-orange" style="width: 32%;">Transición GLSL</div>
+                            </div>
+                            <div class="mockup-track">
+                                <span class="track-label">V1</span>
+                                <div class="track-clip clip-gold" style="width: 66%;">Master_Clip_4K.mp4</div>
+                                <div class="track-clip clip-purple" style="width: 28%;">B-Roll.mp4</div>
+                            </div>
+                            <div class="mockup-track">
+                                <span class="track-label">A1</span>
+                                <div class="track-clip clip-cyan" style="width: 96%;">Audio_Stereo_Master.wav</div>
+                            </div>
+                            <div class="mockup-playhead"></div>
+                        </div>
                     </div>
                 </section>
 
-                <!-- FORMATOS SOCIALES Y PRESETS -->
+                <!-- MIS PROYECTOS RECIENTES (LA SECCIÓN DONDE APARECEN LOS VIDEOS) -->
                 <section>
-                    <div class="section-header">
-                        <h2 class="section-title">
-                            <i class="fa-solid fa-clapperboard"></i> Formato de Proyecto Rápido
-                        </h2>
-                    </div>
-
-                    <div class="preset-cards-grid">
-                        <!-- 16:9 Panorámico -->
-                        <div class="preset-card" onclick="createNewProject('16:9')">
-                            <div class="preset-card-preview">
-                                <i class="fa-solid fa-desktop"></i>
-                            </div>
-                            <span class="preset-card-ratio">16:9 (1920x1080)</span>
-                            <h3 class="preset-card-title">YouTube & Cinema</h3>
-                            <p class="preset-card-desc">Videos horizontales, tutoriales, podcasts y documentales.</p>
+                    <div class="projects-toolbar-row">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <h2 class="section-title">
+                                <i class="fa-solid fa-folder-open"></i> Proyectos Recientes
+                            </h2>
+                            <span class="badge-project-counter" id="projectCountBadge">Cargando...</span>
                         </div>
 
-                        <!-- 9:16 Vertical -->
-                        <div class="preset-card" onclick="createNewProject('9:16')">
-                            <div class="preset-card-preview">
-                                <i class="fa-solid fa-mobile-screen"></i>
-                            </div>
-                            <span class="preset-card-ratio">9:16 (1080x1920)</span>
-                            <h3 class="preset-card-title">Reels, Shorts & TikTok</h3>
-                            <p class="preset-card-desc">Formato vertical de alta retención para redes sociales.</p>
+                        <!-- Filtros por relación de aspecto -->
+                        <div class="projects-filter-pills">
+                            <button class="btn-filter-pill active" onclick="setRatioFilter('all', this)">Todos</button>
+                            <button class="btn-filter-pill" onclick="setRatioFilter('16:9', this)">16:9</button>
+                            <button class="btn-filter-pill" onclick="setRatioFilter('9:16', this)">9:16</button>
+                            <button class="btn-filter-pill" onclick="setRatioFilter('1:1', this)">1:1</button>
                         </div>
-
-                        <!-- 1:1 Cuadrado -->
-                        <div class="preset-card" onclick="createNewProject('1:1')">
-                            <div class="preset-card-preview">
-                                <i class="fa-solid fa-square"></i>
-                            </div>
-                            <span class="preset-card-ratio">1:1 (1080x1080)</span>
-                            <h3 class="preset-card-title">Feed Social Cuadrado</h3>
-                            <p class="preset-card-desc">Perfecto para carruseles, publicaciones y anuncios.</p>
-                        </div>
-
-                        <!-- 4:5 Retrato -->
-                        <div class="preset-card" onclick="createNewProject('4:5')">
-                            <div class="preset-card-preview">
-                                <i class="fa-solid fa-image"></i>
-                            </div>
-                            <span class="preset-card-ratio">4:5 (1080x1350)</span>
-                            <h3 class="preset-card-title">Retrato Instagram</h3>
-                            <p class="preset-card-desc">Ocupa el máximo espacio vertical en el feed móvil.</p>
-                        </div>
-
-                        <!-- Plantilla Drift FX -->
-                        <div class="preset-card" onclick="createNewProject('16:9', 'drift_template')">
-                            <div class="preset-card-preview" style="background: rgba(254, 181, 4, 0.2);">
-                                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                            </div>
-                            <span class="preset-card-ratio">Plantilla Drift FX</span>
-                            <h3 class="preset-card-title">Cinematic Glow & VHS</h3>
-                            <p class="preset-card-desc">Preconfigurado con efectos retro, títulos y audio.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ZONA DE IMPORTACIÓN LOCAL DE VIDEOS (100% LOCAL Y PRIVADO) -->
-                <section class="video-local-upload-section">
-                    <div class="video-local-dropzone" id="videoHomeDropzone" onclick="document.getElementById('fileUploadInput').click()">
-                        <div class="dropzone-icon-circle">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                        </div>
-                        <div class="dropzone-text-group">
-                            <h3>Subir Video desde tu Equipo</h3>
-                            <p>Arrastra tu archivo aquí o haz clic para explorar. Los videos se procesan y almacenan 100% de forma local en tu navegador.</p>
-                            <span class="dropzone-formats-tag">Formatos compatibles: MP4, WebM, MOV, MKV, AVI, Audio MP3 / WAV</span>
-                        </div>
-                        <button type="button" class="btn-dropzone-browse">
-                            <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
-                        </button>
-                    </div>
-                </section>
-
-                <!-- MIS PROYECTOS RECIENTES -->
-                <section>
-                    <div class="section-header">
-                        <h2 class="section-title">
-                            <i class="fa-solid fa-folder-open"></i> Proyectos Recientes
-                        </h2>
-                        <button class="btn-launch-editor" onclick="createNewProject('16:9')" style="padding: 7px 16px; font-size: 0.82rem;">
-                            <i class="fa-solid fa-plus"></i> Crear proyecto
-                        </button>
                     </div>
 
                     <div class="projects-list-container" id="projectsListContainer">
@@ -1163,25 +1578,171 @@
         </main>
     </div>
 
+    <!-- MODAL DE FORMATOS (SE ABRE AL TOCAR "ABRIR VIDEO STUDIO" O "NUEVO PROYECTO") -->
+    <div class="format-modal-backdrop" id="formatModal" onclick="closeFormatModal(event)">
+        <div class="format-modal-container" onclick="event.stopPropagation()">
+            <div class="format-modal-header">
+                <div class="format-modal-title-box">
+                    <div class="format-modal-icon">
+                        <i class="fa-solid fa-clapperboard"></i>
+                    </div>
+                    <div>
+                        <h3>Elige el Formato de tu Proyecto</h3>
+                        <p>Selecciona una relación de aspecto para comenzar a editar</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeFormatModal()" title="Cerrar ventana">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="format-modal-grid">
+                <!-- 16:9 Panorámico -->
+                <div class="preset-card" onclick="createNewProject('16:9')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-16-9">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">16:9 &bull; 1920×1080</span>
+                    <h4 class="preset-card-title">YouTube &amp; Cinema</h4>
+                    <p class="preset-card-desc">Videos horizontales, tutoriales, podcasts y documentales en FHD y 4K.</p>
+                </div>
+
+                <!-- 9:16 Vertical -->
+                <div class="preset-card" onclick="createNewProject('9:16')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-9-16">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">9:16 &bull; 1080×1920</span>
+                    <h4 class="preset-card-title">Reels, Shorts &amp; TikTok</h4>
+                    <p class="preset-card-desc">Formato vertical de alta retención para redes sociales en teléfonos.</p>
+                </div>
+
+                <!-- 1:1 Cuadrado -->
+                <div class="preset-card" onclick="createNewProject('1:1')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-1-1">
+                            <i class="fa-solid fa-square"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">1:1 &bull; 1080×1080</span>
+                    <h4 class="preset-card-title">Feed Social Cuadrado</h4>
+                    <p class="preset-card-desc">Perfecto para carruseles, publicaciones de Instagram y anuncios.</p>
+                </div>
+
+                <!-- 4:5 Retrato -->
+                <div class="preset-card" onclick="createNewProject('4:5')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-4-5">
+                            <i class="fa-solid fa-image"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">4:5 &bull; 1080×1350</span>
+                    <h4 class="preset-card-title">Retrato Instagram</h4>
+                    <p class="preset-card-desc">Ocupa el máximo espacio vertical del feed móvil para captar atención.</p>
+                </div>
+
+                <!-- 21:9 Cinemascope -->
+                <div class="preset-card" onclick="createNewProject('21:9')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-21-9">
+                            <i class="fa-solid fa-film"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">21:9 &bull; 2560×1080</span>
+                    <h4 class="preset-card-title">Cinemascope 2.39:1</h4>
+                    <p class="preset-card-desc">Proporción panorámica ultra ancha para cortometrajes y tráilers.</p>
+                </div>
+
+                <!-- Plantilla Drift FX -->
+                <div class="preset-card" onclick="createNewProject('16:9', 'drift_template')">
+                    <div class="preset-ratio-viewport">
+                        <div class="ratio-box r-fx">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                    </div>
+                    <span class="preset-card-ratio">Plantilla Drift FX</span>
+                    <h4 class="preset-card-title">Cinematic Glow &amp; VHS</h4>
+                    <p class="preset-card-desc">Preconfigurado con shaders de resplandor, aberración retro y audio.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/video-db.js"></script>
     <script>
+        // Estado de filtros
+        let allProjectsCache = [];
+        let activeRatioFilter = 'all';
+        let activeSearchQuery = '';
+
+        // Control del Modal de Formatos
+        function openFormatModal() {
+            const m = document.getElementById('formatModal');
+            if (m) m.classList.add('open');
+        }
+
+        function closeFormatModal(e) {
+            if (e && e.target && e.target !== e.currentTarget && !e.target.closest('.btn-close-modal')) return;
+            const m = document.getElementById('formatModal');
+            if (m) m.classList.remove('open');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const m = document.getElementById('formatModal');
+                if (m && m.classList.contains('open')) m.classList.remove('open');
+            }
+        });
+
+        // Animación dinámica del Código de Tiempo (Timecode live counter)
+        function startTimecodeTicker() {
+            const tcEl = document.getElementById('liveTimecode');
+            if (!tcEl) return;
+            let frames = 18;
+            let seconds = 24;
+            let minutes = 1;
+            setInterval(() => {
+                frames++;
+                if (frames >= 60) {
+                    frames = 0;
+                    seconds++;
+                    if (seconds >= 60) {
+                        seconds = 0;
+                        minutes++;
+                        if (minutes >= 60) minutes = 0;
+                    }
+                }
+                const pad = (n) => String(n).padStart(2, '0');
+                tcEl.textContent = `00:${pad(minutes)}:${pad(seconds)}:${pad(frames)}`;
+            }, 1000 / 30);
+        }
+
         // Gestor de Tema
         function toggleTheme() {
             const isDark = document.documentElement.classList.contains('dark');
             if (isDark) {
                 document.documentElement.classList.remove('dark');
                 document.documentElement.setAttribute('data-theme', 'light');
+                if (document.body) document.body.classList.remove('dark');
                 localStorage.setItem('myxsi_theme', 'light');
             } else {
                 document.documentElement.classList.add('dark');
                 document.documentElement.setAttribute('data-theme', 'dark');
+                if (document.body) document.body.classList.add('dark');
                 localStorage.setItem('myxsi_theme', 'dark');
             }
         }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
-            if (sb) sb.classList.toggle('collapsed');
+            if (sb) {
+                sb.classList.toggle('collapsed');
+                sb.classList.toggle('open');
+            }
         }
 
         function getEditorPage() {
@@ -1225,7 +1786,7 @@
             window.location.href = `${getEditorPage()}?id=${projectId}&ratio=${ratio || '16:9'}&template=${template || ''}`;
         }
 
-        // Importación directa de archivos locales
+        // Importación directa de archivos locales (drag & drop en la ventana)
         async function handleDirectImport(event) {
             const file = event.target ? event.target.files[0] : event;
             if (!file) return;
@@ -1311,9 +1872,6 @@
 
         // Cargar Proyectos Recientes (IndexedDB + LocalStorage)
         async function loadRecentProjects() {
-            const container = document.getElementById('projectsListContainer');
-            if (!container) return;
-
             let projects = [];
             if (window.MyxsiVideoDB) {
                 try {
@@ -1331,7 +1889,7 @@
                 }
             }
 
-            // Si está vacío, crear un proyecto demo guiado
+            // Si está vacío, crear proyectos demo
             if (projects.length === 0) {
                 projects = [
                     {
@@ -1354,34 +1912,56 @@
                 localStorage.setItem('myxsi_video_projects', JSON.stringify(projects));
             }
 
-            renderProjects(projects);
-            setupDropzoneEvents();
+            allProjectsCache = projects;
+            applyFilters();
+            setupDropEvents();
         }
 
-        function setupDropzoneEvents() {
-            const dropzone = document.getElementById('videoHomeDropzone');
-            if (!dropzone) return;
+        function setRatioFilter(ratio, btn) {
+            activeRatioFilter = ratio;
+            document.querySelectorAll('.btn-filter-pill').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            applyFilters();
+        }
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropzone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropzone.classList.add('drag-over');
-                }, false);
+        function handleSearchInput(val) {
+            activeSearchQuery = (val || '').toLowerCase().trim();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filtered = allProjectsCache;
+
+            if (activeRatioFilter !== 'all') {
+                filtered = filtered.filter(p => (p.ratio || '').includes(activeRatioFilter));
+            }
+
+            if (activeSearchQuery) {
+                filtered = filtered.filter(p => 
+                    (p.title || '').toLowerCase().includes(activeSearchQuery) || 
+                    (p.ratio || '').toLowerCase().includes(activeSearchQuery)
+                );
+            }
+
+            const countBadge = document.getElementById('projectCountBadge');
+            if (countBadge) {
+                const total = allProjectsCache.length;
+                countBadge.textContent = `${filtered.length} de ${total} ${total === 1 ? 'proyecto' : 'proyectos'}`;
+            }
+
+            renderProjects(filtered);
+        }
+
+        function setupDropEvents() {
+            window.addEventListener('dragover', (e) => {
+                e.preventDefault();
             });
 
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropzone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropzone.classList.remove('drag-over');
-                }, false);
-            });
-
-            dropzone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const file = dt.files[0];
-                if (file) handleDirectImport(file);
+            window.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleDirectImport(e.dataTransfer.files[0]);
+                }
             });
         }
 
@@ -1393,10 +1973,10 @@
                 container.innerHTML = `
                     <div class="empty-projects-state">
                         <i class="fa-solid fa-film"></i>
-                        <h3>Aún no tienes proyectos de video</h3>
-                        <p>Crea tu primer video con formato 16:9 para YouTube, 9:16 para TikTok y Reels, o importa tus propios clips.</p>
-                        <button class="btn-launch-editor" onclick="createNewProject('16:9')" style="margin: 0 auto;">
-                            <i class="fa-solid fa-plus"></i> Crear mi primer video
+                        <h3>No se encontraron proyectos</h3>
+                        <p>No hay proyectos que coincidan con tu búsqueda. Puedes crear un video nuevo con cualquier formato.</p>
+                        <button class="btn-launch-editor" onclick="openFormatModal()">
+                            <i class="fa-solid fa-plus"></i> Crear nuevo video
                         </button>
                     </div>
                 `;
@@ -1411,7 +1991,7 @@
                         <div class="project-thumbnail-area" onclick="window.location.href=\`\${getEditorPage()}?id=${p.id}\`" style="cursor: pointer;">
                             <img src="assets/cosmic_waves_bg.webp" alt="${p.title}" class="project-thumb-bg" onerror="this.src='assets/designer_corner_logo.png'">
                             <span class="project-badge-ratio">${p.ratio || '16:9'}</span>
-                            <span class="project-badge-duration">${durStr}</span>
+                            <span class="project-badge-duration"><i class="fa-regular fa-clock"></i> ${durStr}</span>
                             <div class="project-play-hover">
                                 <i class="fa-solid fa-play"></i>
                             </div>
@@ -1419,8 +1999,8 @@
                         <div class="project-info-area">
                             <h4 class="project-title" title="${p.title}">${p.title}</h4>
                             <div class="project-meta-row">
-                                <span><i class="fa-regular fa-clock"></i> ${dateStr}</span>
-                                <span style="color: #feb504; font-weight: 700;">Drift Core</span>
+                                <span><i class="fa-regular fa-calendar"></i> ${dateStr}</span>
+                                <span style="color: #fbbf24; font-weight: 700;"><i class="fa-solid fa-bolt" style="font-size: 0.7rem;"></i> Drift Core</span>
                             </div>
                             <div class="project-actions-row">
                                 <a href="video.html?id=${p.id}" onclick="event.preventDefault(); window.location.href=\`\${getEditorPage()}?id=${p.id}\`;" class="btn-project-edit">
@@ -1437,7 +2017,7 @@
         }
 
         async function deleteProject(id) {
-            if (!confirm('¿Deseas eliminar este proyecto de video?')) return;
+            if (!confirm('¿Deseas eliminar este proyecto de video? Esta acción no se puede deshacer.')) return;
             if (window.MyxsiVideoDB) {
                 await window.MyxsiVideoDB.deleteProject(id);
             } else {
@@ -1453,22 +2033,11 @@
             loadRecentProjects();
         }
 
-        async function filterProjects(query) {
-            const q = (query || '').toLowerCase().trim();
-            let projects = [];
-            if (window.MyxsiVideoDB) projects = await window.MyxsiVideoDB.getAllProjects();
-            else projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
-
-            if (!q) {
-                renderProjects(projects);
-                return;
-            }
-            const filtered = projects.filter(p => p.title.toLowerCase().includes(q) || (p.ratio || '').includes(q));
-            renderProjects(filtered);
-        }
-
         // Iniciar
-        document.addEventListener('DOMContentLoaded', loadRecentProjects);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRecentProjects();
+            startTimecodeTicker();
+        });
     </script>
 </body>
 </html>
