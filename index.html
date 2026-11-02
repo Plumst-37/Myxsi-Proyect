@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myxsi — "Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro"</title>
+    <meta name="description" content="Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro. Tu espacio de productividad inteligente con IA para conversar, redactar, analizar y diseñar.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Favicon & Manifest -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --bg-base: #070510;
+            --bg-surface: rgba(18, 13, 32, 0.65);
+            --bg-surface-elevated: rgba(28, 20, 50, 0.85);
+            --border-subtle: rgba(255, 255, 255, 0.07);
+            --border-accent: rgba(167, 139, 250, 0.22);
+            --border-glow: rgba(139, 92, 246, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-purple: #8b5cf6;
+            --accent-purple-strong: #7c3aed;
+            --accent-cyan: #38bdf8;
+            --font-display: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --radius-sm: 8px;
+            --radius-md: 14px;
+            --radius-lg: 20px;
+            --radius-pill: 9999px;
+            --shadow-btn: 0 4px 18px rgba(124, 58, 237, 0.35);
+        }
+
+        html:not(.dark) {
+            --bg-base: #f8fafc;
+            --bg-surface: rgba(255, 255, 255, 0.85);
+            --bg-surface-elevated: #ffffff;
+            --border-subtle: rgba(0, 0, 0, 0.08);
+            --border-accent: rgba(124, 58, 237, 0.18);
+            --border-glow: rgba(124, 58, 237, 0.4);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --shadow-btn: 0 4px 16px rgba(124, 58, 237, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+            background-image: url('assets/cosmic_waves_bg.webp');
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        html:not(.dark) body {
+            background-image: 
+                radial-gradient(circle at 10% 15%, rgba(237, 233, 254, 0.6) 0%, transparent 50%),
+                radial-gradient(circle at 90% 85%, rgba(219, 234, 254, 0.6) 0%, transparent 50%);
+            background-color: #f8fafc;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ===== CALM AMBIENT GLOW ===== */
+        .ambient-canvas {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .ambient-glow-center {
+            position: absolute;
+            top: 25%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 750px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 65%);
+            filter: blur(80px);
+        }
+
+        /* ===== NAVBAR TRANQUILA Y ELEGANTE ===== */
+        .navbar {
+            padding: 1rem 3.2rem 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 20;
+            width: 100%;
+            max-width: 1360px;
+            margin: 0 auto;
+            flex-shrink: 0;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            user-select: none;
+        }
+
+        .brand-logo-img {
+            height: 34px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .brand-logo-dark { display: block; }
+        .brand-logo-light { display: none; }
+
+        html:not(.dark) .brand-logo-dark { display: none; }
+        html:not(.dark) .brand-logo-light { display: block; }
+
+        /* Floating Nav Center Pill (Limpio y sutil) */
+        .nav-center-pill {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            padding: 7px 22px;
+            list-style: none;
+        }
+
+        .nav-item-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.84rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-item-link i {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .nav-item-link:hover {
+            color: var(--text-primary);
+        }
+        .nav-item-link:hover i {
+            color: var(--accent-purple);
+        }
+
+        /* Nav Right Actions */
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-login-pill {
+            padding: 7px 18px;
+            border-radius: var(--radius-pill);
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-size: 0.84rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-login-pill:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--border-accent);
+        }
+
+        .btn-start-gradient {
+            padding: 8px 20px;
+            border-radius: var(--radius-pill);
+            background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+            color: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 650;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.35);
+            transition: all 0.25s ease;
+        }
+
+        .btn-start-gradient:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 22px rgba(124, 58, 237, 0.45);
+        }
+
+        .btn-github-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: var(--radius-pill);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-github-pill:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: translateY(-1px);
+            color: #c4b5fd;
+        }
+
+        /* ===== HERO CENTRAL: ESPACIOSO, SERENO Y EQUILIBRADO ===== */
+        .main-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 0.5rem 2rem 1.6rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex: 1;
+            justify-content: space-evenly;
+            min-height: 0;
+        }
+
+        /* SLOGAN OFICIAL DESTACADO CON ORGULLO */
+        .slogan-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1) 0%, rgba(139, 92, 246, 0.12) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #7dd3fc;
+            padding: 6px 18px;
+            border-radius: var(--radius-pill);
+            font-size: 0.84rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            box-shadow: 0 2px 14px rgba(56, 189, 248, 0.12);
+            backdrop-filter: blur(14px);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .slogan-hero-badge:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 4px 20px rgba(56, 189, 248, 0.22);
+            transform: translateY(-1px);
+        }
+
+        .slogan-hero-badge i {
+            color: #38bdf8;
+            font-size: 0.76rem;
+        }
+
+        /* Titular Principal */
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: clamp(2.5rem, 4.2vw, 3.5rem);
+            font-weight: 850;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            color: var(--text-primary);
+            margin: 0.4rem 0 0.5rem;
+        }
+
+        .gradient-ia {
+            background: linear-gradient(135deg, #a78bfa 20%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Subtítulo Breve y Claro */
+        .hero-description {
+            font-size: clamp(0.92rem, 1.3vw, 1.05rem);
+            color: var(--text-secondary);
+            line-height: 1.5;
+            max-width: 660px;
+            font-weight: 450;
+            margin-bottom: 0.6rem;
+        }
+
+        /* BARRA INTERACTIVA DE ENTRADA (CENTRO DE ACCIÓN LIMPIO) */
+        .prompt-capsule {
+            width: 100%;
+            max-width: 650px;
+            background: var(--bg-surface);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid var(--border-accent);
+            border-radius: var(--radius-pill);
+            padding: 6px 8px 6px 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3), 0 0 40px -10px rgba(124, 58, 237, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        .prompt-capsule:focus-within {
+            border-color: var(--border-glow);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 50px -5px rgba(124, 58, 237, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .prompt-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.94rem;
+            outline: none;
+        }
+
+        .prompt-input::placeholder {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .btn-prompt-submit {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: #ffffff;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.92rem;
+            box-shadow: 0 3px 12px rgba(124, 58, 237, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .btn-prompt-submit:hover {
+            transform: scale(1.06);
+            background: linear-gradient(135deg, #9333ea 0%, #6d28d9 100%);
+        }
+
+        /* ACCESOS RÁPIDOS SERENOS (SIN CAJAS PESADAS) */
+        .studios-quiet-strip {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .studio-quiet-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-pill);
+            padding: 7px 16px;
+            font-size: 0.82rem;
+            font-weight: 550;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(12px);
+        }
+
+        .studio-quiet-pill i {
+            font-size: 0.85rem;
+            transition: transform 0.2s ease;
+        }
+
+        .studio-quiet-pill:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--border-accent);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .pill-chat:hover i { color: #a78bfa; }
+        .pill-docs:hover i { color: #60a5fa; }
+        .pill-sheets:hover i { color: #34d399; }
+        .pill-canva:hover i { color: #f472b6; }
+        .pill-video:hover i { color: #feb504; }
+        .pill-files:hover i { color: #f59e0b; }
+
+        /* BANNER TRANQUILO DE MYXSI VISION (ELEGANTE, LIMPIO Y SIN SOBRECARGA) */
+        .vision-quiet-banner {
+            width: 100%;
+            max-width: 900px;
+            background: linear-gradient(135deg, rgba(20, 14, 38, 0.6) 0%, rgba(14, 20, 38, 0.6) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: var(--radius-pill);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.25);
+            transition: all 0.25s ease;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .vision-quiet-banner:hover {
+            border-color: rgba(56, 189, 248, 0.45);
+            box-shadow: 0 8px 30px rgba(56, 189, 248, 0.18);
+            transform: translateY(-2px);
+        }
+
+        .vision-quiet-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-align: left;
+        }
+
+        .vision-eye-mini {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #38bdf8;
+            font-size: 0.95rem;
+            box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+        }
+
+        .vision-quiet-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .vision-quiet-title {
+            font-size: 0.88rem;
+            font-weight: 750;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .vision-quiet-title span {
+            color: #38bdf8;
+        }
+
+        .vision-quiet-desc {
+            font-size: 0.74rem;
+            color: var(--text-secondary);
+        }
+
+        .vision-quiet-cta {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            font-weight: 650;
+            color: #38bdf8;
+            white-space: nowrap;
+            transition: gap 0.2s ease;
+        }
+
+        .vision-quiet-banner:hover .vision-quiet-cta {
+            gap: 10px;
+        }
+
+        /* ===== MODALS (PRESENTACIÓN LIMPIA E INTERACTIVA) ===== */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(4, 2, 10, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .login-modal-card {
+            background: rgba(18, 13, 34, 0.95);
+            border: 1px solid rgba(167, 139, 250, 0.25);
+            border-radius: var(--radius-lg);
+            padding: 2.4rem;
+            max-width: 440px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 50px rgba(124, 58, 237, 0.2);
+            color: var(--text-primary);
+            text-align: left;
+            animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPopIn {
+            from { opacity: 0; transform: scale(0.95) translateY(12px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .btn-close-modal {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close-modal:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .card-header-title {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .card-header-subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.4rem;
+        }
+
+        /* Login Components */
+        .btn-sso {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .btn-sso:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--border-accent);
+        }
+
+        .divider-line {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            margin: 0.9rem 0;
+        }
+
+        .divider-line::before, .divider-line::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .divider-line span {
+            padding: 0 10px;
+        }
+
+        .form-group {
+            margin-bottom: 0.9rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-purple);
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .form-options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.1rem;
+        }
+
+        .forgot-link {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .btn-card-submit {
+            width: 100%;
+            padding: 10px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .btn-card-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+        }
+
+        .card-footer-text {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 1rem;
+        }
+
+        .card-footer-text a {
+            color: var(--accent-purple);
+            font-weight: 700;
+        }
+
+        .alert-box {
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+            display: none;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-height: 560px) {
+            html, body { height: auto; max-height: none; overflow-y: auto; }
+        }
+
+        @media (max-width: 900px) {
+            html, body { height: auto; max-height: none; overflow-y: auto; }
+            body { min-height: 100%; }
+            .navbar { padding: 0.8rem 1.6rem; }
+            .nav-center-pill { display: none; }
+            .main-wrapper { padding: 1.5rem 1.2rem 2.5rem; gap: 1.5rem; }
+            .hero-title { font-size: 2.2rem; }
+            .vision-quiet-banner { flex-direction: column; align-items: flex-start; border-radius: var(--radius-lg); padding: 16px 20px; }
+            .vision-quiet-cta { margin-top: 6px; }
+        }
+    </style>
+
+    <script>
+        (function() {
+            if (localStorage.getItem('myxsi_theme_v2') !== 'set') {
+                localStorage.setItem('myxsi_theme', 'dark');
+                localStorage.setItem('myxsi_theme_v2', 'set');
+            }
+            const saved = localStorage.getItem('myxsi_theme');
+            const isDark = saved ? (saved === 'dark') : true;
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                document.documentElement.classList.remove('dark');
+            }
+
+            window.openLoginModal = function() {
+                const m = document.getElementById('loginModal');
+                if (m) m.classList.add('active');
+            };
+
+            window.closeLoginModal = function() {
+                const m = document.getElementById('loginModal');
+                if (m) m.classList.remove('active');
+            };
+        })();
+    </script>
+</head>
+<body>
+    <!-- CALM AMBIENT GLOW CANVAS -->
+    <div class="ambient-canvas" aria-hidden="true">
+        <div class="ambient-glow-center"></div>
+        <div class="ambient-glow-left"></div>
+        <div class="ambient-glow-right"></div>
+    </div>
+
+    <!-- NAVBAR (LIMPIA Y SERENA) -->
+    <header class="navbar">
+        <a href="index.html" class="brand-logo" aria-label="Myxsi Inicio">
+            <img src="assets/designer_corner_logo.png" alt="Myxsi" class="brand-logo-img brand-logo-light">
+            <img src="assets/designer_corner_logo_dark.png" alt="Myxsi" class="brand-logo-img brand-logo-dark">
+        </a>
+
+        <!-- Floating Nav Pill -->
+        <nav class="nav-center-pill">
+            <a href="chat.html" class="nav-item-link">
+                <i class="fa-regular fa-comment-dots"></i>
+                <span>Chat IA</span>
+            </a>
+            <a href="docs-home.html" class="nav-item-link">
+                <i class="fa-regular fa-file-lines"></i>
+                <span>Docs Studio</span>
+            </a>
+            <a href="sheets-home.html" class="nav-item-link">
+                <i class="fa-solid fa-table-cells"></i>
+                <span>Sheets Studio</span>
+            </a>
+            <a href="canva-home.html" class="nav-item-link">
+                <i class="fa-solid fa-palette"></i>
+                <span>Canva Studio</span>
+            </a>
+            <a href="video-home.html" class="nav-item-link">
+                <i class="fa-solid fa-video"></i>
+                <span>Video Studio</span>
+            </a>
+            <a href="files.html" class="nav-item-link">
+                <i class="fa-regular fa-folder"></i>
+                <span>Archivos</span>
+            </a>
+        </nav>
+
+        <!-- Right Side Actions -->
+        <div class="nav-right-actions">
+            <a href="https://github.com/Plumst-37/Myxsi-Proyect" target="_blank" rel="noopener noreferrer" class="btn-github-pill" title="Código Abierto en GitHub">
+                <i class="fa-brands fa-github"></i>
+                <span>GitHub</span>
+            </a>
+            <button class="btn-login-pill" onclick="window.openLoginModal()">
+                Iniciar sesión
+            </button>
+            <a href="registro.html" class="btn-start-gradient">
+                <span>Comenzar gratis</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- HERO CENTRAL: TRANQUILO, ESPACIOSO Y PROFESIONAL -->
+    <main class="main-wrapper">
+        <!-- BADGES OFICIALES: CÓDIGO ABIERTO + SLOGAN OFICIAL -->
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; margin-bottom: 0.3rem;">
+            <a href="https://github.com/Plumst-37/Myxsi-Proyect" target="_blank" rel="noopener noreferrer" class="slogan-hero-badge" style="border-color: rgba(167, 139, 250, 0.4); color: #c4b5fd; background: rgba(124, 58, 237, 0.12);" title="Ver repositorio de código abierto en GitHub">
+                <i class="fa-brands fa-github"></i>
+                <span>Código Abierto • Todo en Uno (myxsi.com)</span>
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.72rem; opacity: 0.8; margin-left: 2px;"></i>
+            </a>
+            <a href="vision.html" class="slogan-hero-badge" title="Conocer el compromiso y proyectos de inclusión de Myxsi">
+                <i class="fa-solid fa-quote-left"></i>
+                <span>"Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro"</span>
+                <i class="fa-solid fa-arrow-right" style="font-size: 0.72rem; opacity: 0.8; margin-left: 2px;"></i>
+            </a>
+        </div>
+
+        <!-- Titular Principal -->
+        <div>
+            <h1 class="hero-title">
+                Todo tu trabajo. Potenciado por <span class="gradient-ia">IA de Código Abierto.</span>
+            </h1>
+
+            <p class="hero-description">
+                Myxsi (<strong>myxsi.com</strong>) es la plataforma de <strong>código abierto</strong> creada para tener <strong>todo en uno</strong>: Chat IA conversacional con voz y visión, redacción inteligente de documentos, hojas de cálculo asistidas, diseño visual y multimedia en un único espacio libre, privado y accesible.
+            </p>
+        </div>
+
+        <!-- Barra Interactiva de Entrada -->
+        <form class="prompt-capsule" onsubmit="event.preventDefault(); const val = document.getElementById('quickPrompt').value.trim(); window.location.href = val ? 'chat.html?q=' + encodeURIComponent(val) : 'chat.html';">
+            <input type="text" id="quickPrompt" class="prompt-input" placeholder="¿En qué podemos ayudarte hoy? (Escribe una consulta, idea o tarea...)" autocomplete="off">
+            <button type="submit" class="btn-prompt-submit" aria-label="Iniciar consulta">
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <!-- Accesos Rápidos Serenos (Píldoras sutiles que respiran) -->
+        <div class="studios-quiet-strip">
+            <a href="chat.html" class="studio-quiet-pill pill-chat">
+                <i class="fa-regular fa-comment-dots" style="color: #a78bfa;"></i>
+                <span>Chat IA</span>
+            </a>
+            <a href="docs-home.html" class="studio-quiet-pill pill-docs">
+                <i class="fa-regular fa-file-lines" style="color: #60a5fa;"></i>
+                <span>Docs Studio</span>
+            </a>
+            <a href="sheets-home.html" class="studio-quiet-pill pill-sheets">
+                <i class="fa-solid fa-table-cells" style="color: #34d399;"></i>
+                <span>Sheets Studio</span>
+            </a>
+            <a href="canva-home.html" class="studio-quiet-pill pill-canva">
+                <i class="fa-solid fa-palette" style="color: #f472b6;"></i>
+                <span>Canva Studio</span>
+            </a>
+            <a href="video-home.html" class="studio-quiet-pill pill-video">
+                <i class="fa-solid fa-video" style="color: #feb504;"></i>
+                <span>Video Studio</span>
+            </a>
+            <a href="files.html" class="studio-quiet-pill pill-files">
+                <i class="fa-regular fa-folder" style="color: #f59e0b;"></i>
+                <span>Archivos</span>
+            </a>
+        </div>
+
+        <!-- Banner Tranquilo de Myxsi Vision (Elegante y sin cajas pesadas) -->
+        <a href="vision.html" class="vision-quiet-banner" title="Conocer la iniciativa Myxsi Vision">
+            <div class="vision-quiet-left">
+                <div class="vision-eye-mini">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+                <div class="vision-quiet-text">
+                    <div class="vision-quiet-title">
+                        Iniciativa <span>Myxsi Vision</span>
+                    </div>
+                    <div class="vision-quiet-desc">
+                        Asistencia accesible con IA para personas no videntes o con baja visión
+                    </div>
+                </div>
+            </div>
+            <div class="vision-quiet-cta">
+                <span>Conocer proyecto</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </div>
+        </a>
+
+        <!-- Pie de página de Código Abierto -->
+        <div style="display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary); flex-wrap: wrap;">
+            <span>© 2026 <strong>Myxsi</strong> (<a href="https://myxsi.com" style="color: #c4b5fd; text-decoration: underline;">myxsi.com</a>) — Plataforma de Código Abierto Todo en Uno</span>
+            <span>•</span>
+            <a href="https://github.com/Plumst-37/Myxsi-Proyect" target="_blank" rel="noopener noreferrer" style="color: #a78bfa; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-brands fa-github"></i>
+                <span>GitHub Repository</span>
+            </a>
+            <span>•</span>
+            <a href="vision.html" style="color: var(--text-secondary); text-decoration: none;">Inclusión & Visión</a>
+        </div>
+    </main>
+
+    <!-- MODAL DE INICIO DE SESIÓN INTEGRADO -->
+    <div class="modal-backdrop" id="loginModal" onclick="if(event.target === this) window.closeLoginModal()">
+        <div class="login-modal-card" id="login-card">
+            <button class="btn-close-modal" onclick="window.closeLoginModal()" aria-label="Cerrar modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <h2 class="card-header-title">Iniciar sesión</h2>
+            <p class="card-header-subtitle">Accede a tu espacio de trabajo en Myxsi</p>
+
+            <!-- Alert Box -->
+            <div class="alert-box" id="alertBox"></div>
+
+            <!-- Google SSO Button -->
+            <button type="button" id="btnGoogleSSO" class="btn-sso">
+                <svg width="18" height="18" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <span>Continuar con Google</span>
+            </button>
+
+            <div class="divider-line">
+                <span>o con tu correo</span>
+            </div>
+
+            <form id="indexLoginForm">
+                <div class="form-group">
+                    <label class="form-label" for="indexEmailInput">Correo electrónico</label>
+                    <div class="input-wrapper">
+                        <input type="email" id="indexEmailInput" class="form-input" placeholder="tucorreo@ejemplo.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="indexPasswordInput">Contraseña</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="indexPasswordInput" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" id="btnTogglePassword" class="btn-toggle-eye" aria-label="Mostrar contraseña">
+                            <i class="fa-solid fa-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options-row">
+                    <label class="remember-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <input type="checkbox" id="indexRememberCheck" checked style="accent-color: #7c3aed;">
+                        <span>Recordarme</span>
+                    </label>
+                    <a href="recuperacion.html" class="forgot-link">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" id="btnIndexLoginSubmit" class="btn-card-submit">
+                    Iniciar sesión <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+
+            <p class="card-footer-text">
+                ¿No tienes cuenta? <a href="registro.html">Regístrate gratis</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- FIREBASE AUTH & BACKEND CONNECTION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            GoogleAuthProvider,
+            signInWithPopup, 
+            signInWithRedirect,
+            getRedirectResult,
+            setPersistence, 
+            browserLocalPersistence,
+            browserSessionPersistence,
+            onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const MYXSI_API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
+            authDomain: "myxsi-e4ba3.firebaseapp.com",
+            projectId: "myxsi-e4ba3",
+            storageBucket: "myxsi-e4ba3.firebasestorage.app",
+            messagingSenderId: "321958728313",
+            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8",
+            measurementId: "G-54WPJGNXHP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const googleProvider = new GoogleAuthProvider();
+        googleProvider.addScope('https://www.googleapis.com/auth/drive');
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+        googleProvider.setCustomParameters({ prompt: 'select_account' });
+
+        const alertBox = document.getElementById('alertBox');
+        function showAlert(msg, isErr = true) {
+            if (!alertBox) return;
+            alertBox.textContent = msg;
+            alertBox.className = 'alert-box ' + (isErr ? 'alert-error' : '');
+            alertBox.style.display = 'block';
+        }
+
+        const btnTogglePassword = document.getElementById('btnTogglePassword');
+        const indexPasswordInput = document.getElementById('indexPasswordInput');
+        const eyeIcon = document.getElementById('eyeIcon');
+        if (btnTogglePassword && indexPasswordInput) {
+            btnTogglePassword.addEventListener('click', () => {
+                const isPass = indexPasswordInput.type === 'password';
+                indexPasswordInput.type = isPass ? 'text' : 'password';
+                eyeIcon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+            });
+        }
+
+        const loginForm = document.getElementById('indexLoginForm');
+        const btnSubmit = document.getElementById('btnIndexLoginSubmit');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('indexEmailInput').value.trim();
+                const password = document.getElementById('indexPasswordInput').value;
+                const remember = document.getElementById('indexRememberCheck')?.checked ?? true;
+
+                if (!email || !password) {
+                    showAlert('Por favor completa todos los campos.');
+                    return;
+                }
+
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Iniciando...';
+
+                try {
+                    await setPersistence(auth, remember ? browserLocalPersistence : browserSessionPersistence);
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    const idToken = await userCredential.user.getIdToken();
+                    sessionStorage.setItem('firebase_id_token', idToken);
+                    localStorage.setItem('myxsi_user_email', userCredential.user.email);
+                    window.location.href = 'chat.html';
+                } catch (err) {
+                    console.error("Login error:", err);
+                    let msg = 'Error al iniciar sesión.';
+                    if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') {
+                        msg = 'Correo electrónico o contraseña incorrectos.';
+                    } else if (err.code === 'auth/too-many-requests') {
+                        msg = 'Demasiados intentos fallidos. Intenta más tarde.';
+                    }
+                    showAlert(msg);
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = 'Iniciar sesión <i class="fa-solid fa-arrow-right"></i>';
+                }
+            });
+        }
+
+        const btnGoogle = document.getElementById('btnGoogleSSO');
+        if (btnGoogle) {
+            btnGoogle.addEventListener('click', async () => {
+                btnGoogle.disabled = true;
+                btnGoogle.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Conectando...';
+
+                try {
+                    const result = await signInWithPopup(auth, googleProvider);
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    if (credential?.accessToken) {
+                        sessionStorage.setItem('google_access_token', credential.accessToken);
+                    }
+                    const idToken = await result.user.getIdToken();
+                    sessionStorage.setItem('firebase_id_token', idToken);
+                    localStorage.setItem('myxsi_user_email', result.user.email);
+                    window.location.href = 'chat.html';
+                } catch (err) {
+                    console.error("Google sign in error:", err);
+                    if (err.code !== 'auth/popup-closed-by-user') {
+                        showAlert('Error al autenticar con Google. Intenta nuevamente.');
+                    }
+                    btnGoogle.disabled = false;
+                    btnGoogle.innerHTML = `
+                        <svg width="18" height="18" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Continuar con Google</span>`;
+                }
+            });
+        }
+
+        // Cierre con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                window.closeLoginModal();
+                window.closeVisionModal();
+            }
+        });
+    </script>
+</body>
+</html>

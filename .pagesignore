@@ -1,0 +1,25 @@
+.wrangler
+.firebase
+.git_old
+.agents
+.agent_logs
+.agent_pids
+.agent_prompts
+scratch/
+local_backup/
+APIs Key
+node_modules
+.git
+.firebaserc
+firebase-debug.log
+playwright-report/
+test-results/
+e2e-tests/
+playwright.config.js
+package.json
+package-lock.json
+*.md
+*.sh
+scripts/
+.env*
+

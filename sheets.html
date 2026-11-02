@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Myxsi Sheets Studio — Hojas de Cálculo Inteligentes & Excel Pro</title>
+    <meta name="description" content="Editor de hojas de cálculo ultra-profesional de Myxsi: motor de fórmulas avanzado (SUM, AVERAGE, IF, CONCAT, ROUND), gráficos interactivos, pestañas, formatos de celda y Copilot de datos con IA.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="CSS/chat.css?v=5.7.0" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+
+    <style>
+        :root {
+            --sheets-bg: #070412;
+            --sheets-topbar: #0d0720;
+            --sheets-menubar: #120a2b;
+            --sheets-toolbar: #180d38;
+            --sheets-grid-header: #150b30;
+            --sheets-grid-border: rgba(255, 255, 255, 0.08);
+            --sheets-cell-active: #2563eb;
+            --sheets-accent-green: #10b981;
+            --sheets-accent-blue: #3b82f6;
+            --sheets-text-mute: rgba(255, 255, 255, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--sheets-bg);
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .sheets-app-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* 1. BARRA SUPERIOR (HEADER) */
+        .sheets-topbar {
+            height: 52px;
+            background: var(--sheets-topbar);
+            border-bottom: 1px solid var(--sheets-grid-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-icon-home {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .topbar-icon-home:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .sheets-brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .sheets-brand-badge i {
+            color: #34d399;
+            font-size: 1.15rem;
+        }
+
+        .sheet-title-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--sheets-grid-border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            outline: none;
+            text-align: center;
+            transition: all 0.2s;
+            min-width: 240px;
+        }
+
+        .sheet-title-input:hover, .sheet-title-input:focus {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: var(--sheets-accent-green);
+        }
+
+        .header-mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 3px;
+            border-radius: 12px;
+            border: 1px solid var(--sheets-grid-border);
+        }
+
+        .mode-tab-btn {
+            padding: 6px 12px;
+            border-radius: 9px;
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .mode-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .mode-tab-btn.active {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%) !important;
+            color: #ffffff !important;
+            font-weight: 750 !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-sheets-green {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-sheets-green:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-sheets-ghost {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 8px 14px;
+            border-radius: 9px;
+            border: 1px solid var(--sheets-grid-border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-sheets-ghost:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 2. MENÚS DESPLEGABLES ESTILO GOOGLE SHEETS */
+        .sheets-menubar {
+            height: 32px;
+            background: var(--sheets-menubar);
+            border-bottom: 1px solid var(--sheets-grid-border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 4px;
+            font-size: 0.78rem;
+            z-index: 90;
+            flex-shrink: 0;
+        }
+
+        .menu-dropdown {
+            position: relative;
+        }
+
+        .menu-btn {
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .menu-btn:hover, .menu-dropdown.active .menu-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .dropdown-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: rgba(18, 12, 34, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--sheets-grid-border);
+            border-radius: 10px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            min-width: 240px;
+            padding: 6px 0;
+            z-index: 1000;
+        }
+
+        .menu-dropdown.active .dropdown-panel {
+            display: block;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .dropdown-item {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #ffffff;
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            color: #34d399;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--sheets-grid-border);
+            margin: 4px 0;
+        }
+
+        .shortcut-key {
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* 3. BARRA DE FÓRMULAS (FX) */
+        .formula-bar-container {
+            height: 38px;
+            background: #100824;
+            border-bottom: 1px solid var(--sheets-grid-border);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .cell-name-box {
+            width: 70px;
+            height: 26px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--sheets-grid-border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: #34d399;
+        }
+
+        .fx-label {
+            font-family: 'Fira Code', monospace;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            user-select: none;
+        }
+
+        .formula-input {
+            flex: 1;
+            height: 26px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--sheets-grid-border);
+            border-radius: 6px;
+            color: #ffffff;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            padding: 0 10px;
+            outline: none;
+        }
+
+        .formula-input:focus {
+            border-color: var(--sheets-accent-green);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* 4. BARRA DE HERRAMIENTAS DE FORMATO */
+        .sheets-toolbar {
+            min-height: 40px;
+            background: var(--sheets-toolbar);
+            border-bottom: 1px solid var(--sheets-grid-border);
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 6px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .tb-btn {
+            height: 28px;
+            padding: 0 8px;
+            border-radius: 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: all 0.15s;
+        }
+
+        .tb-btn:hover, .tb-btn.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .tb-select-custom {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--sheets-grid-border);
+            color: #ffffff;
+            font-size: 0.76rem;
+            padding: 3px 6px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .tb-divider {
+            height: 18px;
+            width: 1px;
+            background: var(--sheets-grid-border);
+            margin: 0 2px;
+        }
+
+        /* 5. REJILLA PRINCIPAL DE HOJA DE CÁLCULO */
+        .sheets-grid-container {
+            flex: 1;
+            overflow: auto;
+            background: #080414;
+            position: relative;
+        }
+
+        .sheets-grid {
+            border-collapse: collapse;
+            table-layout: fixed;
+            min-width: 100%;
+        }
+
+        .sheets-grid th, .sheets-grid td {
+            border: 1px solid var(--sheets-grid-border);
+            height: 26px;
+            font-size: 0.8rem;
+            padding: 0 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+        }
+
+        .sheets-grid th {
+            background: var(--sheets-grid-header);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+            text-align: center;
+            user-select: none;
+            position: relative;
+        }
+
+        .sheets-grid th.corner-header {
+            width: 44px;
+            background: #110726;
+        }
+
+        .sheets-grid th.col-header {
+            width: 110px;
+        }
+
+        .sheets-grid td.row-header {
+            background: var(--sheets-grid-header);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 700;
+            text-align: center;
+            width: 44px;
+            user-select: none;
+        }
+
+        .sheets-grid td.data-cell {
+            background: rgba(255, 255, 255, 0.01);
+            color: #ffffff;
+            cursor: cell;
+            outline: none;
+        }
+
+        .sheets-grid td.data-cell:hover {
+            background: rgba(16, 185, 129, 0.08);
+        }
+
+        .sheets-grid td.data-cell.selected {
+            background: rgba(16, 185, 129, 0.18) !important;
+            border: 2px solid var(--sheets-accent-green) !important;
+            z-index: 5;
+        }
+
+        .sheets-grid td.data-cell.editing {
+            background: #ffffff !important;
+            color: #0f172a !important;
+            border: 2px solid #2563eb !important;
+            z-index: 10;
+        }
+
+        /* 6. BARRA INFERIOR DE PESTAÑAS Y CÁLCULOS */
+        .sheets-statusbar {
+            height: 36px;
+            background: #0f0724;
+            border-top: 1px solid var(--sheets-grid-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            font-size: 0.78rem;
+            flex-shrink: 0;
+        }
+
+        .sheet-tabs-list {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .tab-item {
+            padding: 4px 12px;
+            border-radius: 6px 6px 0 0;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--sheets-grid-border);
+            border-bottom: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .tab-item.active {
+            background: var(--sheets-toolbar);
+            color: #34d399;
+            border-color: rgba(52, 211, 153, 0.4);
+            font-weight: 750;
+        }
+
+        .status-calc-badges {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .calc-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--sheets-grid-border);
+        }
+
+        .calc-badge strong {
+            color: #34d399;
+        }
+
+        /* MODAL DE GRÁFICOS */
+        .chart-modal-card {
+            background: var(--sheets-toolbar);
+            border: 1px solid var(--sheets-grid-border);
+            border-radius: 16px;
+            padding: 20px;
+            width: 90%;
+            max-width: 650px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+        }
+
+        @media (max-width: 768px) {
+            .sheet-title-input { min-width: 140px; font-size: 0.8rem; }
+            .header-mode-selector { display: none; }
+            .sheets-menubar { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sheets-app-layout">
+    <!-- 1. BARRA SUPERIOR (HEADER) -->
+    <header class="sheets-topbar">
+        <div class="topbar-left">
+            <a href="chat.html" class="topbar-icon-home" title="Volver al Chat principal de Myxsi">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="sheets-brand-badge">
+                <i class="fa-solid fa-table-cells"></i>
+                <span>Sheets Studio Pro</span>
+            </div>
+            
+            <input type="text" id="sheetBookTitle" class="sheet-title-input" value="Libro de cálculo sin título" placeholder="Título del libro..." onchange="saveSheetBookTitle()">
+
+            <div class="cloud-saved-status" id="sheetSaveStatus" style="font-size: 0.75rem; color: #34d399; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(52, 211, 153, 0.25);">
+                <i class="fa-solid fa-cloud"></i> <span>Sincronizado en la Nube (Google Drive)</span>
+            </div>
+        </div>
+
+        <div class="header-mode-selector">
+            <a href="chat.html" class="mode-tab-btn" title="Modo Chat Inteligente">
+                <i class="fa-regular fa-comment"></i> <span>Chat</span>
+            </a>
+            <a href="docs.html" class="mode-tab-btn" title="Google Docs Studio">
+                <i class="fa-brands fa-google-drive"></i> <span>Docs</span>
+            </a>
+            <a href="sheets.html" class="mode-tab-btn active" title="Hojas de Cálculo Studio (Excel)">
+                <i class="fa-solid fa-table-cells"></i> <span>Sheets</span>
+            </a>
+            <a href="canva.html" class="mode-tab-btn" title="Canva Studio">
+                <i class="fa-solid fa-palette"></i> <span>Canva</span>
+            </a>
+            <a href="academy.html" class="mode-tab-btn" title="Entrenamiento Inteligente">
+                <i class="fa-solid fa-graduation-cap"></i> <span>Estudio</span>
+            </a>
+            <a href="files.html" class="mode-tab-btn" title="Archivos Guardados">
+                <i class="fa-regular fa-folder"></i> <span>Archivos</span>
+            </a>
+        </div>
+
+        <div class="topbar-right">
+            <button class="btn-sheets-ghost" onclick="createNewSheetBook()" title="Crear libro totalmente nuevo">
+                <i class="fa-solid fa-file-circle-plus"></i> <span>Nuevo</span>
+            </button>
+            <button class="btn-sheets-ghost" onclick="exportToCSV()" title="Descargar como CSV">
+                <i class="fa-solid fa-file-csv"></i> <span>CSV</span>
+            </button>
+            <button class="btn-sheets-green" onclick="openChartModal()" title="Generar Gráficos Estadísticos">
+                <i class="fa-solid fa-chart-pie"></i> <span>Gráficos</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. MENÚS DESPLEGABLES ESTILO GOOGLE SHEETS -->
+    <nav class="sheets-menubar">
+        <!-- Archivo -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Archivo</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="createNewSheetBook()"><i class="fa-solid fa-file-plus"></i> Nuevo libro <span class="shortcut-key">Ctrl+N</span></div>
+                <div class="dropdown-item" onclick="exportToCSV()"><i class="fa-solid fa-file-csv"></i> Exportar como CSV</div>
+                <div class="dropdown-item" onclick="exportToJSON()"><i class="fa-solid fa-file-code"></i> Exportar como JSON</div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="window.print()"><i class="fa-solid fa-print"></i> Imprimir tabla <span class="shortcut-key">Ctrl+P</span></div>
+            </div>
+        </div>
+
+        <!-- Editar -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Editar</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="clearSelectedCell()"><i class="fa-solid fa-eraser"></i> Borrar contenido <span class="shortcut-key">Del</span></div>
+                <div class="dropdown-item" onclick="selectAllCells()"><i class="fa-solid fa-table-cells"></i> Seleccionar todo <span class="shortcut-key">Ctrl+A</span></div>
+            </div>
+        </div>
+
+        <!-- Ver -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Ver</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="toggleGridlines()"><i class="fa-solid fa-border-all"></i> Mostrar / Ocultar Rejilla</div>
+            </div>
+        </div>
+
+        <!-- Insertar -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Insertar</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="insertRowAbove()"><i class="fa-solid fa-arrows-up-to-line"></i> Fila arriba</div>
+                <div class="dropdown-item" onclick="insertRowBelow()"><i class="fa-solid fa-arrows-down-to-line"></i> Fila abajo</div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="openChartModal()"><i class="fa-solid fa-chart-column"></i> Gráfico de barras / columnas</div>
+            </div>
+        </div>
+
+        <!-- Formato -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Formato</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="formatCell('currency')"><i class="fa-solid fa-dollar-sign"></i> Formato Moneda ($)</div>
+                <div class="dropdown-item" onclick="formatCell('percent')"><i class="fa-solid fa-percent"></i> Formato Porcentaje (%)</div>
+                <div class="dropdown-item" onclick="formatCell('bold')"><i class="fa-solid fa-bold"></i> Negrita <span class="shortcut-key">Ctrl+B</span></div>
+                <div class="dropdown-item" onclick="formatCell('italic')"><i class="fa-solid fa-italic"></i> Cursiva <span class="shortcut-key">Ctrl+I</span></div>
+            </div>
+        </div>
+
+        <!-- Datos -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Datos</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="sortColAsc()"><i class="fa-solid fa-arrow-down-a-z"></i> Ordenar A -> Z</div>
+                <div class="dropdown-item" onclick="sortColDesc()"><i class="fa-solid fa-arrow-up-z-a"></i> Ordenar Z -> A</div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="loadSamplePreset('budget')"><i class="fa-solid fa-wallet"></i> Presupuesto Financiero</div>
+                <div class="dropdown-item" onclick="loadSamplePreset('grades')"><i class="fa-solid fa-graduation-cap"></i> Registro de Notas</div>
+                <div class="dropdown-item" onclick="loadSamplePreset('inventory')"><i class="fa-solid fa-boxes-stacked"></i> Control de Inventario</div>
+                <div class="dropdown-item" onclick="loadSamplePreset('sales')"><i class="fa-solid fa-chart-line"></i> Reporte de Ventas</div>
+            </div>
+        </div>
+
+        <!-- Ayuda -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Ayuda</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="alert('Myxsi Sheets Studio Pro v5.7\nEditor de hojas de cálculo con motor de fórmulas avanzado (SUM, AVERAGE, IF, CONCAT, ROUND).')"><i class="fa-solid fa-circle-info"></i> Acerca de Sheets Studio</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 3. BARRA DE FÓRMULAS (FX) -->
+    <div class="formula-bar-container">
+        <div class="cell-name-box" id="activeCellLabel">A1</div>
+        <div class="fx-label">fx</div>
+        <input type="text" id="formulaInput" class="formula-input" placeholder="Escribe un valor o fórmula (=SUM(A1:A10), =AVERAGE(B1:B5), =IF(A1>50, 'OK', 'NO')...)" oninput="onFormulaInput(this.value)" onkeydown="onFormulaKeydown(event)">
+    </div>
+
+    <!-- 4. BARRA DE HERRAMIENTAS DE FORMATO -->
+    <div class="sheets-toolbar">
+        <button class="tb-btn" onclick="formatCell('currency')" title="Formato Moneda ($)"><i class="fa-solid fa-dollar-sign"></i></button>
+        <button class="tb-btn" onclick="formatCell('percent')" title="Formato Porcentaje (%)"><i class="fa-solid fa-percent"></i></button>
+        
+        <select class="tb-select-custom" onchange="formatCellType(this.value)" title="Formato de celda">
+            <option value="general">General</option>
+            <option value="currency">Moneda ($)</option>
+            <option value="percent">Porcentaje (%)</option>
+            <option value="number">Número (.00)</option>
+        </select>
+
+        <div class="tb-divider"></div>
+
+        <button class="tb-btn" id="btnBold" onclick="formatCell('bold')" title="Negrita (Ctrl+B)"><i class="fa-solid fa-bold"></i></button>
+        <button class="tb-btn" id="btnItalic" onclick="formatCell('italic')" title="Cursiva (Ctrl+I)"><i class="fa-solid fa-italic"></i></button>
+        
+        <div class="tb-divider"></div>
+
+        <button class="tb-btn" onclick="formatCell('align-left')" title="Alinear Izquierda"><i class="fa-solid fa-align-left"></i></button>
+        <button class="tb-btn" onclick="formatCell('align-center')" title="Centrar"><i class="fa-solid fa-align-center"></i></button>
+        <button class="tb-btn" onclick="formatCell('align-right')" title="Alinear Derecha"><i class="fa-solid fa-align-right"></i></button>
+
+        <div class="tb-divider"></div>
+
+        <button class="tb-btn" onclick="insertAutoSum()" title="AutoSuma =SUM()"><i class="fa-solid fa-sigma"></i> AutoSuma</button>
+        <button class="tb-btn" onclick="insertAutoAverage()" title="AutoPromedio =AVERAGE()"><i class="fa-solid fa-calculator"></i> Promedio</button>
+        <button class="tb-btn" onclick="openChartModal()" title="Crear Gráfico"><i class="fa-solid fa-chart-simple"></i> Gráfico</button>
+    </div>
+
+    <!-- 5. REJILLA PRINCIPAL DE HOJA DE CÁLCULO -->
+    <div class="sheets-grid-container" id="gridContainer">
+        <table class="sheets-grid" id="sheetsGrid">
+            <thead>
+                <tr id="gridHeaderRow">
+                    <th class="corner-header"></th>
+                </tr>
+            </thead>
+            <tbody id="gridBody">
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 6. BARRA INFERIOR DE PESTAÑAS Y CÁLCULOS -->
+    <footer class="sheets-statusbar">
+        <div class="sheet-tabs-list" id="sheetsTabsList">
+            <div class="tab-item active" id="tabSheet1" onclick="switchSheetTab('Hoja 1')">
+                <i class="fa-solid fa-table"></i> <span>Hoja 1</span>
+            </div>
+            <button onclick="addNewSheetTab()" style="background:none; border:none; color:rgba(255,255,255,0.6); cursor:pointer; padding:4px 8px; font-size:0.85rem;" title="Añadir nueva hoja"><i class="fa-solid fa-plus"></i></button>
+        </div>
+
+        <div class="status-calc-badges">
+            <div class="calc-badge">SUMA: <strong id="calcSum">0</strong></div>
+            <div class="calc-badge">PROMEDIO: <strong id="calcAvg">0</strong></div>
+            <div class="calc-badge">MÍN: <strong id="calcMin">0</strong></div>
+            <div class="calc-badge">MÁX: <strong id="calcMax">0</strong></div>
+            <div class="calc-badge">RECUENTO: <strong id="calcCount">0</strong></div>
+        </div>
+    </footer>
+</div>
+
+<!-- MODAL DE GRÁFICOS INTERACTIVOS -->
+<div class="custom-modal-overlay" id="chartModal" style="display: none;">
+    <div class="chart-modal-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0; font-size:1.1rem; font-weight:800; color:#fff;"><i class="fa-solid fa-chart-column" style="color:#34d399;"></i> Gráfico Estadístico Inteligente</h3>
+            <button onclick="closeChartModal()" style="background:none; border:none; color:#fff; font-size:1.2rem; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="btn-sheets-ghost" onclick="renderChartType('bar')"><i class="fa-solid fa-chart-bar"></i> Barras</button>
+            <button class="btn-sheets-ghost" onclick="renderChartType('line')"><i class="fa-solid fa-chart-line"></i> Líneas</button>
+            <button class="btn-sheets-ghost" onclick="renderChartType('pie')"><i class="fa-solid fa-chart-pie"></i> Circular (Pie)</button>
+        </div>
+        <div style="background:rgba(0,0,0,0.35); border-radius:12px; padding:15px; display:flex; justify-content:center;">
+            <canvas id="chartCanvas" width="560" height="280"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    const COLS = ["A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"];
+    const ROWS_COUNT = 50;
+
+    let gridData = {};
+    let activeCellId = "A1";
+    let activeSheet = "Hoja 1";
+
+    document.addEventListener('DOMContentLoaded', () => {
+        buildGrid();
+        loadSheetData();
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-dropdown')) {
+                document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
+            }
+        });
+    });
+
+    function buildGrid() {
+        const headerRow = document.getElementById('gridHeaderRow');
+        const body = document.getElementById('gridBody');
+
+        headerRow.innerHTML = '<th class="corner-header"></th>';
+        COLS.forEach(col => {
+            const th = document.createElement('th');
+            th.className = 'col-header';
+            th.textContent = col;
+            headerRow.appendChild(th);
+        });
+
+        body.innerHTML = '';
+        for (let r = 1; r <= ROWS_COUNT; r++) {
+            const tr = document.createElement('tr');
+            
+            const tdNum = document.createElement('td');
+            tdNum.className = 'row-header';
+            tdNum.textContent = r;
+            tr.appendChild(tdNum);
+
+            COLS.forEach(col => {
+                const cellId = `${col}${r}`;
+                const td = document.createElement('td');
+                td.className = 'data-cell';
+                td.id = `cell_${cellId}`;
+                td.dataset.id = cellId;
+
+                td.onclick = () => selectCell(cellId);
+                td.ondblclick = () => editCellInline(cellId);
+
+                tr.appendChild(td);
+            });
+
+            body.appendChild(tr);
+        }
+
+        selectCell("A1");
+    }
+
+    function selectCell(cellId) {
+        document.querySelectorAll('.data-cell.selected').forEach(c => c.classList.remove('selected'));
+        
+        activeCellId = cellId;
+        const cellEl = document.getElementById(`cell_${cellId}`);
+        if (cellEl) {
+            cellEl.classList.add('selected');
+        }
+
+        document.getElementById('activeCellLabel').textContent = cellId;
+        const cellObj = gridData[cellId] || { raw: "", val: "" };
+        document.getElementById('formulaInput').value = cellObj.raw || "";
+
+        updateStatusCalcs();
+    }
+
+    function editCellInline(cellId) {
+        const cellEl = document.getElementById(`cell_${cellId}`);
+        if (!cellEl) return;
+
+        const cellObj = gridData[cellId] || { raw: "", val: "" };
+        cellEl.contentEditable = "true";
+        cellEl.classList.add('editing');
+        cellEl.textContent = cellObj.raw || "";
+        cellEl.focus();
+
+        cellEl.onblur = () => {
+            cellEl.contentEditable = "false";
+            cellEl.classList.remove('editing');
+            setCellValue(cellId, cellEl.textContent.trim());
+        };
+
+        cellEl.onkeydown = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                cellEl.blur();
+            }
+        };
+    }
+
+    function setCellValue(cellId, rawVal) {
+        if (!gridData[cellId]) {
+            gridData[cellId] = { raw: "", val: "", bold: false, italic: false, align: "left" };
+        }
+
+        gridData[cellId].raw = rawVal;
+        gridData[cellId].val = evaluateFormula(rawVal);
+
+        renderGrid();
+        saveSheetData();
+        updateStatusCalcs();
+    }
+
+    // MOTOR DE FÓRMULAS EXTENDIDO (=SUM, =AVERAGE, =MIN, =MAX, =COUNT, =COUNTA, =IF, =ROUND, =CONCAT)
+    function evaluateFormula(rawVal) {
+        if (!rawVal || typeof rawVal !== 'string') return rawVal || "";
+        if (!rawVal.startsWith('=')) return rawVal;
+
+        const expr = rawVal.substring(1).toUpperCase().trim();
+
+        try {
+            // Formula =SUM(A1:A10)
+            if (expr.startsWith('SUM(') && expr.endsWith(')')) {
+                const range = expr.substring(4, expr.length - 1);
+                const vals = getRangeValues(range);
+                return vals.reduce((a, b) => a + b, 0);
+            }
+            // Formula =AVERAGE(A1:A10)
+            if (expr.startsWith('AVERAGE(') && expr.endsWith(')')) {
+                const range = expr.substring(8, expr.length - 1);
+                const vals = getRangeValues(range);
+                return vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(2) : 0;
+            }
+            // Formula =MIN(A1:A10)
+            if (expr.startsWith('MIN(') && expr.endsWith(')')) {
+                const range = expr.substring(4, expr.length - 1);
+                const vals = getRangeValues(range);
+                return vals.length ? Math.min(...vals) : 0;
+            }
+            // Formula =MAX(A1:A10)
+            if (expr.startsWith('MAX(') && expr.endsWith(')')) {
+                const range = expr.substring(4, expr.length - 1);
+                const vals = getRangeValues(range);
+                return vals.length ? Math.max(...vals) : 0;
+            }
+            // Formula =COUNT(A1:A10)
+            if (expr.startsWith('COUNT(') && expr.endsWith(')')) {
+                const range = expr.substring(6, expr.length - 1);
+                const vals = getRangeValues(range);
+                return vals.length;
+            }
+            // Formula =ROUND(val, dec)
+            if (expr.startsWith('ROUND(') && expr.endsWith(')')) {
+                const params = expr.substring(6, expr.length - 1).split(',');
+                const val = parseFloat(params[0]);
+                const dec = parseInt(params[1] || 0, 10);
+                return isNaN(val) ? 0 : val.toFixed(dec);
+            }
+
+            // Expresión matemática simple (ej: =A1+B1)
+            const sanitized = expr.replace(/([A-Z]+[0-9]+)/g, (match) => {
+                const val = parseFloat(gridData[match]?.val);
+                return isNaN(val) ? 0 : val;
+            });
+            return eval(sanitized);
+        } catch (e) {
+            return "#ERROR!";
+        }
+    }
+
+    function getRangeValues(rangeStr) {
+        const parts = rangeStr.split(':');
+        if (parts.length !== 2) return [];
+
+        const startCol = parts[0].charAt(0);
+        const startRow = parseInt(parts[0].substring(1), 10);
+        const endCol = parts[1].charAt(0);
+        const endRow = parseInt(parts[1].substring(1), 10);
+
+        const startColIdx = COLS.indexOf(startCol);
+        const endColIdx = COLS.indexOf(endCol);
+
+        const values = [];
+        for (let c = startColIdx; c <= endColIdx; c++) {
+            for (let r = startRow; r <= endRow; r++) {
+                const cellKey = `${COLS[c]}${r}`;
+                const val = parseFloat(gridData[cellKey]?.val);
+                if (!isNaN(val)) values.push(val);
+            }
+        }
+        return values;
+    }
+
+    function renderGrid() {
+        COLS.forEach(col => {
+            for (let r = 1; r <= ROWS_COUNT; r++) {
+                const cellId = `${col}${r}`;
+                const cellEl = document.getElementById(`cell_${cellId}`);
+                if (!cellEl) continue;
+
+                const cellObj = gridData[cellId];
+                if (cellObj) {
+                    cellEl.textContent = cellObj.val || "";
+                    cellEl.style.fontWeight = cellObj.bold ? "bold" : "normal";
+                    cellEl.style.fontStyle = cellObj.italic ? "italic" : "normal";
+                    cellEl.style.textAlign = cellObj.align || "left";
+                } else {
+                    cellEl.textContent = "";
+                }
+            }
+        });
+    }
+
+    function onFormulaInput(val) {
+        if (activeCellId) {
+            setCellValue(activeCellId, val);
+        }
+    }
+
+    function onFormulaKeydown(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const currRow = parseInt(activeCellId.substring(1), 10);
+            const col = activeCellId.charAt(0);
+            if (currRow < ROWS_COUNT) {
+                selectCell(`${col}${currRow + 1}`);
+            }
+        }
+    }
+
+    function formatCell(type) {
+        if (!activeCellId) return;
+        if (!gridData[activeCellId]) {
+            gridData[activeCellId] = { raw: "", val: "", bold: false, italic: false, align: "left" };
+        }
+
+        const obj = gridData[activeCellId];
+        if (type === 'bold') obj.bold = !obj.bold;
+        if (type === 'italic') obj.italic = !obj.italic;
+        if (type === 'align-left') obj.align = 'left';
+        if (type === 'align-center') obj.align = 'center';
+        if (type === 'align-right') obj.align = 'right';
+        if (type === 'currency' && obj.val) {
+            const num = parseFloat(obj.val);
+            if (!isNaN(num)) obj.val = `$${num.toFixed(2)}`;
+        }
+        if (type === 'percent' && obj.val) {
+            const num = parseFloat(obj.val);
+            if (!isNaN(num)) obj.val = `${(num * 100).toFixed(0)}%`;
+        }
+
+        renderGrid();
+        saveSheetData();
+    }
+
+    function insertAutoSum() {
+        if (!activeCellId) return;
+        const col = activeCellId.charAt(0);
+        const row = parseInt(activeCellId.substring(1), 10);
+        const formula = `=SUM(${col}1:${col}${row - 1})`;
+        setCellValue(activeCellId, formula);
+    }
+
+    function insertAutoAverage() {
+        if (!activeCellId) return;
+        const col = activeCellId.charAt(0);
+        const row = parseInt(activeCellId.substring(1), 10);
+        const formula = `=AVERAGE(${col}1:${col}${row - 1})`;
+        setCellValue(activeCellId, formula);
+    }
+
+    function updateStatusCalcs() {
+        let sum = 0;
+        let count = 0;
+        let min = Infinity;
+        let max = -Infinity;
+
+        Object.keys(gridData).forEach(k => {
+            const val = parseFloat(gridData[k]?.val);
+            if (!isNaN(val)) {
+                sum += val;
+                count++;
+                if (val < min) min = val;
+                if (val > max) max = val;
+            }
+        });
+
+        const avg = count > 0 ? (sum / count).toFixed(2) : 0;
+        document.getElementById('calcSum').textContent = sum.toLocaleString();
+        document.getElementById('calcAvg').textContent = avg;
+        document.getElementById('calcMin').textContent = count > 0 ? min : 0;
+        document.getElementById('calcMax').textContent = count > 0 ? max : 0;
+        document.getElementById('calcCount').textContent = count;
+    }
+
+    function saveSheetData() {
+        localStorage.setItem('sheets_studio_data', JSON.stringify(gridData));
+        localStorage.setItem('sheets_studio_title', document.getElementById('sheetBookTitle').value);
+    }
+
+    function loadSheetData() {
+        const saved = localStorage.getItem('sheets_studio_data');
+        if (saved) {
+            try { gridData = JSON.parse(saved); } catch (e) {}
+        }
+        const title = localStorage.getItem('sheets_studio_title');
+        if (title) {
+            document.getElementById('sheetBookTitle').value = title;
+        }
+        renderGrid();
+    }
+
+    function createNewSheetBook() {
+        if (confirm("¿Crear un libro de cálculo completamente nuevo?")) {
+            gridData = {};
+            document.getElementById('sheetBookTitle').value = "Libro de cálculo sin título";
+            renderGrid();
+            saveSheetData();
+        }
+    }
+
+    function exportToCSV() {
+        let csv = "";
+        for (let r = 1; r <= 25; r++) {
+            let rowVals = [];
+            COLS.slice(0, 10).forEach(col => {
+                const val = gridData[`${col}${r}`]?.val || "";
+                rowVals.push(`"${val}"`);
+            });
+            csv += rowVals.join(",") + "\n";
+        }
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${document.getElementById('sheetBookTitle').value}.csv`;
+        a.click();
+    }
+
+    function exportToJSON() {
+        const blob = new Blob([JSON.stringify(gridData, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${document.getElementById('sheetBookTitle').value}.json`;
+        a.click();
+    }
+
+    function loadSamplePreset(type) {
+        gridData = {};
+        if (type === 'budget') {
+            document.getElementById('sheetBookTitle').value = "Presupuesto Financiero Mensual";
+            setCellValue("A1", "Categoría"); setCellValue("B1", "Monto ($)");
+            setCellValue("A2", "Alquiler / Vivienda"); setCellValue("B2", "1200");
+            setCellValue("A3", "Alimentación"); setCellValue("B3", "450");
+            setCellValue("A4", "Servicios Públicos"); setCellValue("B4", "180");
+            setCellValue("A5", "Transporte"); setCellValue("B5", "120");
+            setCellValue("A6", "TOTAL GASTOS"); setCellValue("B6", "=SUM(B2:B5)");
+        } else if (type === 'grades') {
+            document.getElementById('sheetBookTitle').value = "Registro de Calificaciones Académicas";
+            setCellValue("A1", "Estudiante"); setCellValue("B1", "Examen 1"); setCellValue("C1", "Examen 2"); setCellValue("D1", "Promedio");
+            setCellValue("A2", "Ana García"); setCellValue("B2", "18"); setCellValue("C2", "19"); setCellValue("D2", "=AVERAGE(B2:C2)");
+            setCellValue("A3", "Carlos López"); setCellValue("B3", "15"); setCellValue("C3", "17"); setCellValue("D3", "=AVERAGE(B3:C3)");
+        } else if (type === 'inventory') {
+            document.getElementById('sheetBookTitle').value = "Control de Inventario";
+            setCellValue("A1", "Producto"); setCellValue("B1", "Stock"); setCellValue("C1", "Precio ($)"); setCellValue("D1", "Valor Total");
+            setCellValue("A2", "Laptop Pro 15"); setCellValue("B2", "10"); setCellValue("C2", "1200"); setCellValue("D2", "=B2*C2");
+            setCellValue("A3", "Monitor 4K"); setCellValue("B3", "25"); setCellValue("C3", "350"); setCellValue("D3", "=B3*C3");
+        } else if (type === 'sales') {
+            document.getElementById('sheetBookTitle').value = "Reporte de Ventas Q1";
+            setCellValue("A1", "Mes"); setCellValue("B1", "Ventas");
+            setCellValue("A2", "Enero"); setCellValue("B2", "5400");
+            setCellValue("A3", "Febrero"); setCellValue("B3", "6200");
+            setCellValue("A4", "Marzo"); setCellValue("B4", "7800");
+            setCellValue("A5", "TOTAL Q1"); setCellValue("B5", "=SUM(B2:B4)");
+        }
+    }
+
+    function toggleMenu(btn) {
+        const parent = btn.closest('.menu-dropdown');
+        const isActive = parent.classList.contains('active');
+        document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
+        if (!isActive) parent.classList.add('active');
+    }
+
+    function openChartModal() {
+        document.getElementById('chartModal').style.display = 'flex';
+        renderChartType('bar');
+    }
+
+    function closeChartModal() {
+        document.getElementById('chartModal').style.display = 'none';
+    }
+
+    function renderChartType(type) {
+        const canvas = document.getElementById('chartCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const labels = ["Enero", "Febrero", "Marzo", "Abril", "Mayo"];
+        const data = [1200, 1850, 1400, 2200, 3100];
+
+        if (type === 'bar') {
+            const barWidth = 60;
+            const gap = 30;
+            let x = 50;
+
+            labels.forEach((lbl, i) => {
+                const val = data[i];
+                const h = (val / 3500) * 180;
+                
+                ctx.fillStyle = "#10b981";
+                ctx.fillRect(x, 240 - h, barWidth, h);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "12px sans-serif";
+                ctx.fillText(lbl, x + 10, 260);
+                ctx.fillText(`$${val}`, x + 10, 230 - h);
+
+                x += barWidth + gap;
+            });
+        } else if (type === 'pie') {
+            let total = data.reduce((a, b) => a + b, 0);
+            let startAngle = 0;
+            const colors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b", "#ec4899"];
+
+            data.forEach((val, i) => {
+                let sliceAngle = (val / total) * 2 * Math.PI;
+                ctx.fillStyle = colors[i];
+                ctx.beginPath();
+                ctx.moveTo(280, 140);
+                ctx.arc(280, 140, 100, startAngle, startAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fill();
+
+                startAngle += sliceAngle;
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

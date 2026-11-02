@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Myxsi Academia — Centro de Estudio Inteligente</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <link href="CSS/chat.css?v=4.5.1" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Prettier for professional client-side code formatting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.8/standalone.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.8/parser-babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.8/parser-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prettier/2.8.8/parser-postcss.min.js"></script>
+
+    <style>
+        .gradient-text {
+            background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ffffff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;
+        }
+
+        /* ==========================================
+           NUEVO SISTEMA DE DISEÑO PREMIUM (SIDEBAR + HOME)
+           ========================================== */
+        .app-layout {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+        
+        .main-chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        /* BARRA LATERAL IZQUIERDA PERMANENTE */
+        .main-sidebar {
+            width: 280px;
+            background: rgba(6, 4, 15, 0.7);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border-right: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            flex-direction: column;
+            padding: 2.2rem 1.4rem;
+            height: 100%;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            z-index: 150;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .main-sidebar-brand-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 2.2rem;
+        }
+
+        .main-sidebar-logo {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .main-sidebar-logo svg {
+            width: 24px;
+            height: 24px;
+            filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.6));
+        }
+
+        .main-sidebar-user-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .main-sidebar-user-name {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .main-sidebar-user-status {
+            font-size: 0.68rem;
+            font-weight: 750;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-dot-green {
+            width: 6px;
+            height: 6px;
+            background-color: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #10b981;
+        }
+
+        .main-sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            flex: 1;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0.85rem 1.2rem;
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
+            box-sizing: border-box;
+        }
+
+        .menu-item i {
+            font-size: 1.05rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .menu-item:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .menu-item.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, rgba(109, 40, 217, 0.3) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+        }
+
+        /* WIDGET RACHA LATERAL */
+        .racha-widget-container {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            padding: 1.25rem;
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.02);
+        }
+
+        .racha-widget-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .racha-widget-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .racha-days-count {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            color: #ffffff;
+        }
+
+        .racha-days-count span:first-child {
+            font-size: 2.2rem;
+            font-weight: 850;
+            line-height: 1;
+        }
+
+        .racha-days-count .days-lbl {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 550;
+        }
+
+        .racha-flame-icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .text-purple-flame {
+            font-size: 2.2rem;
+            color: #a78bfa;
+            filter: drop-shadow(0 0 12px rgba(167, 139, 250, 0.7));
+        }
+
+        .racha-week-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            margin: 4px 0;
+        }
+
+        .week-day-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .day-letter {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .day-check {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            font-size: 0.68rem;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .week-day-box.checked .day-check {
+            background: #7c3aed;
+            border-color: #8b5cf6;
+            color: #ffffff;
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .racha-progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .racha-progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #7c3aed, #a78bfa);
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .racha-widget-footer {
+            font-size: 0.76rem;
+            font-weight: 650;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: left;
+        }
+
+        /* CONTENEDOR CENTRADO PRINCIPAL */
+        .academy-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            box-sizing: border-box;
+        }
+
+        /* PORTADA HERO / WELCOME CARD CENTRAL */
+        .welcome-hero-card {
+            background: rgba(18, 15, 34, 0.45);
+            border: 1px solid rgba(139, 92, 246, 0.15);
+            border-radius: 28px;
+            padding: 3.5rem 2.5rem;
+            width: 100%;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .welcome-hero-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .welcome-hero-card * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-hero-card .welcome-title {
+            font-size: 2.2rem !important;
+            font-weight: 800;
+            color: #ffffff;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-hero-card .welcome-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.94rem;
+            margin-bottom: 2rem;
+            max-width: 500px;
+            line-height: 1.5;
+        }
+
+        .welcome-hero-card .welcome-input-row {
+            width: 100%;
+            max-width: 680px;
+        }
+
+        .welcome-hero-card .input-wrapper {
+            background: rgba(10, 8, 22, 0.6) !important;
+            border: 1px solid rgba(139, 92, 246, 0.3) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        .welcome-hero-card .input-wrapper:focus-within {
+            border-color: #a78bfa !important;
+            box-shadow: 0 12px 36px rgba(139, 92, 246, 0.25) !important;
+        }
+
+        /* SUGGESTIONS GRID (3 COLUMNAS) */
+        .dashboard-section-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.25rem;
+            align-self: flex-start;
+        }
+
+        .vertical-accent {
+            width: 3px;
+            height: 18px;
+            background-color: #a78bfa;
+            border-radius: 2px;
+            display: inline-block;
+            box-shadow: 0 0 8px #a78bfa;
+        }
+
+        .welcome-grid-3cols {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            width: 100%;
+            margin-bottom: 2rem;
+            box-sizing: border-box;
+        }
+
+        .welcome-card-premium {
+            background: rgba(18, 15, 34, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+        }
+
+        .welcome-card-premium:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15);
+        }
+
+        .welcome-card-premium-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .welcome-card-premium-icon-box {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(109, 40, 217, 0.3) 0%, rgba(139, 92, 246, 0.15) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .welcome-card-premium:hover .welcome-card-premium-icon-box {
+            background: #7c3aed;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .welcome-card-premium-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .welcome-card-premium-content h4 {
+            font-size: 0.92rem;
+            font-weight: 750;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .welcome-card-premium-content p {
+            font-size: 0.74rem;
+            color: rgba(255, 255, 255, 0.55);
+            margin: 0;
+            line-height: 1.35;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .welcome-card-premium-chevron {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.78rem;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .welcome-card-premium:hover .welcome-card-premium-chevron {
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #a78bfa;
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        /* BARRA DE ESTADÍSTICAS HORIZONTAL INFERIOR */
+        .dashboard-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: rgba(18, 15, 34, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            padding: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 0.5rem;
+        }
+
+        .stat-metric-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            justify-content: center;
+            position: relative;
+        }
+
+        .stat-metric-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 15%;
+            bottom: 15%;
+            width: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .stat-metric-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            color: #a78bfa;
+            filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.3));
+            flex-shrink: 0;
+        }
+
+        .stat-metric-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+        }
+
+        .stat-metric-value {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1.1;
+        }
+
+        .stat-metric-label {
+            font-size: 0.72rem;
+            font-weight: 550;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        /* HEADER PILL RACHA GOLD */
+        .header-streak-badge-premium {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(245, 158, 11, 0.05);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            color: #f59e0b;
+            padding: 0.5rem 1rem;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 750;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.1);
+            animation: breathingGlow 3s infinite alternate;
+        }
+
+        .header-streak-badge-premium i {
+            filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.5));
+        }
+
+        .header-streak-badge-premium .lbl-racha {
+            font-size: 0.8rem;
+            font-weight: 550;
+            color: rgba(245, 158, 11, 0.8);
+        }
+
+        /* ANIMACIÓN DE RACHA */
+        @keyframes rachaPulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.5)); }
+            50% { transform: scale(1.25); filter: drop-shadow(0 0 25px rgba(167, 139, 250, 0.9)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.5)); }
+        }
+        .racha-pulse {
+            animation: rachaPulse 0.8s ease-in-out;
+        }
+
+        /* ADAPTABILIDAD RESPONSIVA Y DISPOSITIVOS */
+        @media (max-width: 768px) {
+            .academy-container {
+                padding: 2rem 1.5rem;
+            }
+            .welcome-grid-3cols {
+                grid-template-columns: 1fr;
+                gap: 0.9rem;
+            }
+            .dashboard-stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1.25rem 0;
+            }
+            .stat-metric-item:nth-child(2)::after {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .academy-container {
+                padding: 1.5rem 1rem;
+            }
+            .main-sidebar {
+                display: none !important;
+            }
+            .welcome-hero-card {
+                padding: 2.2rem 1.25rem;
+                border-radius: 20px;
+            }
+            .welcome-hero-card .welcome-title {
+                font-size: 1.6rem !important;
+            }
+            .welcome-hero-card .welcome-desc {
+                font-size: 0.82rem;
+                margin-bottom: 1.5rem;
+            }
+            .dashboard-stats-bar {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                padding: 1.25rem;
+            }
+            .stat-metric-item::after {
+                display: none !important;
+            }
+            .stat-metric-item {
+                justify-content: flex-start;
+            }
+            .academy-main-dashboard {
+                grid-template-columns: 1fr !important;
+            }
+            .academy-selection-card {
+                min-height: 200px !important;
+            }
+        }
+
+        /* ==========================================================================
+           ORQUESTACIÓN DE VISIBILIDAD Y CORRECCIÓN DE CABECERA DE ACADEMIA (DESKTOP)
+           ========================================================================== */
+        @media (min-width: 769px) {
+            /* Ocultar logo y texto redundante en cabecera de escritorio */
+            .chat-header .header-info {
+                display: none !important;
+            }
+            /* Alinear elementos a los extremos */
+            .chat-header {
+                justify-content: space-between !important;
+            }
+        }
+
+        /* ==========================================================================
+           OVERRIDES DE TARJETAS PARA EL CENTRO DE ESTUDIO (MOCKUP ESTILO FILA)
+           ========================================================================== */
+        .academy-main-dashboard {
+            gap: 1.5rem !important;
+            margin-top: 0 !important;
+        }
+
+        .academy-selection-card {
+            background: rgba(18, 15, 34, 0.5) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(139, 92, 246, 0.12) !important;
+            border-radius: 20px !important;
+            padding: 2rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            gap: 1.5rem !important;
+            text-decoration: none !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.03) !important;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            min-height: 240px;
+            box-sizing: border-box !important;
+        }
+
+        .academy-selection-card.science {
+            background: rgba(13, 27, 34, 0.5) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid rgba(6, 182, 212, 0.12) !important;
+        }
+
+        .card-header-row {
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            width: 100% !important;
+            text-align: left !important;
+        }
+
+        .selection-icon {
+            width: 56px !important;
+            height: 56px !important;
+            border-radius: 16px !important;
+            background: rgba(139, 92, 246, 0.08) !important;
+            border: 1px solid rgba(139, 92, 246, 0.2) !important;
+            color: #a78bfa !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.4rem !important;
+            flex-shrink: 0 !important;
+            filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.15)) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .academy-selection-card.science .selection-icon {
+            background: rgba(6, 182, 212, 0.08) !important;
+            border: 1px solid rgba(6, 182, 212, 0.2) !important;
+            color: #06b6d4 !important;
+            filter: drop-shadow(0 0 6px rgba(6, 182, 212, 0.15)) !important;
+        }
+
+        .selection-info {
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+
+        .selection-info h3 {
+            font-size: 1.2rem !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            margin: 0 0 6px 0 !important;
+            letter-spacing: -0.3px !important;
+            line-height: 1.3 !important;
+        }
+
+        .selection-info p {
+            font-size: 0.85rem !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+            margin: 0 !important;
+            line-height: 1.5 !important;
+        }
+        }
+
+        .card-divider-line {
+            width: 100% !important;
+            height: 1px !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            margin: 1.5rem 0 1rem 0 !important;
+        }
+
+        .selection-cta-row {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            margin-top: auto !important;
+        }
+
+        .cta-text-label {
+            font-size: 0.85rem !important;
+            font-weight: 750 !important;
+            color: #a78bfa !important;
+            letter-spacing: 0.2px !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .academy-selection-card.science .cta-text-label {
+            color: #06b6d4 !important;
+        }
+
+        .cta-arrow-icon {
+            font-size: 0.95rem !important;
+            color: rgba(255, 255, 255, 0.4) !important;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        }
+
+        .academy-selection-card:hover {
+            transform: translateY(-4px) !important;
+            border-color: rgba(139, 92, 246, 0.35) !important;
+            background: rgba(18, 15, 34, 0.65) !important;
+            box-shadow: 0 20px 48px rgba(139, 92, 246, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .academy-selection-card:hover .selection-icon {
+            background: rgba(139, 92, 246, 0.15) !important;
+            border-color: rgba(139, 92, 246, 0.4) !important;
+            transform: scale(1.05) !important;
+        }
+
+        .academy-selection-card.science:hover {
+            border-color: rgba(6, 182, 212, 0.35) !important;
+            background: rgba(13, 27, 34, 0.65) !important;
+            box-shadow: 0 20px 48px rgba(6, 182, 212, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .academy-selection-card.science:hover .selection-icon {
+            background: rgba(6, 182, 212, 0.15) !important;
+            border-color: rgba(6, 182, 212, 0.4) !important;
+        }
+
+        .academy-selection-card:hover .cta-arrow-icon {
+            transform: translateX(6px) !important;
+            color: #ffffff !important;
+        }
+
+        .academy-selection-card:hover .cta-text-label {
+            filter: brightness(1.15) !important;
+        }
+
+        /* DISEÑO DE LA SECCIÓN DE HERRAMIENTAS AVANZADAS */
+        .academy-advanced-section {
+            margin-top: 2.2rem !important;
+            width: 100% !important;
+            animation: fadeIn 0.5s ease-out !important;
+        }
+
+        .advanced-section-title {
+            font-size: 0.92rem !important;
+            font-weight: 800 !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            margin-bottom: 1.25rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.8px !important;
+            text-align: left !important;
+        }
+
+        .advanced-section-title .vertical-accent {
+            width: 3px !important;
+            height: 14px !important;
+            background-color: #a78bfa !important;
+            border-radius: 2px !important;
+            display: inline-block !important;
+            box-shadow: 0 0 8px #a78bfa !important;
+        }
+
+        /* ==========================================================================
+           MODALES E INTERFAZ DE HERRAMIENTAS IA (Monaco & Document Creator)
+           ========================================================================== */
+        .ai-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(6, 4, 15, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ai-modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .ai-modal-card {
+            background: rgba(14, 12, 28, 0.85);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 28px;
+            padding: 2.2rem;
+            width: 90%;
+            max-width: 850px;
+            max-height: 90vh;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ai-modal-overlay.show .ai-modal-card {
+            transform: scale(1);
+        }
+
+        .ide-modal-card {
+            max-width: 95% !important;
+            width: 95% !important;
+            height: 90vh !important;
+            max-height: 90vh !important;
+            padding: 1.5rem !important;
+            overflow: hidden !important;
+        }
+
+        .editor-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 0.8rem 1.1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-align: left;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.01);
+        }
+
+        .editor-action-btn:hover {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: rgba(139, 92, 246, 0.25);
+            color: #ffffff;
+            transform: translateX(4px);
+        }
+
+        .editor-action-btn i {
+            font-size: 0.95rem;
+            width: 18px;
+        }
+
+        .ide-file-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: rgba(255, 255, 255, 0.55);
+            width: 100%;
+            text-align: left;
+            padding: 7px 11px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .ide-file-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .ide-file-btn.active {
+            background: rgba(16, 185, 129, 0.08) !important;
+            border-color: rgba(16, 185, 129, 0.25) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.05);
+        }
+
+        .ide-tabs-bar {
+            display: flex;
+            align-items: center;
+            background: #141414;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            height: 35px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+        }
+
+        .ide-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            height: 100%;
+            background: #141414;
+            border-right: 1px solid rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.45);
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .ide-tab:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        .ide-tab.active {
+            background: #1e1e1e;
+            color: #ffffff;
+        }
+        .ide-tab.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2.5px;
+            background-color: #8b5cf6;
+            box-shadow: 0 1px 4px rgba(139, 92, 246, 0.4);
+        }
+
+        .ide-ctrl-btn.active-ctrl {
+            background: rgba(139, 92, 246, 0.25) !important;
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+        }
+
+        /* ==========================================================================
+           MOCKUP: INTERACTIVE EXAM SELECTION & TWO-COLUMN PREMIUM LAYOUT
+           ========================================================================== */
+        .academy-two-col-layout {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            margin-top: 2rem;
+            position: relative;
+            width: 100%;
+            max-width: 1280px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .academy-left-col {
+            flex: 1.6;
+            display: flex;
+            flex-direction: column;
+            gap: 1.75rem;
+            min-width: 0;
+        }
+        .academy-right-col {
+            flex: 1.1;
+            min-width: 360px;
+            max-width: 440px;
+            background: rgba(14, 12, 28, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 92, 246, 0.18);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 1024px) {
+            .academy-two-col-layout {
+                flex-direction: column;
+                gap: 1.5rem;
+                padding: 0 1.5rem;
+            }
+            .academy-right-col {
+                width: 100%;
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+
+        /* Particles Flow Animation */
+        .particle-flow-container {
+            position: absolute;
+            top: 35%;
+            left: 42%;
+            width: 200px;
+            height: 120px;
+            pointer-events: none;
+            z-index: 100;
+            overflow: visible;
+        }
+        @media (max-width: 1024px) {
+            .particle-flow-container {
+                display: none;
+            }
+        }
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            opacity: 0;
+        }
+        .particle-purple {
+            background: #c4b5fd;
+            box-shadow: 0 0 8px #a78bfa, 0 0 15px #7c3aed;
+        }
+        .particle-green {
+            background: #a7f3d0;
+            box-shadow: 0 0 8px #34d399, 0 0 15px #10b981;
+        }
+        @keyframes flow1 {
+            0% { transform: translate(-120px, 0px) scale(0.5); opacity: 0; }
+            15% { opacity: 0.8; }
+            50% { transform: translate(0px, -30px) scale(1.2) rotate(180deg); }
+            85% { opacity: 0.8; }
+            100% { transform: translate(140px, -10px) scale(0.3); opacity: 0; }
+        }
+        @keyframes flow2 {
+            0% { transform: translate(-100px, 20px) scale(0.4); opacity: 0; }
+            15% { opacity: 0.7; }
+            60% { transform: translate(15px, 15px) scale(1.1) rotate(-90deg); }
+            85% { opacity: 0.7; }
+            100% { transform: translate(160px, 5px) scale(0.2); opacity: 0; }
+        }
+        @keyframes flow3 {
+            0% { transform: translate(-130px, -15px) scale(0.6); opacity: 0; }
+            20% { opacity: 0.9; }
+            40% { transform: translate(-25px, 25px) scale(1.3) rotate(45deg); }
+            80% { opacity: 0.9; }
+            100% { transform: translate(150px, -25px) scale(0.4); opacity: 0; }
+        }
+        .p1 { animation: flow1 4.2s infinite linear; animation-delay: 0s; }
+        .p2 { animation: flow2 4.8s infinite linear; animation-delay: 0.7s; }
+        .p3 { animation: flow3 3.9s infinite linear; animation-delay: 1.4s; }
+        .p4 { animation: flow1 5.2s infinite linear; animation-delay: 2.1s; }
+        .p5 { animation: flow2 4.4s infinite linear; animation-delay: 2.8s; }
+        .p6 { animation: flow3 4.6s infinite linear; animation-delay: 3.5s; }
+
+        /* Floating test icons */
+        .floating-test-icon {
+            position: absolute;
+            color: rgba(167, 139, 250, 0.12);
+            font-size: 1.15rem;
+            pointer-events: none;
+            animation: floatIcon 6s infinite ease-in-out;
+            z-index: 1;
+        }
+        @keyframes floatIcon {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                filter: drop-shadow(0 0 2px rgba(139, 92, 246, 0.05));
+            }
+            50% {
+                transform: translateY(-8px) rotate(12deg);
+                filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+                color: rgba(167, 139, 250, 0.35);
+            }
+        }
+        .f-icon-1 { top: 18px; right: 55px; animation-delay: 0s; }
+        .f-icon-2 { top: 35px; right: 25px; animation-delay: 2s; font-size: 0.95rem; }
+        .f-icon-3 { top: 20px; right: 90px; animation-delay: 4s; font-size: 0.85rem; }
+
+        /* Exam selection tiles */
+        .exam-tiles-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+            z-index: 5;
+            position: relative;
+        }
+        .exam-tile {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            padding: 1.1rem 1.35rem !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            cursor: pointer !important;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-sizing: border-box !important;
+            text-align: left !important;
+            position: relative !important;
+            min-height: 76px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25) !important;
+        }
+        .exam-tile .tile-icon {
+            width: 42px !important;
+            height: 42px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.15rem !important;
+            flex-shrink: 0 !important;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+        }
+        .exam-tile .tile-info {
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+        .exam-tile .tile-info h4 {
+            margin: 0 0 4px 0 !important;
+            font-size: 0.9rem !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            letter-spacing: -0.1px !important;
+        }
+        .exam-tile .tile-info p {
+            margin: 0 !important;
+            font-size: 0.74rem !important;
+            color: rgba(255, 255, 255, 0.5) !important;
+            line-height: 1.35 !important;
+        }
+        .exam-tile .tile-checkbox {
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 50% !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            font-size: 0.85rem !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Hover state (PAES Competencia Matemática M1 hovered) */
+        .exam-tile.hover-state, .exam-tile:hover:not(.selected-state) {
+            background: rgba(139, 92, 246, 0.1) !important;
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            transform: translateY(-3px) scale(1.015) !important;
+            box-shadow: 0 12px 28px rgba(139, 92, 246, 0.22) !important;
+        }
+        .exam-tile:hover .tile-checkbox {
+            background: #7c3aed !important;
+            border-color: #a78bfa !important;
+            color: white !important;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.5) !important;
+        }
+        .exam-tile.hover-state {
+            animation: tilePulse 2s infinite ease-in-out !important;
+            cursor: pointer !important;
+        }
+        @keyframes tilePulse {
+            0%, 100% {
+                border-color: rgba(139, 92, 246, 0.3);
+                box-shadow: 0 4px 12px rgba(139, 92, 246, 0.05);
+            }
+            50% {
+                border-color: rgba(139, 92, 246, 0.6);
+                box-shadow: 0 10px 30px rgba(139, 92, 246, 0.25);
+            }
+        }
+
+        /* Selected state (PAES Ciencias selected) */
+        .exam-tile.selected-state {
+            border: 2px solid #10b981 !important;
+            background: rgba(16, 185, 129, 0.08) !important;
+            transform: scale(1.02) !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.28), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+        }
+        .exam-tile.selected-state .tile-info h4 {
+            color: #34d399 !important;
+        }
+        .exam-tile.selected-state .tile-info p {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+        .exam-tile.selected-state .tile-checkbox {
+            background: #10b981 !important;
+            border-color: #34d399 !important;
+            color: white !important;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.4) !important;
+        }
+
+        /* Glowing button animation for left card */
+        @keyframes purpleGlow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(139, 92, 246, 0.4), 0 0 10px rgba(139, 92, 246, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(139, 92, 246, 0.7), 0 0 25px rgba(139, 92, 246, 0.4);
+                transform: scale(1.02);
+            }
+        }
+        .pulsing-purple-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+            border: none !important;
+            color: #ffffff !important;
+            animation: purpleGlow 2.5s infinite ease-in-out !important;
+            transition: all 0.3s ease !important;
+        }
+        .pulsing-purple-btn:hover {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+
+        /* Glowing button animation for right card (Science/Cyan theme) */
+        @keyframes cyanGlow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(6, 182, 212, 0.4), 0 0 10px rgba(6, 182, 212, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 18px rgba(6, 182, 212, 0.7), 0 0 25px rgba(6, 182, 212, 0.4);
+                transform: scale(1.02);
+            }
+        }
+        .pulsing-cyan-btn {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+            border: none !important;
+            color: #ffffff !important;
+            animation: cyanGlow 2.5s infinite ease-in-out !important;
+            transition: all 0.3s ease !important;
+        }
+        .pulsing-cyan-btn:hover {
+            background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%) !important;
+            transform: translateY(-2px) scale(1.03) !important;
+        }
+
+        /* Ensure header buttons are highly visible and premium */
+        .mode-tab-btn {
+            color: rgba(255, 255, 255, 0.65) !important;
+            opacity: 0.85 !important;
+        }
+        .mode-tab-btn:hover {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+            opacity: 1 !important;
+        }
+        .mode-tab-btn.active {
+            color: #ffffff !important;
+            opacity: 1 !important;
+            background: rgba(139, 92, 246, 0.12) !important;
+            border: 1px solid rgba(139, 92, 246, 0.35) !important;
+        }
+        .module-card.english { --card-glow: #06b6d4; }
+        .module-card.all { --card-glow: #a78bfa; }
+
+        /* ==========================================================================
+           DUOLINGO ADAPTIVE SYSTEM STYLES
+           ========================================================================== */
+        .duo-path-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            padding: 2.5rem 0;
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .duo-path-line {
+            position: absolute;
+            width: 6px;
+            background: rgba(139, 92, 246, 0.15);
+            z-index: 1;
+            top: 40px;
+            bottom: 40px;
+            border-radius: 3px;
+        }
+        .duo-path-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            z-index: 2;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        .node-ring {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            background: rgba(15, 12, 30, 0.6);
+            border: 4px solid rgba(139, 92, 246, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        .duo-path-node:not(.locked):hover .node-ring {
+            transform: scale(1.1) translateY(-2px);
+            border-color: #a78bfa;
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.4);
+        }
+        .node-inner {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.6rem;
+            transition: all 0.3s;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .duo-path-node.locked .node-inner {
+            background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+            color: #6b7280 !important;
+        }
+        .duo-path-node.locked .node-ring {
+            border-color: #4b5563 !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+        }
+        .node-label {
+            margin-top: 0.85rem;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: white;
+            text-align: center;
+            letter-spacing: -0.2px;
+        }
+        .node-sublabel {
+            font-size: 0.74rem;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 3px;
+            font-weight: 600;
+        }
+        .node-progress-circle {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 84px;
+            height: 84px;
+            transform: rotate(-90deg);
+            pointer-events: none;
+        }
+        .node-progress-circle circle {
+            fill: none;
+            stroke: #10b981;
+            stroke-width: 4;
+            stroke-dasharray: 251.2;
+            stroke-dashoffset: 251.2;
+            transition: stroke-dashoffset 0.8s ease-in-out;
+            stroke-linecap: round;
+        }
+        .study-option-btn {
+            width: 100%;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.045) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            border-radius: 18px !important;
+            padding: 1.15rem 1.45rem !important;
+            color: white !important;
+            font-size: 1rem !important;
+            font-weight: 650 !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.2rem !important;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            outline: none !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
+            position: relative !important;
+        }
+        .study-option-btn:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.18) !important;
+        }
+        .study-option-btn.selected {
+            background: rgba(139, 92, 246, 0.14) !important;
+            border-color: #a78bfa !important;
+            box-shadow: 0 8px 28px rgba(139, 92, 246, 0.28), inset 0 1px 1px rgba(255,255,255,0.08) !important;
+        }
+        .study-option-letter {
+            width: 32px !important;
+            height: 32px !important;
+            border-radius: 10px !important;
+            background: rgba(255, 255, 255, 0.06) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.95rem !important;
+            font-weight: 800 !important;
+            color: rgba(255,255,255,0.8) !important;
+            transition: all 0.25s ease !important;
+        }
+        .study-option-btn:hover .study-option-letter {
+            border-color: rgba(139, 92, 246, 0.5) !important;
+            background: rgba(139, 92, 246, 0.1) !important;
+            color: #a78bfa !important;
+        }
+        .study-option-btn.selected .study-option-letter {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
+            border-color: #a78bfa !important;
+            color: white !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3) !important;
+        }
+        .duo-feedback-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(15, 12, 30, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 1.75rem 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 1000;
+            box-sizing: border-box;
+            transform: translateY(100%);
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+        .duo-feedback-bar.show {
+            transform: translateY(0);
+        }
+        .duo-feedback-bar.success {
+            background: rgba(6, 47, 33, 0.96) !important;
+            border-color: rgba(16, 185, 129, 0.3) !important;
+        }
+        .duo-feedback-bar.error {
+            background: rgba(69, 10, 10, 0.96) !important;
+            border-color: rgba(239, 68, 108, 0.3) !important;
+        }
+        .duo-feedback-info {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            color: white;
+            text-align: left;
+        }
+        .duo-feedback-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .success .duo-feedback-icon {
+            background: #10b981;
+            color: white;
+        }
+        .error .duo-feedback-icon {
+            background: #ef4444;
+            color: white;
+        }
+        .duo-feedback-text h4 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 850;
+        }
+        .duo-feedback-text p {
+            margin: 4px 0 0 0;
+            font-size: 0.88rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .syllabus-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+            width: 100%;
+        }
+        .syllabus-card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 20px !important;
+            padding: 1.25rem 1.4rem !important;
+            cursor: pointer !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.1rem !important;
+            transition: all 0.25s ease !important;
+            box-sizing: border-box !important;
+            text-align: left !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .syllabus-card:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(139, 92, 246, 0.45) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.15) !important;
+        }
+        .syllabus-card.checked {
+            background: rgba(16, 185, 129, 0.08) !important;
+            border-color: rgba(16, 185, 129, 0.35) !important;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.03), 0 8px 20px rgba(16, 185, 129, 0.15) !important;
+        }
+        .syllabus-checkbox {
+            width: 24px;
+            height: 24px;
+            border-radius: 7px;
+            border: 2px solid rgba(255,255,255,0.25) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0 !important;
+            transition: all 0.2s !important;
+            font-size: 0.85rem !important;
+            color: transparent;
+            background: rgba(255,255,255,0.03) !important;
+        }
+        .syllabus-checkbox i {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .syllabus-card.checked .syllabus-checkbox i {
+            opacity: 1;
+        }
+        .syllabus-card.checked .syllabus-checkbox {
+            background: #10b981 !important;
+            border-color: #10b981 !important;
+            color: white !important;
+        }
+        .syllabus-card-info h4 {
+            margin: 0;
+            font-size: 0.92rem;
+            font-weight: 800;
+            color: white;
+        }
+        .syllabus-card-info p {
+            margin: 2px 0 0 0;
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.45);
+        }
+        .study-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.25rem;
+            text-align: left;
+        }
+        .study-stats-table th, .study-stats-table td {
+            padding: 0.9rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 0.85rem;
+        }
+        .study-stats-table th {
+            color: rgba(255,255,255,0.45);
+            font-weight: 750;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .study-stats-table td {
+            color: rgba(255,255,255,0.85);
+        }
+        .mastery-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .mastery-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            width: 0%;
+            transition: width 0.5s ease-out;
+        }
+
+        /* Drawer Overlay & Panel styles */
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: none;
+        }
+        .academy-right-col.drawer-panel {
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            width: 440px !important;
+            max-width: 100% !important;
+            z-index: 1000 !important;
+            border-radius: 0px !important;
+            border: none !important;
+            border-left: 1px solid rgba(139, 92, 246, 0.2) !important;
+            background: rgba(8, 6, 18, 0.82) !important;
+            backdrop-filter: blur(40px) !important;
+            -webkit-backdrop-filter: blur(40px) !important;
+            box-shadow: -15px 0 50px rgba(0, 0, 0, 0.7) !important;
+            transform: translateX(100%) !important;
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            padding: 2.2rem 2rem !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            box-sizing: border-box;
+        }
+        .drawer-overlay.open {
+            opacity: 1 !important;
+        }
+        .academy-right-col.drawer-panel.open {
+            transform: translateX(0) !important;
+        }
+        .drawer-close-btn {
+            position: absolute;
+            top: 1.8rem;
+            right: 1.8rem;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        .drawer-close-btn:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Responsive adjustments for mobile viewports */
+        @media (max-width: 600px) {
+            .duo-feedback-bar {
+                padding: 1.1rem 1.4rem !important;
+                flex-direction: column !important;
+                gap: 1.1rem !important;
+                align-items: stretch !important;
+                text-align: center !important;
+            }
+            .duo-feedback-info {
+                flex-direction: column !important;
+                gap: 0.6rem !important;
+                text-align: center !important;
+            }
+            .duo-feedback-text h4 {
+                font-size: 1.05rem !important;
+                text-align: center !important;
+            }
+            .duo-feedback-text p {
+                font-size: 0.78rem !important;
+                text-align: center !important;
+            }
+            #duoFeedbackBtn {
+                width: 100% !important;
+                padding: 0.8rem !important;
+                font-size: 0.88rem !important;
+            }
+            .study-option-btn {
+                padding: 0.95rem 1.15rem !important;
+                font-size: 0.92rem !important;
+                gap: 0.85rem !important;
+            }
+            .study-option-letter {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.85rem !important;
+            }
+            .academy-right-col.drawer-panel {
+                width: 100% !important;
+                padding: 1.5rem !important;
+            }
+            .exam-tile {
+                padding: 0.85rem 1rem !important;
+                min-height: 64px !important;
+                gap: 12px !important;
+            }
+            .exam-tile .tile-icon {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 0.95rem !important;
+            }
+            .exam-tile .tile-info h4 {
+                font-size: 0.82rem !important;
+            }
+            .exam-tile .tile-info p {
+                font-size: 0.68rem !important;
+            }
+            .exam-tile .tile-checkbox {
+                width: 28px !important;
+                height: 28px !important;
+                font-size: 0.75rem !important;
+            }
+        }
+    </style>
+    <!-- Favicon Configuración Premium (Google & Multi-Dispositivo) -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+</head>
+<body>
+
+    <div class="ambient">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+        <div class="space-grid"></div>
+    </div>
+    <div class="grain"></div>
+
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Centro de Estudio Myxsi...</div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+    
+    <main class="app-layout">
+        <!-- BARRA LATERAL IZQUIERDA PERMANENTE (NUEVA) -->
+        <aside class="main-sidebar">
+            <!-- Área de Marca (Rediseño Innovador) -->
+            <div class="main-sidebar-brand-area" style="display: flex; align-items: center; justify-content: flex-start; margin-bottom: 1.25rem; padding: 4px 0;">
+                <a href="index.html" class="brand-logo" style="display: flex; align-items: center; text-decoration: none;">
+                    <img src="assets/designer_corner_logo.png" alt="Myxsi — Tu plataforma de IA" class="brand-logo-img" style="height: 42px; width: auto; object-fit: contain; display: block;">
+                </a>
+                <div id="sidebarUserName" style="display: none;"></div>
+            </div>
+
+            <!-- Menu list -->
+            <nav class="main-sidebar-menu">
+                <a href="chat.html" class="menu-item" id="menuBtnInicio">
+                    <i class="fa-regular fa-comment-dots" style="font-size: 0.85rem; width: 16px; text-align: center; color: #a78bfa;"></i> <span>Chat IA</span>
+                </a>
+                <a href="docs-home.html" class="menu-item" id="menuBtnDocs">
+                    <i class="fa-regular fa-file-lines" style="font-size: 0.85rem; width: 16px; text-align: center; color: #60a5fa;"></i> <span>Docs Studio</span>
+                </a>
+                <a href="sheets-home.html" class="menu-item" id="menuBtnSheets">
+                    <i class="fa-solid fa-table-cells" style="font-size: 0.85rem; width: 16px; text-align: center; color: #34d399;"></i> <span>Sheets Studio</span>
+                </a>
+                <a href="canva-home.html" class="menu-item" id="menuBtnCanva">
+                    <i class="fa-solid fa-palette" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f472b6;"></i> <span>Canva Studio</span>
+                </a>
+                <a href="video-home.html" class="menu-item" id="menuBtnVideo">
+                    <i class="fa-solid fa-video" style="font-size: 0.85rem; width: 16px; text-align: center; color: #feb504;"></i> <span>Video Studio</span>
+                </a>
+                <a href="files.html" class="menu-item" id="menuBtnResources">
+                    <i class="fa-regular fa-folder" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f59e0b;"></i> <span>Archivos</span>
+                </a>
+                <a href="academy.html" class="menu-item active" id="menuBtnAcademy" style="display: none;">
+                    <i class="fa-solid fa-graduation-cap"></i> <span>Centro de Estudio</span>
+                </a>
+            </nav>
+
+            <!-- Racha widget (Rediseño Innovador Compacto) -->
+            <div class="racha-card-premium" id="sidebarRachaWidget" title="Racha de estudio diaria">
+                <div class="racha-card-left">
+                    <div class="racha-card-header">Racha de estudio</div>
+                    <div class="racha-card-value"><span id="sidebarRachaNum">0</span> días</div>
+                </div>
+                <div class="racha-card-right">
+                    <div class="racha-fire-icon"><i class="fa-solid fa-fire"></i></div>
+                </div>
+            </div>
+
+            <!-- Dummy elements required to prevent JS exceptions when writing to original IDs -->
+            <div style="display: none;">
+                <div id="sidebarRachaProgress"></div>
+            </div>
+        </aside>
+
+        <!-- SIDEBAR DE NAVEGACIÓN COMPARTIDO -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand-area">
+                <h2 class="sidebar-main-title">Mis <span class="gradient-text">Chats</span></h2>
+                <p class="sidebar-sub-title">Regresar a tus conversaciones</p>
+            </div>
+            
+            <div class="sidebar-search-container">
+                <div class="sidebar-search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchChatsInput" placeholder="Buscar chats..." oninput="window.filterChatsList(this.value)">
+                </div>
+                <button class="sidebar-filter-btn" title="Filtrar"><i class="fa-solid fa-sliders"></i></button>
+            </div>
+
+            <div class="sidebar-tabs-container">
+                <button class="sidebar-tab-btn active" id="tabAll" onclick="window.switchSidebarTab('all')">Todos</button>
+                <button class="sidebar-tab-btn" id="tabFav" onclick="window.switchSidebarTab('favorites')"><i class="fa-regular fa-star"></i> Favoritos</button>
+                <button class="sidebar-tab-btn" id="tabArchived" onclick="window.switchSidebarTab('archived')"><i class="fa-regular fa-folder"></i> Archivados</button>
+                <button class="sidebar-tab-btn" id="tabRecent" onclick="window.switchSidebarTab('recent')"><i class="fa-regular fa-clock"></i> Recientes</button>
+            </div>
+
+            <div class="chats-list" id="chatsList"></div>
+            
+            <button class="sidebar-floating-add-btn" onclick="window.initNewChatLocal()" title="Nueva conversación"><i class="fa-solid fa-plus"></i></button>
+        </aside>
+
+        <!-- MAIN AREA DEDICADA A LA ACADEMIA -->
+        <section class="main-chat-area" id="mainChatArea">
+            
+            <header class="chat-header">
+                <div class="header-left" style="display: flex; align-items: center;">
+                    <button class="desktop-sidebar-toggle-btn" onclick="window.toggleSidebarDesktop()" title="Mostrar/Ocultar barra lateral">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="header-info">
+                        <div class="header-avatar breathing-avatar" style="background: none; border: none; width: 36px; height: 36px;">
+                            <svg width="36" height="36" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <defs>
+                                <linearGradient id="gemGradHeader" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                                  <stop offset="0%" stop-color="#A78BFA"/>
+                                  <stop offset="100%" stop-color="#6D28D9"/>
+                                </linearGradient>
+                              </defs>
+                              <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGradHeader)" opacity="0.9"/>
+                              <path d="M22 4L38 14L22 22L6 14L22 4Z" fill="rgba(255,255,255,0.2)"/>
+                              <path d="M22 22L38 14V30L22 22Z" fill="rgba(0,0,0,0.15)"/>
+                              <path d="M22 22L6 14V30L22 22Z" fill="rgba(255,255,255,0.08)"/>
+                              <circle cx="22" cy="22" r="4" fill="rgba(255,255,255,0.6)"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="header-name" id="userNameDisplay">Centro de </div>
+                            <div class="header-status" id="headerStatus"><div class="status-dot"></div> Conectado</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="header-mode-selector">
+                        <button class="mode-tab-btn" id="btnChat" onclick="window.location.href='chat.html'" title="Modo Conversación Inteligente">
+                            <i class="fa-regular fa-comment"></i> <span>Chat</span>
+                        </button>
+                        <button class="mode-tab-btn active" id="btnAcademy" title="Entrenamiento Inteligente">
+                            <i class="fa-solid fa-graduation-cap"></i> <span>Entrenamiento Inteligente</span>
+                        </button>
+                        <button class="mode-tab-btn" id="btnCanva" onclick="window.location.href='canva.html'" title="Editor de Bocetos Canva">
+                            <i class="fa-solid fa-palette"></i> <span>Canva</span>
+                        </button>
+                        <button class="mode-tab-btn" id="btnDocs" onclick="window.location.href='docs.html'" title="Google Docs Studio — Editor Inteligente">
+                            <i class="fa-brands fa-google-drive"></i> <span>Google Docs</span>
+                        </button>
+                        <button class="mode-tab-btn" id="btnSheets" onclick="window.location.href='sheets.html'" title="Hojas de Cálculo Studio (Excel)">
+                            <i class="fa-solid fa-table-cells"></i> <span>Sheets</span>
+                        </button>
+                        <button class="mode-tab-btn" id="btnResources" onclick="window.location.href='files.html'" title="Archivos guardados">
+                            <i class="fa-regular fa-folder"></i> <span>Archivos</span>
+                        </button>
+                    </div>
+                    <!-- Streak Flame Badge -->
+                    <div class="header-streak-badge" id="headerStreakBadge" title="Racha de estudio diaria" style="display: flex; align-items: center; gap: 0.35rem; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); color: #f59e0b; padding: 0.45rem 0.8rem; border-radius: 14px; font-size: 0.85rem; font-weight: 750; margin-right: 0.5rem; animation: breathingGlow 3s infinite alternate;">
+                        <i class="fa-solid fa-fire" style="filter: drop-shadow(0 0 4px rgba(245,158,11,0.5));"></i> <span id="headerStreakCount">0</span>
+                    </div>
+                    <button class="header-action-circle" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Detalles del Usuario"><i class="fa-solid fa-circle-user"></i></button>
+                </div>
+            </header>
+
+            <!-- ACADEMY VIEW CONTAINER DEDICADO Y ACTIVADO -->
+            <div class="view-wrapper active-view" id="academyView">
+                <div class="academy-container" id="academyMainContainer">
+                    <!-- HERO TITULO ACTUALIZADO -->
+                    <div class="academy-hero" style="text-align: center; margin-bottom: 0; max-width: 900px; margin-left: auto; margin-right: auto;">
+                        <span class="focus-badge" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.08); border: 1px solid rgba(139, 92, 246, 0.2); color: #a78bfa; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;"><i class="fa-solid fa-crosshairs"></i> Modo Enfoque Activado</span>
+                        <h1 class="academy-title" style="font-size: 2.5rem; font-weight: 850; letter-spacing: -1.2px; margin-bottom: 0.75rem; text-align: center; line-height: 1.2;">¡Es hora de <span style="background: linear-gradient(135deg, #a78bfa 0%, #c4b5fd 50%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">ponerte a prueba</span>!</h1>
+                        <p class="academy-subtitle" style="font-size: 1rem; color: rgba(255,255,255,0.55); text-align: center; margin-top: 0; margin-bottom: 0; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">Elige tu camino y comencemos a entrenar tu potencial.</p>
+                    </div>
+
+                    <!-- MOCKUP COMPLETO: DOS COLUMNAS CON PARTÍCULAS -->
+                    <div class="academy-two-col-layout">
+                        <!-- Partículas de Flujo Central -->
+                        <div class="particle-flow-container">
+                            <div class="particle particle-purple p1"></div>
+                            <div class="particle particle-green p2"></div>
+                            <div class="particle particle-purple p3"></div>
+                            <div class="particle particle-green p4"></div>
+                            <div class="particle particle-purple p5"></div>
+                            <div class="particle particle-green p6"></div>
+                        </div>
+
+                        <!-- Columna Izquierda: Área de Aprendizaje -->
+                        <div class="academy-left-col">
+                            <div class="academy-main-dashboard" id="academyMainDashboard" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 0 !important; width: 100%;">
+                                <!-- Tarjeta 1: Preparar Examen (Actualizado) -->
+                                <div class="academy-selection-card math" onclick="window.showAssignedExams(event)" style="width: 100%;">
+                                    <div class="card-header-row">
+                                        <div class="selection-icon" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); color: #a78bfa;"><i class="fa-solid fa-bullseye"></i></div>
+                                        <div class="selection-info">
+                                            <h3 id="paesOptionTitle">Preparar Examen</h3>
+                                            <p id="paesOptionSub" style="color: #c4b5fd !important; font-weight: 700; margin-top: 4px !important;">Tu plan de estudio personalizado está listo para activarse.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-divider-line"></div>
+                                    <div class="selection-cta-row" style="width: 100%;">
+                                        <button class="modal-btn pulsing-purple-btn" style="width: 100%; padding: 0.75rem; border-radius: 12px; font-weight: 750; font-size: 0.82rem; border: none; display: flex; align-items: center; justify-content: center; gap: 6px;">Elegir examen <i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Tarjeta 2: Estudio Libre -->
+                                <div class="academy-selection-card science" onclick="selectStudyFlow('school')" style="width: 100%;">
+                                    <div class="card-header-row">
+                                        <div class="selection-icon" style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); color: #06b6d4;"><i class="fa-solid fa-book-open"></i></div>
+                                        <div class="selection-info">
+                                            <h3>Estudio Libre</h3>
+                                            <p>Explora cualquier tema, materia o habilidad. Tú eliges, Myxsi te guía.</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-divider-line"></div>
+                                    <div class="selection-cta-row" style="width: 100%;">
+                                        <button class="modal-btn pulsing-cyan-btn" style="width: 100%; padding: 0.75rem; border-radius: 12px; font-weight: 750; font-size: 0.82rem; border: none; display: flex; align-items: center; justify-content: center; gap: 6px;">Estudiar algo nuevo <i class="fa-solid fa-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Backdrop Overlay para cerrar al hacer clic fuera -->
+                        <div class="drawer-overlay" id="assignedExamsOverlay" onclick="window.hideAssignedExams()"></div>
+
+                        <!-- Columna Derecha: Exámenes Asignados (Interactive Mockup Drawer) -->
+                        <div class="academy-right-col drawer-panel" id="assignedExamsPanel">
+                            <!-- Botón de cerrar tipo cajón -->
+                            <button class="drawer-close-btn" onclick="window.hideAssignedExams()"><i class="fa-solid fa-xmark"></i></button>
+                            <!-- Cluster de iconos flotantes iluminados -->
+                            <div class="floating-test-icon f-icon-1"><i class="fa-solid fa-stopwatch"></i></div>
+                            <div class="floating-test-icon f-icon-2"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="floating-test-icon f-icon-3"><i class="fa-solid fa-star"></i></div>
+
+                            <h3 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Tus Exámenes Asignados</h3>
+                            <p style="margin: 3px 0 0 0; font-size: 0.72rem; color: rgba(255, 255, 255, 0.45); text-align: left;">Selecciona para activar</p>
+
+                            <!-- Lista de Exámenes Interactivos -->
+                            <div class="exam-tiles-list">
+                                <!-- PAES Competencia M1 -->
+                                <div class="exam-tile" onclick="window.openExamStudySystem('m1')">
+                                    <div class="tile-icon" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); color: #f59e0b;">
+                                        <i class="fa-solid fa-square-root-variable"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <h4>PAES Competencia Matemática M1</h4>
+                                        <p>Álgebra, Geometría, Probabilidad y Estadística.</p>
+                                    </div>
+                                    <div class="tile-checkbox">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                </div>
+
+                                <!-- PAES Competencia M2 -->
+                                <div class="exam-tile" onclick="window.openExamStudySystem('m2')">
+                                    <div class="tile-icon" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa;">
+                                        <i class="fa-solid fa-chart-line"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <h4>PAES Competencia Matemática M2</h4>
+                                        <p>Funciones, límites, modelamiento y resolución avanzada.</p>
+                                    </div>
+                                    <div class="tile-checkbox">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                </div>
+
+                                <!-- PAES Competencia Lectora -->
+                                <div class="exam-tile" onclick="window.openExamStudySystem('lectora')">
+                                    <div class="tile-icon" style="background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.2); color: #f472b6;">
+                                        <i class="fa-solid fa-book"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <h4>PAES Competencia Lectora</h4>
+                                        <p>Comprensión de textos y análisis crítico.</p>
+                                    </div>
+                                    <div class="tile-checkbox">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                </div>
+
+                                <!-- PAES Ciencias -->
+                                <div class="exam-tile" onclick="window.openExamStudySystem('ciencias')">
+                                    <div class="tile-icon" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399;">
+                                        <i class="fa-solid fa-flask"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <h4>PAES Ciencias</h4>
+                                        <p>Biología, Física y Química.</p>
+                                    </div>
+                                    <div class="tile-checkbox">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                </div>
+
+                                <!-- PAES Historia -->
+                                <div class="exam-tile" onclick="window.openExamStudySystem('historia')">
+                                    <div class="tile-icon" style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.2); color: #eab308;">
+                                        <i class="fa-solid fa-landmark"></i>
+                                    </div>
+                                    <div class="tile-info">
+                                        <h4>PAES Historia y Ciencias Sociales</h4>
+                                        <p>Procesos históricos, ciudadanía y análisis social.</p>
+                                    </div>
+                                    <div class="tile-checkbox">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <!-- Texto informativo / Guía de usuario -->
+                            <p style="font-size: 0.74rem; color: rgba(255,255,255,0.45); line-height: 1.4; margin: 1rem 0 1rem 0; text-align: left; font-style: italic;">
+                                Selecciona el examen principal que deseas para tu plan de estudio hoy. Puedes cambiarlo en cualquier momento.
+                            </p>
+
+                            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0.75rem 0;"></div>
+
+                            <!-- Nota de temarios oficiales -->
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.68rem; color: rgba(255,255,255,0.35);">
+                                <span><i class="fa-solid fa-circle-info" style="margin-right: 4px;"></i> Contenido basado en temarios oficiales DEMRE</span>
+                                <a href="https://demre.cl" target="_blank" rel="noopener noreferrer" style="color: #a78bfa; text-decoration: none; display: flex; align-items: center; gap: 3px;">demre.cl <i class="fa-solid fa-up-right-from-square" style="font-size: 0.55rem;"></i></a>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    
+                    <!-- 2. FLUJO A: GRID DE MATERIAS PAES -->
+                    <div class="academy-flow-container" id="paesFlowContainer" style="display: none;">
+                        <button class="btn-back-flow" onclick="backToMainDashboard()"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+                        
+                        <div class="paes-header-box" style="margin-bottom: 2rem; text-align: left;">
+                            <h2 style="font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #ffffff 30%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 0.5rem 0;">¿Qué puedes estudiar?</h2>
+                            <p style="color: rgba(255,255,255,0.55); font-size: 0.88rem; margin: 0;">Selecciona una asignatura o área de aprendizaje para iniciar tu ruta de entrenamiento inteligente.</p>
+                        </div>
+
+                        <div class="academy-grid">
+                            <div class="module-card math" onclick="selectSubject('Matemáticas M1')">
+                                <div class="module-icon"><i class="fa-solid fa-calculator"></i></div>
+                                <div class="module-info"><h3>Matemáticas M1</h3><p>Álgebra, Geometría y Probabilidad</p></div>
+                            </div>
+                            <div class="module-card science" onclick="selectSubject('Ciencias (Física, Química y Biología)')">
+                                <div class="module-icon"><i class="fa-solid fa-flask"></i></div>
+                                <div class="module-info"><h3>Ciencias</h3><p>Biología, Física y Química</p></div>
+                            </div>
+                            <div class="module-card history" onclick="selectSubject('Historia y Ciencias Sociales')">
+                                <div class="module-icon"><i class="fa-solid fa-monument"></i></div>
+                                <div class="module-info"><h3>Historia</h3><p>Mundo Global y Sociedad</p></div>
+                            </div>
+                            <div class="module-card language" onclick="selectSubject('Competencia Lectora')">
+                                <div class="module-icon"><i class="fa-solid fa-book"></i></div>
+                                <div class="module-info"><h3>Lenguaje</h3><p>Comprensión y análisis de textos</p></div>
+                            </div>
+                            <div class="module-card english" onclick="selectSubject('Inglés')">
+                                <div class="module-icon"><i class="fa-solid fa-language"></i></div>
+                                <div class="module-info"><h3>Inglés</h3><p>Gramática, vocabulario y comprensión</p></div>
+                            </div>
+                            <div class="module-card all" onclick="selectSubject('Todos')">
+                                <div class="module-icon"><i class="fa-solid fa-plus"></i></div>
+                                <div class="module-info"><h3>Ver todo</h3><p>Explora todas las materias disponibles</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 3. FLUJO B: FORMULARIO TEMA PERSONALIZADO COLEGIO / LICEO -->
+                    <div class="academy-flow-container" id="schoolFlowContainer" style="display: none;">
+                        <button class="btn-back-flow" onclick="backToMainDashboard()"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+                        <h2 class="flow-section-title">Elige tu Tema de Colegio o Liceo:</h2>
+                        <div class="school-form-card">
+                            <div class="form-group-study">
+                                <label for="customTopicInput">¿Qué tema quieres aprender o reforzar hoy?</label>
+                                <input type="text" id="customTopicInput" placeholder="Ej. Fracciones, Fotosíntesis, Revolución Francesa..." />
+                            </div>
+                            <div class="form-group-study">
+                                <label for="customSubjectSelect">Selecciona la materia correspondiente:</label>
+                                <select id="customSubjectSelect">
+                                    <option value="Matemáticas">Matemáticas 📐</option>
+                                    <option value="Biología">Biología 🌿</option>
+                                    <option value="Física">Física 🌌</option>
+                                    <option value="Química">Química ⚗️</option>
+                                    <option value="Historia">Historia 📜</option>
+                                    <option value="Lenguaje">Lenguaje ✍️</option>
+                                    <option value="Inglés">Inglés 🗣️</option>
+                                    <option value="Otra">Otra materia 📚</option>
+                                </select>
+                            </div>
+                            <button class="btn-confirm-topic" onclick="confirmCustomTopic()">Continuar con este tema <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- 4. RUTA DE APRENDIZAJE POR NIVELES (ROADMAP VISUAL) -->
+                    <div class="academy-flow-container" id="roadmapContainer" style="display: none;">
+                        <button class="btn-back-flow" onclick="backToFlow()"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+                        <h2 class="flow-section-title" id="roadmapTitle">Ruta de Aprendizaje para [Tema]</h2>
+                        <p style="font-size: 0.82rem; color: var(--fog); margin-bottom: 1.5rem; text-align: center;">Completa los niveles de forma progresiva. Cada nivel desbloqueará el siguiente lección por lección.</p>
+                        
+                        <div class="roadmap-levels-path" id="roadmapLevelsPath">
+                            <!-- Nivel 1: Principiante -->
+                            <div class="roadmap-level-card unlocked" id="cardLevel1" onclick="window.startLevelSession('principiante')">
+                                <div class="level-icon-wrapper">
+                                    <i class="fa-solid fa-seedling"></i>
+                                </div>
+                                <div class="level-info-wrapper">
+                                    <div class="level-badge active-badge" id="badgeLevel1">Disponible</div>
+                                    <h3>Principiante: Bases y Fundamentos</h3>
+                                    <p>Introducción conceptual interactiva, analogías cotidianas simples, ejemplos prácticos y quiz de comprensión básica.</p>
+                                </div>
+                                <div class="level-action-wrapper">
+                                    <span class="btn-level-action">Iniciar lección <i class="fa-solid fa-play"></i></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Nivel 2: Intermedio -->
+                            <div class="roadmap-level-card locked" id="cardLevel2" onclick="window.startLevelSession('intermedio')">
+                                <div class="level-icon-wrapper">
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                </div>
+                                <div class="level-info-wrapper">
+                                    <div class="level-badge locked-badge" id="badgeLevel2">Bloqueado</div>
+                                    <h3>Intermedio: Aplicación Práctica</h3>
+                                    <p>Estudios de caso de la vida real, resolución guiada de problemas paso a paso y evaluación intermedia.</p>
+                                </div>
+                                <div class="level-action-wrapper">
+                                    <span class="btn-level-action locked-icon"><i class="fa-solid fa-lock"></i></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Nivel 3: Avanzado -->
+                            <div class="roadmap-level-card locked" id="cardLevel3" onclick="window.startLevelSession('avanzado')">
+                                <div class="level-icon-wrapper">
+                                    <i class="fa-solid fa-fire"></i>
+                                </div>
+                                <div class="level-info-wrapper">
+                                    <div class="level-badge locked-badge" id="badgeLevel3">Bloqueado</div>
+                                    <h3>Avanzado: Desafíos Complejos</h3>
+                                    <p>Ejercicios complejos conceptuales de nivel PAES, análisis extremo independiente y síntesis crítica final.</p>
+                                </div>
+                                <div class="level-action-wrapper">
+                                    <span class="btn-level-action locked-icon"><i class="fa-solid fa-lock"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 5. VENTANA DE ESTUDIO ACTIVO (DISTRACCIONES LIBRES) -->
+                    <div class="study-zone" id="studyZone" style="display: none;">
+                        <button class="btn-exit-study" onclick="exitStudySession()"><i class="fa-solid fa-arrow-left"></i> Salir de la lección</button>
+                        
+                        <div class="study-glass-card">
+                            <div class="study-header-roadmap-tracker">
+                                <div class="study-header-top-row">
+                                    <span class="study-tag" id="studyTag">Materia / Tema</span>
+                                    <span class="study-counter" id="studyMethodTag">Nivel: Principiante</span>
+                                </div>
+                                
+                                <!-- TRACKER DE PASOS PEDAGÓGICOS -->
+                                <div class="study-steps-tracker" id="studyStepsTracker">
+                                    <div class="step-dot active" data-step="1" title="Introducción"><span class="step-num">1</span><span class="step-label">Intro</span></div>
+                                    <div class="step-line"></div>
+                                    <div class="step-dot" data-step="2" title="Conceptos"><span class="step-num">2</span><span class="step-label">Bases</span></div>
+                                    <div class="step-line"></div>
+                                    <div class="step-dot" data-step="3" title="Ejemplos"><span class="step-num">3</span><span class="step-label">Ejemplos</span></div>
+                                    <div class="step-line"></div>
+                                    <div class="step-dot" data-step="4" title="Práctica"><span class="step-num">4</span><span class="step-label">Práctica</span></div>
+                                    <div class="step-line"></div>
+                                    <div class="step-dot" data-step="5" title="Quiz"><span class="step-num">5</span><span class="step-label">Quiz</span></div>
+                                    <div class="step-line"></div>
+                                    <div class="step-dot" data-step="6" title="Logro"><span class="step-num">6</span><span class="step-label">Logro</span></div>
+                                </div>
+                            </div>
+                            
+                            <!-- ACTIVE SESSION STATS BAR -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255, 255, 255, 0.01); border-bottom: 1px solid rgba(255, 255, 255, 0.05); padding: 0.6rem 1.5rem; font-size: 0.8rem; font-weight: 650; color: #ffffff;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; color: #ef4444;" id="studyHeartsBadge">
+                                    <i class="fa-solid fa-heart" style="filter: drop-shadow(0 0 3px rgba(239,68,68,0.4));"></i> <span id="studyHeartsCount">5 / 5 Vidas</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--violet-soft);" id="studyXPBadge">
+                                    <i class="fa-solid fa-star" style="filter: drop-shadow(0 0 3px rgba(167,139,250,0.4));"></i> <span id="studyXPCount">0 XP Ganados</span>
+                                </div>
+                            </div>
+                            
+                            <div class="study-chat-win" id="studyChatWin">
+                                <!-- Mensajes del Tutor de IA y el Estudiante -->
+                                <div class="typing-indicator" id="studyTypingIndicator" style="display: none;">
+                                    <div class="message-avatar breathing-avatar" style="background: none; border: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px;">
+                                        <svg viewBox="0 0 24 24" fill="none" style="width: 18px; height: 18px; filter: drop-shadow(0 0 5px rgba(167,139,250,0.5));">
+                                            <path d="M12 2C12 7.5 16.5 12 22 12C16.5 12 12 16.5 12 22C12 16.5 7.5 12 2 12C7.5 12 12 7.5 12 2Z" fill="url(#sparkGrad2)"/>
+                                            <defs>
+                                                <linearGradient id="sparkGrad2" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stop-color="#A78BFA"/><stop offset="50%" stop-color="#C4B5FD"/><stop offset="100%" stop-color="#8B5CF6"/>
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <div class="typing-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>
+                                </div>
+                            </div>
+                            
+                            <!-- BOTÓN DE AVANCE DE RITMO DE ESTUDIO PREMIUM -->
+                            <div class="study-flow-nav-area" id="studyFlowNavArea">
+                                <span style="font-size: 0.76rem; color: var(--fog); font-weight: 600;" id="flowNavHint">¿Listo para continuar? Pulsa el botón:</span>
+                                <button class="btn-confirm-topic" id="btnNextStep" onclick="window.advanceStudyStep()" style="margin: 0; padding: 0.5rem 1.1rem; font-size: 0.8rem; border-radius: 10px; width: auto; font-weight: 750; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);">Entendido, ver conceptos ➜</button>
+                            </div>
+
+                            <div class="study-input-area" id="studyInputArea">
+                                <textarea id="studyUserInput" placeholder="Responde al tutor o escribe tu pregunta..." rows="1" onkeypress="handleStudyKeyPress(event)" oninput="window.autoResize(this)"></textarea>
+                                <button class="study-send-btn" id="studySendBtn" onclick="sendStudyMessage()"><i class="fa-solid fa-arrow-up"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- Closes #academyMainContainer -->
+
+                <!-- CONTENEDOR DEL SISTEMA DE ESTUDIO ADAPTATIVO -->
+                <div class="academy-container" id="examStudySystemContainer" style="display: none; animation: fadeIn 0.4s ease-out; margin-top: 0 !important; width: 100%;">
+                    <!-- Pantalla 1: Onboarding / Bienvenida -->
+                    <div class="study-screen" id="studyWelcomeScreen" style="display: none;">
+                        <button class="btn-back-flow" onclick="window.exitExamStudySystem()"><i class="fa-solid fa-arrow-left"></i> Volver a la Academia</button>
+                        <div style="text-align: left; max-width: 600px; margin: 0 auto; background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 28px; padding: 2.5rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);">
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.25); color: #a78bfa; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; margin-bottom: 1.5rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <h2 style="font-size: 1.8rem; font-weight: 850; margin: 0 0 0.5rem 0; color: white;">¡Hola, <span id="onboardingUserName" class="gradient-text">Estudiante</span>! 🎯</h2>
+                            <p style="font-size: 0.95rem; color: rgba(255,255,255,0.7); line-height: 1.6; margin: 0 0 1.5rem 0;">Te damos la bienvenida al sistema de entrenamiento adaptativo inteligente. Prepárate para el examen <strong id="onboardingExamName" style="color: #a78bfa;">[Nombre Examen]</strong>.</p>
+                            <p style="font-size: 0.88rem; color: rgba(255,255,255,0.5); line-height: 1.5; margin: 0 0 2rem 0;">A continuación, analizaremos los temas del temario oficial. Podrás excluir los temas que ya dominas para generar una evaluación personalizada, donde se te harán varias preguntas sobre los temas que aún no dominas para construir tu mapa de aprendizaje inteligente.</p>
+                            <button class="modal-btn pulsing-purple-btn" onclick="window.transitionStudyScreen('syllabus')" style="width: 100%; padding: 0.9rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem;">Comenzar Configuración <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Pantalla 2: Syllabus / Descarte de Temas -->
+                    <div class="study-screen" id="studySyllabusScreen" style="display: none;">
+                        <button class="btn-back-flow" onclick="window.transitionStudyScreen('welcome')"><i class="fa-solid fa-arrow-left"></i> Volver</button>
+                        <div style="text-align: left; max-width: 800px; margin: 0 auto; background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 28px; padding: 2.5rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);">
+                            <h2 style="font-size: 1.6rem; font-weight: 850; margin: 0 0 0.25rem 0; color: white;">Temario Oficial</h2>
+                            <p style="font-size: 0.88rem; color: rgba(255,255,255,0.5); margin: 0 0 2rem 0;">Selecciona los temas que <strong>YA dominas</strong> o que no deseas incluir en tu diagnóstico. Los no seleccionados serán evaluados.</p>
+                            
+                            <div class="syllabus-grid" id="syllabusTopicsGrid">
+                                <!-- Inyectado dinámicamente -->
+                            </div>
+                            
+                            <button class="modal-btn pulsing-purple-btn" onclick="window.startDiagnosticExam()" style="width: 100%; padding: 0.9rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 8px;">Guardar y Empezar Diagnóstico <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Pantalla 3: Reproductor de Examen (Diagnóstico / Simulación) -->
+                    <div class="study-screen" id="studyPlayerScreen" style="display: none;">
+                        <div style="max-width: 700px; margin: 0 auto;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                                <span id="playerExamTitle" style="font-size: 0.76rem; font-weight: 800; color: var(--violet-soft); text-transform: uppercase; letter-spacing: 1.5px;">EVALUACIÓN DIAGNÓSTICA</span>
+                                <span id="playerTimer" style="font-size: 0.85rem; font-weight: 750; color: #60a5fa; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.2); padding: 0.35rem 0.75rem; border-radius: 10px; display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-clock"></i> 00:00</span>
+                            </div>
+                            
+                            <!-- Barra de progreso superior -->
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 2rem;">
+                                <div id="playerProgressBar" style="height: 100%; background: linear-gradient(90deg, #7c3aed, #a78bfa); width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+
+                            <!-- Pregunta Card -->
+                            <div style="background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 26px; padding: 2.2rem; margin-bottom: 1.5rem; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);">
+                                <span id="playerQuestionIndex" style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem;">Pregunta 1 de 10</span>
+                                <h3 id="playerQuestionText" style="font-size: 1.15rem; font-weight: 700; color: white; line-height: 1.5; margin: 0 0 1.5rem 0;">[Texto de la pregunta]</h3>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="playerOptionsContainer">
+                                    <!-- Inyectado dinámicamente -->
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button id="playerNextBtn" class="modal-btn" onclick="window.playerSubmitAnswer()" style="padding: 0.8rem 2rem; border-radius: 14px; font-weight: 750; font-size: 0.85rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed;" disabled>Siguiente <i class="fa-solid fa-arrow-right" style="margin-left: 4px;"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pantalla 4: Resultados del Diagnóstico -->
+                    <div class="study-screen" id="studyResultsScreen" style="display: none;">
+                        <div style="text-align: left; max-width: 650px; margin: 0 auto; background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(139, 92, 246, 0.15); border-radius: 28px; padding: 2.5rem; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);">
+                            <div style="text-align: center; margin-bottom: 2rem;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 2px solid #10b981; color: #10b981; display: inline-flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 1rem;"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                                <h2 style="font-size: 1.8rem; font-weight: 850; margin: 0 0 0.5rem 0; color: white;">Diagnóstico Finalizado</h2>
+                                <p style="font-size: 0.9rem; color: rgba(255,255,255,0.5); margin: 0;">Analizamos tu desempeño y construimos tu perfil de conocimiento.</p>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 1.25rem; text-align: center;">
+                                    <span style="font-size: 0.74rem; color: rgba(255,255,255,0.4); font-weight: 750; text-transform: uppercase;">Aciertos totales</span>
+                                    <h3 id="resultsScoreText" style="font-size: 1.8rem; font-weight: 800; color: #10b981; margin: 5px 0 0 0;">8 / 10</h3>
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 16px; padding: 1.25rem; text-align: center;">
+                                    <span style="font-size: 0.74rem; color: rgba(255,255,255,0.4); font-weight: 750; text-transform: uppercase;">Tiempo promedio</span>
+                                    <h3 id="resultsTimeText" style="font-size: 1.8rem; font-weight: 800; color: #60a5fa; margin: 5px 0 0 0;">12s / preg</h3>
+                                </div>
+                            </div>
+
+                            <h4 style="font-size: 0.95rem; font-weight: 800; color: white; margin: 0 0 0.85rem 0; text-transform: uppercase; letter-spacing: 0.5px;">Temas a Reforzar con Prioridad:</h4>
+                            <div id="resultsWeakTopicsContainer" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2.2rem;">
+                                <!-- Inyectado dinámicamente -->
+                            </div>
+
+                            <button class="modal-btn pulsing-purple-btn" onclick="window.openStudyDashboard()" style="width: 100%; padding: 0.9rem; border-radius: 14px; font-weight: 800; font-size: 0.95rem;">Entrar al Panel de Entrenamiento <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Pantalla 5: Tablero Adaptativo Estilo Duolingo -->
+                    <div class="study-screen" id="studyDashboardScreen" style="display: none;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <button class="btn-back-flow" onclick="window.exitExamStudySystem()" style="margin-bottom: 0 !important;"><i class="fa-solid fa-arrow-left-long"></i> Salir al Menú Principal</button>
+                                <a id="examPdfLink" href="#" target="_blank" class="btn-back-flow" style="margin-bottom: 0 !important; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;"><i class="fa-solid fa-file-pdf"></i> Descargar Temario PDF</a>
+                            </div>
+                            <span id="dashboardExamTitle" style="font-size: 0.82rem; font-weight: 800; color: white; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.08); padding: 0.45rem 1rem; border-radius: 14px; text-transform: uppercase;">EXAMEN M1</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1.6fr 1fr; gap: 2.2rem; align-items: flex-start; text-align: left;">
+                            <!-- Columna Izquierda: Árbol de Aprendizaje Duolingo -->
+                            <div style="background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 28px; padding: 2rem; min-height: 500px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+                                <div style="text-align: left; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem;">
+                                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 850; color: white;">Tu Ruta de Aprendizaje</h3>
+                                    <p style="margin: 3px 0 0 0; font-size: 0.82rem; color: rgba(255,255,255,0.5);">Completa los niveles de abajo. Los temas débiles se repasan con mayor frecuencia.</p>
+                                </div>
+                                
+                                <div class="duo-path-tree" id="dashboardPathTree">
+                                    <!-- Línea de conexión y nodos inyectados dinámicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Columna Derecha: Simulador Oficial y Estadísticas -->
+                            <div style="display: flex; flex-direction: column; gap: 1.75rem;">
+                                <!-- Botón Simular Examen País -->
+                                <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(109, 40, 217, 0.05) 100%); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 28px; padding: 2rem; text-align: left; position: relative; overflow: hidden; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);">
+                                    <div style="position: absolute; right: -20px; bottom: -20px; font-size: 7.5rem; color: rgba(139, 92, 246, 0.08); pointer-events: none;"><i class="fa-solid fa-flag-checkered"></i></div>
+                                    <h3 style="margin: 0 0 0.4rem 0; font-size: 1.25rem; font-weight: 850; color: white;">Simular Examen País</h3>
+                                    <p style="margin: 0 0 1.5rem 0; font-size: 0.82rem; color: rgba(255, 255, 255, 0.6); line-height: 1.55;">Enfréntate a una simulación completa con el formato de tiempo y estructura del examen oficial del país.</p>
+                                    <button class="modal-btn pulsing-purple-btn" onclick="window.startCountrySimulation()" style="width: 100%; padding: 0.85rem; border-radius: 14px; font-weight: 800; font-size: 0.88rem; display: flex; align-items: center; justify-content: center; gap: 8px;"><i class="fa-solid fa-circle-play"></i> Iniciar Simulación Completa</button>
+                                </div>
+
+                                <!-- Panel de Estadísticas -->
+                                <div style="background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 28px; padding: 2rem; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);">
+                                    <h3 style="margin: 0 0 0.25rem 0; font-size: 1.15rem; font-weight: 850; color: white;">Estadísticas del Perfil</h3>
+                                    <p style="margin: 0 0 1.25rem 0; font-size: 0.8rem; color: rgba(255,255,255,0.45);">Progreso acumulado y dominio por temas.</p>
+                                    
+                                    <div id="dashboardStatsSummary" style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+                                        <!-- Barras de dominio inyectadas dinámicamente -->
+                                    </div>
+
+                                    <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 1.25rem 0;"></div>
+                                    
+                                    <h4 style="margin: 0 0 0.75rem 0; font-size: 0.85rem; font-weight: 800; color: white; text-transform: uppercase; letter-spacing: 0.5px;">Historial de Sesiones:</h4>
+                                    <div style="max-height: 160px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.04); border-radius: 14px;">
+                                        <table class="study-stats-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Tipo</th>
+                                                    <th>Puntaje</th>
+                                                    <th>Tiempo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dashboardHistoryTableBody">
+                                                <!-- Inyectado dinámicamente -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pantalla 6: Reproductor de Práctica Adaptativa estilo Duolingo -->
+                    <div class="study-screen" id="studyPracticePlayerScreen" style="display: none;">
+                        <div style="max-width: 700px; margin: 0 auto; padding-bottom: 120px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+                                <button class="btn-exit-study" onclick="window.abortPracticeSession()" style="margin-bottom: 0 !important; font-size: 0.8rem; padding: 0.45rem 0.85rem; border-radius: 10px;"><i class="fa-solid fa-xmark"></i> Salir</button>
+                                <span id="practiceTopicTitle" style="font-size: 0.82rem; font-weight: 800; color: white; text-transform: uppercase;">PRÁCTICA</span>
+                                <span id="practiceLives" style="font-size: 0.85rem; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.35rem 0.75rem; border-radius: 10px; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-heart" style="filter: drop-shadow(0 0 3px rgba(239,68,68,0.5));"></i> 5</span>
+                            </div>
+
+                            <!-- Barra de progreso superior -->
+                            <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 2rem;">
+                                <div id="practiceProgressBar" style="height: 100%; background: linear-gradient(90deg, #10b981, #34d399); width: 0%; transition: width 0.3s ease;"></div>
+                            </div>
+
+                            <!-- Pregunta Card -->
+                            <div style="background: rgba(18, 15, 34, 0.45); backdrop-filter: blur(30px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 26px; padding: 2.2rem; margin-bottom: 1.5rem; text-align: left; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);">
+                                <span id="practiceQuestionIndex" style="font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 0.5rem;">Pregunta 1 de 10</span>
+                                <h3 id="practiceQuestionText" style="font-size: 1.15rem; font-weight: 700; color: white; line-height: 1.5; margin: 0 0 1.5rem 0;">[Texto de la pregunta]</h3>
+                                
+                                <div style="display: flex; flex-direction: column; gap: 0.85rem;" id="practiceOptionsContainer">
+                                    <!-- Inyectado dinámicamente -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Barra de feedback Duolingo en la parte inferior -->
+                        <div class="duo-feedback-bar" id="duoFeedbackBar">
+                            <div class="duo-feedback-info">
+                                <div class="duo-feedback-icon" id="duoFeedbackIcon"><i class="fa-solid fa-check"></i></div>
+                                <div class="duo-feedback-text">
+                                    <h4 id="duoFeedbackTitle">¡Excelente trabajo!</h4>
+                                    <p id="duoFeedbackDesc">Respuesta correcta.</p>
+                                </div>
+                            </div>
+                            <button class="modal-btn" id="duoFeedbackBtn" onclick="window.practiceNextQuestion()" style="background: #10b981; color: white; padding: 0.85rem 2.2rem; border-radius: 14px; font-weight: 800; border: none; font-size: 0.9rem;">Continuar</button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- Closes #academyView -->
+
+        </section>
+    </main>
+    
+    <!-- Modal Confirmación Premium (Glassmorphism) -->
+    <div class="custom-modal-overlay" id="customModal">
+        <div class="custom-modal-card">
+            <div class="custom-modal-icon" id="customModalIcon"><i class="fa-solid fa-question"></i></div>
+            <h3 class="custom-modal-title" id="customModalTitle">Confirmación</h3>
+            <p class="custom-modal-text" id="customModalText">¿Estás seguro de realizar esta acción?</p>
+            <div class="custom-modal-actions">
+                <button class="modal-btn cancel" id="customModalCancelBtn">Cancelar</button>
+                <button class="modal-btn confirm" id="customModalConfirmBtn">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles de Usuario Glassmorphic Ultra-Premium -->
+    <div class="custom-modal-overlay" id="userDetailsModal">
+        <div class="custom-modal-card user-details-card">
+            <button class="modal-close-btn" onclick="window.toggleUserDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="user-profile-header">
+                <div class="user-avatar-large">
+                    <span id="userAvatarChar">U</span>
+                    <div class="avatar-glow"></div>
+                </div>
+                <h3 id="modalUserName" class="gradient-text">Usuario</h3>
+                <span class="user-role-badge"><i class="fa-solid fa-shield-halved"></i> Miembro Premium</span>
+            </div>
+            <div class="user-info-body">
+                <div class="user-info-row">
+                    <span class="info-label"><i class="fa-regular fa-envelope"></i> Correo Electrónico</span>
+                    <span class="info-value" id="modalUserEmail">-</span>
+                </div>
+                <div class="user-info-row">
+                    <span class="info-label"><i class="fa-regular fa-calendar"></i> Miembro Desde</span>
+                    <span class="info-value" id="modalUserJoined">-</span>
+                </div>
+                <div class="user-info-row">
+                    <span class="info-label"><i class="fa-solid fa-circle-nodes"></i> Nivel de Servidor</span>
+                    <span class="info-value text-purple" style="font-weight: 700;">Groq Engine (Ultra-Rápido)</span>
+                </div>
+                <div class="user-stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-num" id="modalStatChats">0</span>
+                        <span class="stat-label">Chats Activos</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="modalStatPlatform">99.9%</span>
+                        <span class="stat-label">Disponibilidad</span>
+                    </div>
+                </div>
+                <button class="modal-btn confirm" onclick="openCreatorModal()" style="width: 100%; margin-top: 1rem; margin-bottom: 1rem; background: rgba(167, 139, 250, 0.1); border: 1px solid rgba(167, 139, 250, 0.25); color: var(--violet-soft); display: flex; align-items: center; justify-content: center; gap: 0.5rem;"><i class="fa-solid fa-star"></i> Conoce al Creador de Myxsi</button>
+                <div class="user-security-badge">
+                    <i class="fa-solid fa-lock text-cyan"></i>
+                    <span>Conexión cifrada de extremo a extremo (AES-256)</span>
+                </div>
+            </div>
+            <div class="custom-modal-actions" style="margin-top: 1.5rem;">
+                <button class="modal-btn confirm danger" onclick="window.handleLogout()" style="width: 100%;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Modal Conoce al Creador (Glassmorphism Ultra-Premium) -->
+    <div class="custom-modal-overlay" id="creatorModal">
+        <div class="custom-modal-card creator-bio-card">
+            <button class="modal-close-btn" onclick="window.closeCreatorModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="user-profile-header" style="margin-bottom: 1rem;">
+                <div class="user-avatar-large" style="background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%);">
+                    <span style="font-weight: 800; font-size: 1.5rem; color: #ffffff;">R</span>
+                    <div class="avatar-glow"></div>
+                </div>
+                <h3 class="gradient-text" style="font-size: 1.4rem; font-weight: 800; margin-top: 0.5rem; margin-bottom: 0.2rem;">Reinaldo José Liendo Espinoza</h3>
+                <span class="user-role-badge" style="background: rgba(167, 139, 250, 0.12); color: var(--violet-soft); border-color: rgba(167, 139, 250, 0.25);"><i class="fa-solid fa-code"></i> Creador de Inoxway & Myxsi</span>
+            </div>
+            
+            <div class="creator-bio-body">
+                <p><strong>Reinaldo José Liendo Espinoza</strong> es un joven desarrollador y apasionado de la tecnología nacido en <strong>Venezuela (Caracas, Charallave) el 20 de abril de 2008</strong>. Desde los 8 años descubrió su fascinación por la programación y las herramientas digitales, guiado por un único e inspirador motivo: <em>ayudar a las personas a resolver problemas cotidianos a través de la tecnología de manera inteligente, sencilla, eficiente y sin complicaciones.</em></p>
+                
+                <p>Debido a constantes mudanzas familiares, Reinaldo tuvo la oportunidad única de estudiar en múltiples liceos y colegios alrededor del mundo, incluyendo <strong>Venezuela, Ecuador, Colombia y Chile</strong>. Esta enriquecedora experiencia multicultural le permitió darse cuenta en primera persona de algo fundamental: <strong>los métodos de estudio y sistemas educativos son completamente diferentes en cada país</strong>, y muchos jóvenes a menudo se frustran al carecer de un apoyo didáctico flexible y personalizado.</p>
+                
+                <div class="creator-quote-box">
+                    "Al ver cómo la tecnología y la Inteligencia Artificial avanzaban tan rápido, decidí crear Myxsi para darle a cada estudiante de liceo o colegio un tutor personal inteligente que se adaptara a su nivel, sus temarios y sus propias necesidades."
+                </div>
+                
+                <p>A sus 16 años, combinó su visión filantrópica con su talento en la programación de sistemas distribuidos y modelos de lenguaje de alto rendimiento para dar vida a la suite Myxsi. Su meta principal es preparar a los estudiantes de Chile para la prueba de admisión <strong>PAES</strong>, así como apoyar el reforzamiento escolar y motivar el desarrollo de proyectos tecnológicos creativos en toda Latinoamérica.</p>
+                
+                <div class="creator-timeline">
+                    <div class="creator-timeline-item">
+                        <div class="creator-timeline-year">2016 (8 años)</div>
+                        <div class="creator-timeline-desc">Escribe sus primeras líneas de código y experimenta con la robótica básica.</div>
+                    </div>
+                    <div class="creator-timeline-item">
+                        <div class="creator-timeline-year">2018 - 2023</div>
+                        <div class="creator-timeline-desc">Cursa estudios en liceos de Venezuela, Ecuador y Colombia, adaptándose a diversos modelos didácticos.</div>
+                    </div>
+                    <div class="creator-timeline-item">
+                        <div class="creator-timeline-year">2024 - 2026</div>
+                        <div class="creator-timeline-desc">Se establece en Chile y lanza Inoxway, creando el motor Myxsi como un asistente de aprendizaje premium.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="custom-modal-actions" style="margin-top: 0.5rem;">
+                <button class="modal-btn confirm" onclick="window.closeCreatorModal()" style="width: 100%;">Entendido, ¡Grandioso!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Vidas Agotadas (Estilo Duolingo Glassmorphic) -->
+    <div class="custom-modal-overlay" id="noHeartsModal">
+        <div class="custom-modal-card no-hearts-card" style="max-width: 420px;">
+            <div class="no-hearts-icon heart-beat-active">
+                <i class="fa-solid fa-heart-crack"></i>
+            </div>
+            <h3 class="gradient-text" style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%); -webkit-background-clip: text; background-clip: text; color: transparent;">¡Te quedaste sin vidas!</h3>
+            <p style="font-size: 0.88rem; color: var(--silver); line-height: 1.5; margin-bottom: 1.5rem;">
+                Has cometido algunos errores en esta sesión de estudio. ¡No te preocupes! El error es parte fundamental del aprendizaje inteligente.
+            </p>
+            <div class="custom-modal-actions" style="flex-direction: column; gap: 0.75rem; width: 100%;">
+                <button class="modal-btn confirm btn-refill-trigger" onclick="window.refillHearts()" style="width: 100%; font-weight: 750; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                     <i class="fa-solid fa-heart"></i> Recargar Vidas (Restaurar 5 ❤️)
+                </button>
+                <button class="modal-btn cancel" onclick="window.exitStudySessionAndCloseModal()" style="width: 100%; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color: var(--silver);">
+                    Salir al menú principal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Documento Inteligente (Google Workspace) -->
+    <div class="ai-modal-overlay" id="smartDocModal">
+        <div class="ai-modal-card">
+            <button class="modal-close-btn" onclick="closeSmartDocModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="user-profile-header" style="margin-bottom: 1rem; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                <div class="user-avatar-large" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
+                    <i class="fa-solid fa-file-lines" style="font-size: 1.5rem; color: #ffffff;"></i>
+                    <div class="avatar-glow" style="background: rgba(59, 130, 246, 0.4); position: absolute; width: 100%; height: 100%; border-radius: 50%; top: 0; left: 0; filter: blur(8px); z-index: -1;"></div>
+                </div>
+                <h3 class="gradient-text" style="font-size: 1.4rem; font-weight: 800; margin-top: 0.5rem; margin-bottom: 0.2rem;">Asistente de Documentos Inteligentes</h3>
+                <span class="user-role-badge" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border-color: rgba(59, 130, 246, 0.25);"><i class="fa-brands fa-google-drive"></i> Integración Google Workspace</span>
+            </div>
+            
+            <div class="modal-workspace-layout" style="display: flex; gap: 1.5rem; margin-top: 1rem;">
+                <!-- Left panel: Text Editor -->
+                <div class="editor-main-panel" style="flex: 2; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.6);">CONTENIDO DEL DOCUMENTO</label>
+                    <textarea id="smartDocTextArea" style="width: 100%; height: 280px; background: rgba(10, 8, 22, 0.6); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; color: #ffffff; padding: 1rem; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; resize: none; outline: none; transition: border-color 0.3s;" placeholder="Escribe aquí tu informe, resumen de estudio o haz clic en 'Importar Historial Chat' para traer tus apuntes..."></textarea>
+                </div>
+                
+                <!-- Right panel: AI Assistant & Export -->
+                <div class="editor-sidebar-panel" style="flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: rgba(255,255,255,0.6);">ASISTENTE DE REDACCIÓN IA</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <button class="editor-action-btn" onclick="triggerSmartDocAI('correct')"><i class="fa-solid fa-sparkles" style="color: #a78bfa;"></i> Corregir Estilo</button>
+                        <button class="editor-action-btn" onclick="triggerSmartDocAI('expand')"><i class="fa-solid fa-arrows-left-right" style="color: #60a5fa;"></i> Expandir Ideas</button>
+                        <button class="editor-action-btn" onclick="triggerSmartDocAI('vocabulary')"><i class="fa-solid fa-spell-check" style="color: #34d399;"></i> Sugerir Vocabulario</button>
+                        <button class="editor-action-btn" onclick="importChatContextToDoc()"><i class="fa-solid fa-arrow-down-long" style="color: #a78bfa;"></i> Importar Historial Chat</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom area: Export Status and Button -->
+            <div class="modal-footer-area" style="display: flex; flex-direction: column; gap: 1rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 1.25rem; margin-top: 0.5rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div id="driveExportStatus" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-regular fa-circle-dot" style="color: rgba(255,255,255,0.3);"></i> Listo para exportar.
+                    </div>
+                    <button class="modal-btn confirm" id="btnExportToDrive" onclick="exportDocToGoogleDrive()" style="display: flex; align-items: center; gap: 8px; padding: 0.8rem 1.8rem; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: 14px; color: #ffffff; font-weight: 700; cursor: pointer; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);"><i class="fa-brands fa-google-drive"></i> Guardar en Google Drive</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cloud IDE AI -->
+    <div class="ai-modal-overlay" id="cloudIDEModal">
+        <div class="ai-modal-card ide-modal-card" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <!-- IDE Header -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="ai-tool-icon-box" style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); color: #10b981; font-size: 1rem; display: flex; align-items: center; justify-content: center;">
+                        <i class="fa-solid fa-code"></i>
+                    </div>
+                    <div style="text-align: left;">
+                        <h3 class="gradient-text" style="font-size: 1.15rem; font-weight: 800; margin: 0;">VS Code Cloud AI</h3>
+                        <span style="font-size: 0.68rem; color: #10b981; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">● Servidor Activo (IDE de Desarrollo)</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button class="ide-ctrl-btn" id="btnFormatCode" onclick="formatIDECode()" title="Dar Formato al Código (Prettier)" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3); color: #c084fc; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-align-left"></i> Format</button>
+                    <button class="ide-ctrl-btn active-ctrl" id="btnToggleWordWrap" onclick="toggleIDEWordWrap()" title="Ajuste de Líneas (Word Wrap)" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.7); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-paragraph"></i> Wrap</button>
+                    <button class="ide-ctrl-btn" id="btnToggleMinimap" onclick="toggleIDEMinimap()" title="Mostrar Minimapa" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255,255,255,0.7); padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-map"></i> Minimap</button>
+                    <button class="ide-ctrl-btn" onclick="runCodeInTerminal()" title="Ejecutar Código" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-play"></i> Run</button>
+                    <button class="modal-close-btn" onclick="closeCloudIDEModal()" style="position: static; transform: none; width: 32px; height: 32px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: #ffffff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s;"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- IDE Body -->
+            <div style="display: flex; flex: 1; min-height: 0; gap: 1rem; margin-top: 0.25rem;">
+                <!-- Panel 1: File Explorer -->
+                <div style="width: 180px; background: rgba(10, 8, 22, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.75rem; box-sizing: border-box; flex-shrink: 0;">
+                    <span style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; display: block;">Explorador</span>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <button class="ide-file-btn active" id="file-app-js" onclick="selectIDEFile('app.js')"><i class="fa-brands fa-js" style="color: #f59e0b;"></i> app.js</button>
+                        <button class="ide-file-btn" id="file-index-html" onclick="selectIDEFile('index.html')"><i class="fa-brands fa-html5" style="color: #ef4444;"></i> index.html</button>
+                        <button class="ide-file-btn" id="file-style-css" onclick="selectIDEFile('style.css')"><i class="fa-brands fa-css3-alt" style="color: #3b82f6;"></i> style.css</button>
+                    </div>
+                    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+                        <button class="editor-action-btn" onclick="saveProjectToGoogleDrive()" style="padding: 8px; border-radius: 8px; font-size: 0.75rem; justify-content: center; gap: 6px; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(37, 99, 235, 0.3); color: #60a5fa;"><i class="fa-brands fa-google-drive"></i> Guardar Proyecto</button>
+                    </div>
+                </div>
+
+                <!-- Panel 2: Code Editor & Terminal (Split vertically) -->
+                <div style="flex: 2; display: flex; flex-direction: column; gap: 0; min-width: 0;">
+                    <!-- File Tabs Bar (VS Code style) -->
+                    <div class="ide-tabs-bar" id="ideTabsBar">
+                        <div class="ide-tab active" id="tab-app-js" onclick="selectIDEFile('app.js')">
+                            <i class="fa-brands fa-js" style="color: #f59e0b;"></i> app.js
+                        </div>
+                        <div class="ide-tab" id="tab-index-html" onclick="selectIDEFile('index.html')">
+                            <i class="fa-brands fa-html5" style="color: #ef4444;"></i> index.html
+                        </div>
+                        <div class="ide-tab" id="tab-style-css" onclick="selectIDEFile('style.css')">
+                            <i class="fa-brands fa-css3-alt" style="color: #3b82f6;"></i> style.css
+                        </div>
+                    </div>
+                    <!-- Code Editor container -->
+                    <div id="monacoContainer" style="flex: 1; background: #1e1e1e; border: 1px solid rgba(255,255,255,0.05); border-top: none; border-bottom-left-radius: 14px; border-bottom-right-radius: 14px; overflow: hidden; position: relative;">
+                        <!-- Fallback editor if Monaco script fails to load -->
+                        <textarea id="fallbackEditor" style="width: 100%; height: 100%; background: #1e1e1e; color: #d4d4d4; font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; padding: 1rem; border: none; outline: none; resize: none; display: none;"></textarea>
+                    </div>
+
+                    <!-- Terminal container -->
+                    <div style="height: 120px; background: rgba(10, 8, 22, 0.7); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 0.85rem; display: flex; flex-direction: column; gap: 6px; box-sizing: border-box; flex-shrink: 0; overflow-y: auto; margin-top: 0.75rem;">
+                        <span style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; display: block;"><i class="fa-solid fa-terminal"></i> Terminal</span>
+                        <div id="ideTerminalLog" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.78rem; color: #a7f3d0; line-height: 1.4; white-space: pre-wrap; text-align: left;">$ npm run dev<br>> Myxsi Cloud IDE compiler started successfully.<br>> Ready on http://localhost:3000<br>> Copilot listening for prompts...</div>
+                    </div>
+                </div>
+
+                <!-- Panel 3: Copilot Panel -->
+                <div style="width: 250px; background: rgba(10, 8, 22, 0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 14px; padding: 0.85rem; display: flex; flex-direction: column; gap: 0.85rem; box-sizing: border-box; flex-shrink: 0;">
+                    <span style="font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.5px; text-align: left; display: block;"><i class="fa-solid fa-robot"></i> Copilot AI Assistant</span>
+                    
+                    <textarea id="copilotIDEPrompt" style="width: 100%; height: 75px; background: rgba(10, 8, 22, 0.6); border: 1px solid rgba(139, 92, 246, 0.20); border-radius: 10px; color: #ffffff; padding: 8px; font-family: inherit; font-size: 0.78rem; resize: none; outline: none;" placeholder="Genera código, haz preguntas, etc..."></textarea>
+                    
+                    <button class="modal-btn confirm" onclick="triggerIDEAI('generate')" style="padding: 8px; border-radius: 8px; font-size: 0.78rem; font-weight: 700; width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; border:none; background:#7c3aed; color:#fff; cursor:pointer;"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar Código</button>
+                    
+                    <div style="height: 1px; background: rgba(255,255,255,0.06); margin: 2px 0;"></div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="editor-action-btn" onclick="triggerIDEAI('explain')"><i class="fa-solid fa-quote-left" style="color: #60a5fa; font-size: 0.7rem;"></i> Explicar Código</button>
+                        <button class="editor-action-btn" onclick="triggerIDEAI('refactor')"><i class="fa-solid fa-arrows-spin" style="color: #a78bfa; font-size: 0.7rem;"></i> Refactorizar</button>
+                        <button class="editor-action-btn" onclick="triggerIDEAI('debug')"><i class="fa-solid fa-bug" style="color: #f43f5e; font-size: 0.7rem;"></i> Depuración IA</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT Y LÓGICA COMPLETA DE LA ACADEMIA -->
+    <script type="module" src="js/academy.js"></script>
+    <!-- Mobile Bottom Navigation Tab Bar (Ultra-Premium Glass) -->
+    <div class="mobile-bottom-nav">
+        <button class="mobile-nav-btn" id="btnMobileHome" onclick="window.location.href='chat.html'">
+            <i class="fa-solid fa-house"></i>
+            <span>Tutor</span>
+        </button>
+        <button class="mobile-nav-btn" id="btnMobileHistory" onclick="window.location.href='chat.html?view=history'">
+            <i class="fa-regular fa-comment"></i>
+            <span>Historial</span>
+        </button>
+        <button class="mobile-nav-btn active" id="btnMobileAcademy" onclick="window.location.href='academy.html'">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span>Estudio</span>
+            <div class="nav-active-dot"></div>
+        </button>
+        <button class="mobile-nav-btn" id="btnMobileResources" onclick="window.location.href='files.html'">
+            <i class="fa-regular fa-folder"></i>
+            <span>Archivos</span>
+        </button>
+    </div>
+</body>
+</html>

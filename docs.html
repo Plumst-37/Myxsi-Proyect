@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Myxsi Docs Studio — Editor de Documentos Profesional e Integración Google Docs</title>
+    <meta name="description" content="Editor de documentos profesional con IA de Myxsi: menús estilo Google Docs, regla graduada, anotaciones, ecuaciones LaTeX, Zoom, Búsqueda y Reemplazo y exportación a Word/PDF.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Roboto:ital,wght@0,400;0,500;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Quill.js Editor CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    
+    <link href="CSS/chat.css?v=5.7.0" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+
+    <style>
+        :root {
+            --docs-bg: #090614;
+            --docs-topbar: #110a24;
+            --docs-menubar: #160d2e;
+            --docs-subbar: #1c113b;
+            --docs-sidebar: #150d2b;
+            --docs-panel: #1b113b;
+            --docs-accent: #3b82f6;
+            --docs-accent-purple: #8b5cf6;
+            --docs-accent-light: #60a5fa;
+            --docs-blue-grad: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            --docs-border: rgba(255, 255, 255, 0.08);
+            --docs-card-bg: rgba(255, 255, 255, 0.03);
+            --docs-card-hover: rgba(59, 130, 246, 0.15);
+            --paper-bg: #ffffff;
+            --paper-text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--docs-bg);
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .docs-app-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* 1. BARRA SUPERIOR PRINCIPAL (HEADER) */
+        .docs-topbar {
+            height: 52px;
+            background: var(--docs-topbar);
+            border-bottom: 1px solid var(--docs-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-icon-home {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .topbar-icon-home:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border-color: rgba(96, 165, 250, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .docs-brand-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            color: #ffffff;
+            letter-spacing: -0.3px;
+        }
+
+        .docs-brand-badge i {
+            color: #60a5fa;
+            font-size: 1.15rem;
+        }
+
+        .cloud-saved-status {
+            font-size: 0.75rem;
+            color: #34d399;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 6px;
+            background: rgba(52, 211, 153, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .doc-title-input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--docs-border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            outline: none;
+            text-align: center;
+            transition: all 0.2s;
+            min-width: 240px;
+        }
+
+        .doc-title-input:hover, .doc-title-input:focus {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: var(--docs-accent);
+        }
+
+        .header-mode-selector {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 3px;
+            border-radius: 12px;
+            border: 1px solid var(--docs-border);
+        }
+
+        .mode-tab-btn {
+            padding: 6px 12px;
+            border-radius: 9px;
+            border: none;
+            background: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .mode-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .mode-tab-btn.active {
+            background: var(--docs-blue-grad) !important;
+            color: #ffffff !important;
+            font-weight: 750 !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-docs-blue {
+            background: var(--docs-blue-grad);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-docs-blue:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.55);
+        }
+
+        .btn-docs-ghost {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 8px 14px;
+            border-radius: 9px;
+            border: 1px solid var(--docs-border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-docs-ghost:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 2. BARRA DE MENÚS DESPLEGABLES ESTILO GOOGLE DOCS */
+        .docs-menubar {
+            height: 32px;
+            background: var(--docs-menubar);
+            border-bottom: 1px solid var(--docs-border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 4px;
+            font-size: 0.78rem;
+            z-index: 90;
+            flex-shrink: 0;
+        }
+
+        .menu-dropdown {
+            position: relative;
+        }
+
+        .menu-btn {
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .menu-btn:hover, .menu-dropdown.active .menu-btn {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .dropdown-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 4px;
+            background: rgba(22, 14, 38, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--docs-border);
+            border-radius: 10px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            min-width: 230px;
+            padding: 6px 0;
+            z-index: 1000;
+        }
+
+        .menu-dropdown.active .dropdown-panel {
+            display: block;
+            animation: fadeIn 0.15s ease;
+        }
+
+        .dropdown-item {
+            padding: 8px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #ffffff;
+        }
+
+        .dropdown-item i {
+            width: 18px;
+            color: #60a5fa;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: var(--docs-border);
+            margin: 4px 0;
+        }
+
+        .shortcut-key {
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* 3. SUB-BARRA DE HERRAMIENTAS DE FORMATO (TOOLBAR) */
+        .docs-subbar {
+            min-height: 44px;
+            background: var(--docs-subbar);
+            border-bottom: 1px solid var(--docs-border);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 6px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .docs-subbar #standaloneToolbar {
+            border: none !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            flex-wrap: nowrap !important;
+        }
+
+        .docs-subbar .ql-formats {
+            margin-right: 6px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 2px !important;
+        }
+
+        .docs-subbar button, .docs-subbar .ql-picker {
+            color: rgba(255, 255, 255, 0.8) !important;
+            border-radius: 6px !important;
+            height: 28px !important;
+        }
+
+        .docs-subbar .ql-stroke {
+            stroke: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .docs-subbar .ql-fill {
+            fill: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        .docs-subbar button:hover, .docs-subbar button.ql-active, .docs-subbar .ql-picker-label:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+
+        .docs-subbar button:hover .ql-stroke, .docs-subbar button.ql-active .ql-stroke {
+            stroke: #60a5fa !important;
+        }
+
+        .toolbar-select-custom {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--docs-border);
+            color: #ffffff;
+            font-size: 0.76rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* 4. WORKSPACE PRINCIPAL */
+        .docs-main-workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .docs-sidebar-left {
+            width: 260px;
+            background: var(--docs-sidebar);
+            border-right: 1px solid var(--docs-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .docs-sidebar-nav {
+            display: flex;
+            border-bottom: 1px solid var(--docs-border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .docs-nav-tab {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .docs-nav-tab.active {
+            color: #60a5fa;
+            border-bottom: 2px solid #60a5fa;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .docs-sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .docs-canvas-stage {
+            flex: 1;
+            background: #0b0717;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 20px 60px;
+            position: relative;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        /* REGLA GRADUADA SUPERIOR (RULER) */
+        .ruler-container {
+            width: 100%;
+            max-width: 820px;
+            height: 22px;
+            background: #181030;
+            border: 1px solid var(--docs-border);
+            border-radius: 6px 6px 0 0;
+            display: flex;
+            align-items: flex-end;
+            position: relative;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .ruler-ticks {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: relative;
+        }
+
+        .ruler-tick {
+            width: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            height: 6px;
+        }
+
+        .ruler-tick.major {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.5);
+            position: relative;
+        }
+
+        .ruler-tick.major::after {
+            content: attr(data-num);
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .ruler-margin-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 40px;
+            background: rgba(59, 130, 246, 0.15);
+            border-right: 1px dashed rgba(96, 165, 250, 0.5);
+        }
+
+        .ruler-margin-indicator.right {
+            right: 0;
+            border-right: none;
+            border-left: 1px dashed rgba(96, 165, 250, 0.5);
+        }
+
+        /* HOJA DE PAPEL A4 */
+        .paper-container {
+            width: 100%;
+            max-width: 820px;
+            min-height: 1060px;
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            padding: 50px 60px;
+            margin-bottom: 40px;
+            transition: background 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        .paper-container.dark-mode-paper {
+            background: #18112c !important;
+            color: #f1f5f9 !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(139, 92, 246, 0.2);
+        }
+
+        .paper-container #editorQuillStandalone {
+            border: none !important;
+            font-size: 1.05rem;
+            line-height: 1.7;
+            color: inherit;
+            min-height: 940px;
+        }
+
+        .paper-container .ql-editor {
+            padding: 0 !important;
+            min-height: 940px;
+            color: inherit;
+        }
+
+        /* SIDEBAR DERECHA (COPILOT IA & COMENTARIOS) */
+        .docs-sidebar-right {
+            width: 290px;
+            background: var(--docs-sidebar);
+            border-left: 1px solid var(--docs-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            padding: 16px;
+            gap: 14px;
+            overflow-y: auto;
+        }
+
+        .copilot-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--docs-border);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .copilot-card-title {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #a78bfa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .template-chip {
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--docs-border);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .template-chip:hover {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(96, 165, 250, 0.4);
+            transform: translateX(3px);
+        }
+
+        .stats-badge-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--docs-border);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .stat-box-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .stat-box-lbl {
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+        }
+
+        /* ANOTACIONES Y COMENTARIOS ESTILO CRYPTPAD */
+        .comment-item-card {
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.78rem;
+        }
+
+        .comment-author-badge {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            color: #a78bfa;
+        }
+
+        .paper-view-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 320px;
+            background: rgba(18, 11, 38, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--docs-border);
+            padding: 6px 14px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 50;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .find-replace-modal {
+            display: none;
+            position: fixed;
+            top: 100px;
+            right: 40px;
+            background: rgba(22, 14, 38, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--docs-border);
+            border-radius: 14px;
+            padding: 16px;
+            width: 320px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            z-index: 2000;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (max-width: 992px) {
+            .docs-sidebar-left { width: 220px; }
+            .docs-sidebar-right { display: none; }
+            .paper-view-controls { right: 20px; }
+        }
+
+        @media (max-width: 768px) {
+            .docs-sidebar-left { display: none; }
+            .doc-title-input { min-width: 140px; font-size: 0.8rem; }
+            .header-mode-selector { display: none; }
+            .paper-container { padding: 25px 20px; min-height: 600px; }
+            .docs-menubar { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="docs-app-layout">
+    <!-- 1. BARRA SUPERIOR PRINCIPAL (HEADER) -->
+    <header class="docs-topbar">
+        <div class="topbar-left">
+            <a href="docs-home.html" class="topbar-icon-home" title="Volver a la galería de documentos">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <a href="docs-home.html" style="text-decoration: none;" class="docs-brand-badge" title="Página principal de Myxsi Docs">
+                <i class="fa-brands fa-google-drive"></i>
+                <span>Documentos</span>
+            </a>
+            
+            <input type="text" id="smartDocTitle" class="doc-title-input" value="Documento sin título" placeholder="Título del documento..." onblur="window.saveSmartDocTitle()">
+
+            <div class="cloud-saved-status" id="driveExportStatus" style="font-size: 0.75rem; color: #60a5fa; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(59, 130, 246, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(96, 165, 250, 0.25);">
+                <i class="fa-solid fa-cloud"></i> <span>Sincronizado en la Nube (Google Drive)</span>
+            </div>
+        </div>
+
+        <div class="header-mode-selector">
+            <a href="chat.html" class="mode-tab-btn" title="Modo Chat Inteligente">
+                <i class="fa-regular fa-comment"></i> <span>Chat</span>
+            </a>
+            <a href="docs.html" class="mode-tab-btn active" title="Google Docs Studio">
+                <i class="fa-brands fa-google-drive"></i> <span>Docs</span>
+            </a>
+            <a href="sheets.html" class="mode-tab-btn" title="Hojas de Cálculo Studio (Excel)">
+                <i class="fa-solid fa-table-cells"></i> <span>Sheets</span>
+            </a>
+            <a href="canva.html" class="mode-tab-btn" title="Canva Studio">
+                <i class="fa-solid fa-palette"></i> <span>Canva</span>
+            </a>
+            <a href="academy.html" class="mode-tab-btn" title="Entrenamiento Inteligente">
+                <i class="fa-solid fa-graduation-cap"></i> <span>Estudio</span>
+            </a>
+            <a href="files.html" class="mode-tab-btn" title="Archivos Guardados">
+                <i class="fa-regular fa-folder"></i> <span>Archivos</span>
+            </a>
+        </div>
+
+        <div class="topbar-right">
+            <button class="btn-docs-ghost" onclick="window.createNewSmartDoc()" title="Crear borrador completamente limpio">
+                <i class="fa-solid fa-file-circle-plus"></i> <span>Nuevo</span>
+            </button>
+            <button class="btn-docs-ghost" onclick="window.printOrExportPDF()" title="Exportar a PDF o Imprimir">
+                <i class="fa-solid fa-print"></i> <span>PDF</span>
+            </button>
+            <button class="btn-docs-blue" id="btnExportToDrive" onclick="window.exportDocToGoogleDrive()" title="Guardar y sincronizar con tu Google Drive">
+                <i class="fa-brands fa-google-drive"></i> <span>Guardar en Drive</span>
+            </button>
+            <button class="header-action-circle" id="btnUserDetails" onclick="window.toggleUserDetailsModal()" title="Detalles de usuario">
+                <i class="fa-solid fa-circle-user"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. BARRA DE MENÚS DESPLEGABLES ESTILO GOOGLE DOCS -->
+    <nav class="docs-menubar">
+        <!-- Archivo -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Archivo</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="window.createNewSmartDoc()"><i class="fa-solid fa-file-plus"></i> Nuevo borrador <span class="shortcut-key">Ctrl+N</span></div>
+                <div class="dropdown-item" onclick="window.exportDocToGoogleDrive()"><i class="fa-brands fa-google-drive"></i> Sincronizar con Drive <span class="shortcut-key">Ctrl+S</span></div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="downloadAsWord()"><i class="fa-solid fa-file-word"></i> Descargar como Word (.docx)</div>
+                <div class="dropdown-item" onclick="window.printOrExportPDF()"><i class="fa-solid fa-file-pdf"></i> Exportar como PDF</div>
+                <div class="dropdown-item" onclick="downloadAsMarkdown()"><i class="fa-solid fa-file-code"></i> Descargar como Markdown (.md)</div>
+                <div class="dropdown-item" onclick="downloadAsTxt()"><i class="fa-solid fa-file-lines"></i> Descargar como Texto (.txt)</div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="window.printOrExportPDF()"><i class="fa-solid fa-print"></i> Imprimir <span class="shortcut-key">Ctrl+P</span></div>
+            </div>
+        </div>
+
+        <!-- Editar -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Editar</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="undoEdit()"><i class="fa-solid fa-rotate-left"></i> Deshacer <span class="shortcut-key">Ctrl+Z</span></div>
+                <div class="dropdown-item" onclick="redoEdit()"><i class="fa-solid fa-rotate-right"></i> Rehacer <span class="shortcut-key">Ctrl+Y</span></div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="openFindReplaceModal()"><i class="fa-solid fa-magnifying-glass"></i> Buscar y reemplazar <span class="shortcut-key">Ctrl+F</span></div>
+                <div class="dropdown-item" onclick="selectAllText()"><i class="fa-solid fa-i-cursor"></i> Seleccionar todo <span class="shortcut-key">Ctrl+A</span></div>
+                <div class="dropdown-item" onclick="clearFormatting()"><i class="fa-solid fa-broom"></i> Borrar formato</div>
+            </div>
+        </div>
+
+        <!-- Ver -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Ver</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="window.togglePaperTheme()"><i class="fa-solid fa-circle-half-stroke"></i> Alternar Tema de Hoja</div>
+                <div class="dropdown-item" onclick="toggleRuler()"><i class="fa-solid fa-ruler-horizontal"></i> Mostrar / Ocultar Regla</div>
+                <div class="dropdown-item" onclick="toggleFullWidth()"><i class="fa-solid fa-expand"></i> Ancho Completo / Hoja A4</div>
+            </div>
+        </div>
+
+        <!-- Insertar -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Insertar</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="insertTable()"><i class="fa-solid fa-table"></i> Tabla (3x3)</div>
+                <div class="dropdown-item" onclick="insertImagePrompt()"><i class="fa-solid fa-image"></i> Imagen desde URL</div>
+                <div class="dropdown-item" onclick="insertMathEquation()"><i class="fa-solid fa-square-root-variable"></i> Ecuación Matemática LaTeX</div>
+                <div class="dropdown-item" onclick="insertHorizontalRule()"><i class="fa-solid fa-minus"></i> Línea horizontal</div>
+                <div class="dropdown-item" onclick="insertBlockquote()"><i class="fa-solid fa-quote-left"></i> Cita destacada</div>
+                <div class="dropdown-item" onclick="insertCodeBlock()"><i class="fa-solid fa-code"></i> Bloque de código</div>
+            </div>
+        </div>
+
+        <!-- Formato -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Formato</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="applyFormat('bold')"><i class="fa-solid fa-bold"></i> Negrita <span class="shortcut-key">Ctrl+B</span></div>
+                <div class="dropdown-item" onclick="applyFormat('italic')"><i class="fa-solid fa-italic"></i> Cursiva <span class="shortcut-key">Ctrl+I</span></div>
+                <div class="dropdown-item" onclick="applyFormat('underline')"><i class="fa-solid fa-underline"></i> Subrayado <span class="shortcut-key">Ctrl+U</span></div>
+                <div class="dropdown-item" onclick="applyFormat('strike')"><i class="fa-solid fa-strikethrough"></i> Tachado</div>
+            </div>
+        </div>
+
+        <!-- Herramientas -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Herramientas</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="window.triggerSmartDocAI('correct')"><i class="fa-solid fa-wand-magic-sparkles"></i> Corregir estilo con IA</div>
+                <div class="dropdown-item" onclick="window.triggerSmartDocAI('expand')"><i class="fa-solid fa-arrows-left-right"></i> Expandir ideas con IA</div>
+                <div class="dropdown-item" onclick="window.triggerSmartDocAI('vocabulary')"><i class="fa-solid fa-spell-check"></i> Vocabulario sugerido</div>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item" onclick="showWordCountModal()"><i class="fa-solid fa-calculator"></i> Conteo de palabras detallado</div>
+            </div>
+        </div>
+
+        <!-- Ayuda -->
+        <div class="menu-dropdown">
+            <button class="menu-btn" onclick="toggleMenu(this)">Ayuda</button>
+            <div class="dropdown-panel">
+                <div class="dropdown-item" onclick="alert('Myxsi Docs Studio Pro v5.7\nEditor inteligente de documentos integrado con Google Drive e Inteligencia Artificial.')"><i class="fa-solid fa-circle-info"></i> Acerca de Docs Studio</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 3. SUB-BARRA DE HERRAMIENTAS DE FORMATO INTELIGENTES (TOOLBAR) -->
+    <div class="docs-subbar">
+        <!-- Selector de Zoom -->
+        <select id="zoomSelector" class="toolbar-select-custom" onchange="changeDocZoom(this.value)" title="Nivel de Zoom">
+            <option value="1">100%</option>
+            <option value="0.75">75%</option>
+            <option value="1.25">125%</option>
+            <option value="1.5">150%</option>
+        </select>
+
+        <!-- Selector de Tipografía personalizada -->
+        <select id="fontFamilySelector" class="toolbar-select-custom" onchange="changeFontFamily(this.value)" title="Tipografía del documento">
+            <option value="Plus Jakarta Sans" selected>Plus Jakarta Sans</option>
+            <option value="Inter">Inter</option>
+            <option value="Roboto">Roboto</option>
+            <option value="Playfair Display">Playfair Display</option>
+            <option value="Outfit">Outfit</option>
+            <option value="Fira Code">Fira Code (Monospace)</option>
+        </select>
+
+        <!-- Selector de Tamaño de Fuente en Puntos (pt) -->
+        <select id="fontSizeSelector" class="toolbar-select-custom" onchange="changeFontSize(this.value)" title="Tamaño de letra en puntos">
+            <option value="14px">11 pt</option>
+            <option value="12px">9 pt</option>
+            <option value="16px">12 pt</option>
+            <option value="18px">14 pt</option>
+            <option value="22px">18 pt</option>
+            <option value="28px">24 pt</option>
+            <option value="36px">30 pt</option>
+        </select>
+
+        <!-- Selector de Interlineado -->
+        <select id="lineSpacingSelector" class="toolbar-select-custom" onchange="changeLineSpacing(this.value)" title="Interlineado de párrafo">
+            <option value="1.15">Espaciado 1.15</option>
+            <option value="1.0">Sencillo 1.0</option>
+            <option value="1.5">Espaciado 1.5</option>
+            <option value="2.0">Doble 2.0</option>
+        </select>
+
+        <div style="height: 20px; width: 1px; background: var(--docs-border); margin: 0 4px;"></div>
+
+        <!-- Standalone Quill Toolbar Elements -->
+        <div id="standaloneToolbar">
+            <span class="ql-formats">
+                <select class="ql-header">
+                    <option value="1">Título 1 (H1)</option>
+                    <option value="2">Título 2 (H2)</option>
+                    <option value="3">Título 3 (H3)</option>
+                    <option selected>Párrafo normal</option>
+                </select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-bold" title="Negrita (Ctrl+B)"></button>
+                <button class="ql-italic" title="Cursiva (Ctrl+I)"></button>
+                <button class="ql-underline" title="Subrayado (Ctrl+U)"></button>
+                <button class="ql-strike" title="Tachado"></button>
+            </span>
+            <span class="ql-formats">
+                <select class="ql-color" title="Color de fuente"></select>
+                <select class="ql-background" title="Resaltado"></select>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-list" value="ordered" title="Lista numerada"></button>
+                <button class="ql-list" value="bullet" title="Lista de viñetas"></button>
+                <button class="ql-blockquote" title="Cita"></button>
+                <button class="ql-code-block" title="Código"></button>
+            </span>
+            <span class="ql-formats">
+                <button class="ql-clean" title="Limpiar formato"></button>
+            </span>
+        </div>
+
+        <div style="height: 20px; width: 1px; background: var(--docs-border); margin: 0 4px;"></div>
+
+        <!-- Direct AI Quick Actions -->
+        <button class="btn-docs-ghost" onclick="window.triggerSmartDocAI('correct')" style="font-size: 0.76rem; padding: 5px 10px;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color: #a78bfa;"></i> Estilo IA
+        </button>
+        <button class="btn-docs-ghost" onclick="window.triggerSmartDocAI('expand')" style="font-size: 0.76rem; padding: 5px 10px;">
+            <i class="fa-solid fa-arrows-left-right" style="color: #60a5fa;"></i> Expandir
+        </button>
+        <button class="btn-docs-ghost" onclick="addCommentPrompt()" style="font-size: 0.76rem; padding: 5px 10px;">
+            <i class="fa-solid fa-comment-dots" style="color: #34d399;"></i> Comentario
+        </button>
+    </div>
+
+    <!-- 4. WORKSPACE PRINCIPAL -->
+    <div class="docs-main-workspace">
+        <!-- SIDEBAR IZQUIERDA -->
+        <aside class="docs-sidebar-left">
+            <div class="docs-sidebar-nav">
+                <button class="docs-nav-tab active" onclick="switchSidebarTab('outline')" id="tabBtnOutline">Esquema</button>
+                <button class="docs-nav-tab" onclick="switchSidebarTab('drive')" id="tabBtnDrive">Google Drive</button>
+                <button class="docs-nav-tab" onclick="switchSidebarTab('templates')" id="tabBtnTemplates">Plantillas</button>
+            </div>
+
+            <div class="docs-sidebar-content">
+                <!-- TAB ESQUEMA -->
+                <div id="tabContentOutline" style="display: flex; flex-direction: column; gap: 8px;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Índice interactivo</label>
+                    <div id="docsOutlineList" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem;">
+                        <span style="color: rgba(255,255,255,0.35); font-style: italic;">Sin encabezados en el documento</span>
+                    </div>
+                </div>
+
+                <!-- TAB GOOGLE DRIVE -->
+                <div id="tabContentDrive" style="display: none; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Archivos en la Nube</label>
+                        <button onclick="window.renderSmartDocDriveList()" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem;"><i class="fa-solid fa-rotate"></i> Actualizar</button>
+                    </div>
+                    <div id="smartDocDriveList" style="display: flex; flex-direction: column; gap: 6px;">
+                        <div style="text-align: center; padding: 20px; color: rgba(255,255,255,0.4); font-size: 0.78rem;">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Cargando archivos...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB PLANTILLAS -->
+                <div id="tabContentTemplates" style="display: none; flex-direction: column; gap: 10px;">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase;">Plantillas Rápidas</label>
+                    <div class="template-chip" onclick="loadTemplate('essay')">
+                        <i class="fa-solid fa-graduation-cap" style="color: #60a5fa;"></i>
+                        <div>
+                            <strong>Ensayo Académico</strong>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.5);">Estructura formal de 5 párrafos</div>
+                        </div>
+                    </div>
+                    <div class="template-chip" onclick="loadTemplate('report')">
+                        <i class="fa-solid fa-file-invoice" style="color: #a78bfa;"></i>
+                        <div>
+                            <strong>Informe Técnico</strong>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.5);">Resumen ejecutivo y hallazgos</div>
+                        </div>
+                    </div>
+                    <div class="template-chip" onclick="loadTemplate('cv')">
+                        <i class="fa-solid fa-user-tie" style="color: #34d399;"></i>
+                        <div>
+                            <strong>Currículum Vitae</strong>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.5);">Formato profesional moderno</div>
+                        </div>
+                    </div>
+                    <div class="template-chip" onclick="loadTemplate('notes')">
+                        <i class="fa-solid fa-book-bookmark" style="color: #f59e0b;"></i>
+                        <div>
+                            <strong>Apuntes de Estudio</strong>
+                            <div style="font-size:0.68rem; color:rgba(255,255,255,0.5);">Método Cornell optimizado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CANVAS STAGE (REGLA Y HOJA VIRTUAL) -->
+        <main class="docs-canvas-stage" id="canvasStage">
+            <!-- REGLA GRADUADA VISUAL (GRADUATED RULER) -->
+            <div class="ruler-container" id="docRuler">
+                <div class="ruler-margin-indicator"></div>
+                <div class="ruler-ticks">
+                    <div class="ruler-tick major" data-num="1"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="2"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="3"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="4"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="5"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="6"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick"></div>
+                    <div class="ruler-tick major" data-num="7"></div>
+                </div>
+                <div class="ruler-margin-indicator right"></div>
+            </div>
+
+            <!-- HOJA A4 PRINCIPAL DE EDICIÓN -->
+            <div class="paper-container" id="paperSheet">
+                <div id="editorQuillStandalone"></div>
+            </div>
+        </main>
+
+        <!-- SIDEBAR DERECHA (COPILOT IA & COMENTARIOS ESTILO CRYPTPAD) -->
+        <aside class="docs-sidebar-right">
+            <div class="copilot-card">
+                <div class="copilot-card-title">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Orden Personalizada IA
+                </div>
+                <textarea id="aiDocInstruction" class="smart-doc-textarea" placeholder="Ej: Redacta una conclusión formal para este trabajo de investigación..." rows="3" style="width:100%; background:rgba(0,0,0,0.25); border:1px solid var(--docs-border); border-radius:8px; color:#fff; padding:8px; font-size:0.78rem; outline:none; resize:none;"></textarea>
+                <button class="btn-docs-blue" onclick="window.executeCustomDocAI()" style="width:100%; justify-content:center; padding: 7px;">
+                    <i class="fa-solid fa-play"></i> Ejecutar con IA
+                </button>
+            </div>
+
+            <!-- PANEL DE COMENTARIOS / ANOTACIONES ESTILO CRYPTPAD -->
+            <div class="copilot-card">
+                <div class="copilot-card-title" style="justify-content: space-between;">
+                    <span><i class="fa-solid fa-comments"></i> Anotaciones</span>
+                    <button onclick="addCommentPrompt()" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem;"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div id="commentsList" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;">
+                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-style:italic;">Sin comentarios. Selecciona un texto y haz clic en '+'.</span>
+                </div>
+            </div>
+
+            <div class="copilot-card">
+                <div class="copilot-card-title">
+                    <i class="fa-solid fa-chart-simple"></i> Métricas del Documento
+                </div>
+                <div class="stats-badge-grid">
+                    <div class="stat-box">
+                        <div class="stat-box-val" id="statWordsCount">0</div>
+                        <div class="stat-box-lbl">Palabras</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-val" id="statCharsCount">0</div>
+                        <div class="stat-box-lbl">Caracteres</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-val" id="statParagraphsCount">0</div>
+                        <div class="stat-box-lbl">Párrafos</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-box-val" id="statReadingTime">0 min</div>
+                        <div class="stat-box-lbl">Lectura</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+
+<!-- CONTROLES FLOTANTES DE VISTA -->
+<div class="paper-view-controls">
+    <button onclick="window.togglePaperTheme()" style="background:none; border:none; color:#fff; cursor:pointer; font-size:0.8rem; display:flex; align-items:center; gap:6px;">
+        <i class="fa-solid fa-circle-half-stroke" style="color: #a78bfa;"></i> <span id="themeToggleLabel">Modo Oscuro Hoja</span>
+    </button>
+</div>
+
+<!-- MODAL BÚSQUEDA Y REEMPLAZO -->
+<div class="find-replace-modal" id="findReplaceModal">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong style="font-size:0.85rem; color:#fff;"><i class="fa-solid fa-magnifying-glass" style="color:#60a5fa;"></i> Buscar y Reemplazar</strong>
+        <button onclick="closeFindReplaceModal()" style="background:none; border:none; color:#fff; cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <input type="text" id="findInput" placeholder="Buscar texto..." style="background:rgba(0,0,0,0.3); border:1px solid var(--docs-border); border-radius:6px; color:#fff; padding:6px 10px; font-size:0.78rem; outline:none;">
+    <input type="text" id="replaceInput" placeholder="Reemplazar con..." style="background:rgba(0,0,0,0.3); border:1px solid var(--docs-border); border-radius:6px; color:#fff; padding:6px 10px; font-size:0.78rem; outline:none;">
+    <div style="display:flex; gap:8px;">
+        <button class="btn-docs-blue" onclick="executeReplace()" style="flex:1; justify-content:center; padding:6px;">Reemplazar todo</button>
+    </div>
+</div>
+
+<!-- MODAL DE USUARIO Y GENERALES DE MYXSI -->
+<div class="custom-modal-overlay" id="userDetailsModal">
+    <div class="custom-modal-card" style="max-width: 420px; border-radius: 20px;">
+        <button class="custom-modal-close" onclick="window.toggleUserDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
+        <div style="text-align: center; padding-top: 10px;">
+            <div class="user-avatar" id="modalUserAvatar" style="width: 70px; height: 70px; margin: 0 auto 12px; font-size: 1.8rem; background: var(--docs-blue-grad); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;">U</div>
+            <h3 id="modalUserName" style="font-size: 1.2rem; font-weight: 800; color: #fff;">Usuario Myxsi</h3>
+            <p id="modalUserEmail" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 2px;">usuario@myxsi.ai</p>
+        </div>
+        <div style="margin-top: 20px; border-top: 1px solid var(--docs-border); padding-top: 15px; display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='chat.html'" style="width: 100%; justify-content: center;"><i class="fa-solid fa-comments"></i> Ir al Chat Principal</button>
+            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='sheets.html'" style="width: 100%; justify-content: center;"><i class="fa-solid fa-table-cells"></i> Ir a Sheets Studio</button>
+        </div>
+    </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script type="module" src="js/chat.js"></script>
+
+<script>
+    let commentsList = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof Quill !== 'undefined') {
+            window.smartDocQuill = new Quill('#editorQuillStandalone', {
+                theme: 'snow',
+                modules: {
+                    toolbar: '#standaloneToolbar'
+                },
+                placeholder: 'Comienza a redactar tu documento inteligente aquí...'
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentDocId = urlParams.get('docId');
+            const templateParam = urlParams.get('template');
+
+            let savedContent = '';
+            let savedTitle = '';
+
+            if (currentDocId) {
+                savedContent = localStorage.getItem('smart_doc_content_' + currentDocId) || '';
+                savedTitle = localStorage.getItem('smart_doc_title_' + currentDocId) || '';
+            }
+
+            if (!savedContent) {
+                savedContent = localStorage.getItem('smart_doc_content');
+            }
+
+            if (savedContent && savedContent.trim() !== '') {
+                window.smartDocQuill.root.innerHTML = savedContent;
+            } else if (templateParam && typeof window.loadTemplate === 'function') {
+                window.loadTemplate(templateParam);
+            } else {
+                window.smartDocQuill.root.innerHTML = '<h1>Documento sin título</h1><p>Comienza a redactar tu documento aquí...</p>';
+            }
+
+            if (!savedTitle) {
+                savedTitle = localStorage.getItem('smart_doc_title') || 'Documento sin título';
+            }
+            document.getElementById('smartDocTitle').value = savedTitle;
+
+            window.smartDocQuill.on('text-change', () => {
+                if (currentDocId) {
+                    localStorage.setItem('smart_doc_content_' + currentDocId, window.smartDocQuill.root.innerHTML);
+                    try {
+                        const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                        const f = localFiles.find(item => item.id === currentDocId);
+                        if (f) {
+                            f.updatedAt = Date.now();
+                            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                        }
+                    } catch(e){}
+                }
+                if (window.triggerSmartDocAutosave) {
+                    window.triggerSmartDocAutosave();
+                }
+                updateMetrics();
+                updateOutline();
+            });
+
+            const originalSaveTitle = window.saveSmartDocTitle;
+            window.saveSmartDocTitle = function(val) {
+                if (typeof originalSaveTitle === 'function') originalSaveTitle(val);
+                if (currentDocId) {
+                    const el = document.getElementById('smartDocTitle');
+                    const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
+                    localStorage.setItem('smart_doc_title_' + currentDocId, titleVal);
+                    try {
+                        const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                        const f = localFiles.find(item => item.id === currentDocId);
+                        if (f) {
+                            f.name = titleVal;
+                            f.updatedAt = Date.now();
+                            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                        }
+                    } catch(e){}
+                }
+            };
+
+            updateMetrics();
+            updateOutline();
+
+            if (window.renderSmartDocDriveList) {
+                window.renderSmartDocDriveList();
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.menu-dropdown')) {
+                document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                openFindReplaceModal();
+            }
+        });
+    });
+
+    // Añadir Comentario / Anotación estilo CryptPad
+    window.addCommentPrompt = function() {
+        const text = prompt("Añade una anotación o nota al documento:");
+        if (!text) return;
+
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        commentsList.push({ id: Date.now(), text, time });
+        renderComments();
+    };
+
+    function renderComments() {
+        const container = document.getElementById('commentsList');
+        if (!container) return;
+        if (commentsList.length === 0) {
+            container.innerHTML = '<span style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-style:italic;">Sin comentarios. Selecciona un texto y haz clic en "+".</span>';
+            return;
+        }
+
+        container.innerHTML = '';
+        commentsList.forEach(c => {
+            const item = document.createElement('div');
+            item.className = 'comment-item-card';
+            item.innerHTML = `
+                <div class="comment-author-badge">
+                    <span><i class="fa-solid fa-user-pen"></i> Usuario Myxsi</span>
+                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.4);">${c.time}</span>
+                </div>
+                <div style="color:#ffffff;">${c.text}</div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    // Insertar Ecuación Matemática LaTeX
+    window.insertMathEquation = function() {
+        const eq = prompt("Introduce una ecuación LaTeX (ej: E = mc^2, \\sum_{i=1}^n x_i):", "\\sum_{i=1}^n x_i");
+        if (eq && window.smartDocQuill) {
+            const range = window.smartDocQuill.getSelection() || { index: window.smartDocQuill.getLength() };
+            window.smartDocQuill.clipboard.dangerouslyPasteHTML(range.index, `<span style="font-family:'Fira Code', monospace; background:rgba(96,165,250,0.15); color:#60a5fa; padding:2px 6px; border-radius:4px; font-weight:700;">${eq}</span> `);
+        }
+    };
+
+    window.changeDocZoom = function(val) {
+        const stage = document.getElementById('canvasStage');
+        if (stage) stage.style.transform = `scale(${val})`;
+    };
+
+    window.changeFontSize = function(size) {
+        if (window.smartDocQuill) {
+            window.smartDocQuill.format('size', size);
+        }
+    };
+
+    window.openFindReplaceModal = function() {
+        const modal = document.getElementById('findReplaceModal');
+        modal.style.display = 'flex';
+        document.getElementById('findInput').focus();
+    };
+
+    window.closeFindReplaceModal = function() {
+        document.getElementById('findReplaceModal').style.display = 'none';
+    };
+
+    window.executeReplace = function() {
+        const findText = document.getElementById('findInput').value;
+        const replaceText = document.getElementById('replaceInput').value;
+        if (!findText || !window.smartDocQuill) return;
+
+        const currentHTML = window.smartDocQuill.root.innerHTML;
+        const regex = new RegExp(findText, 'g');
+        window.smartDocQuill.root.innerHTML = currentHTML.replace(regex, replaceText);
+        closeFindReplaceModal();
+    };
+
+    window.insertImagePrompt = function() {
+        const url = prompt("Introduce la URL de la imagen a insertar:");
+        if (url && window.smartDocQuill) {
+            const range = window.smartDocQuill.getSelection() || { index: window.smartDocQuill.getLength() };
+            window.smartDocQuill.insertEmbed(range.index, 'image', url);
+        }
+    };
+
+    window.toggleMenu = function(btn) {
+        const parent = btn.closest('.menu-dropdown');
+        const isActive = parent.classList.contains('active');
+        document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
+        if (!isActive) {
+            parent.classList.add('active');
+        }
+    };
+
+    window.changeFontFamily = function(font) {
+        if (window.smartDocQuill) {
+            window.smartDocQuill.root.style.fontFamily = font;
+        }
+    };
+
+    window.changeLineSpacing = function(spacing) {
+        if (window.smartDocQuill) {
+            window.smartDocQuill.root.style.lineHeight = spacing;
+        }
+    };
+
+    window.switchSidebarTab = function(tab) {
+        document.getElementById('tabBtnOutline').classList.toggle('active', tab === 'outline');
+        document.getElementById('tabBtnDrive').classList.toggle('active', tab === 'drive');
+        document.getElementById('tabBtnTemplates').classList.toggle('active', tab === 'templates');
+
+        document.getElementById('tabContentOutline').style.display = tab === 'outline' ? 'flex' : 'none';
+        document.getElementById('tabContentDrive').style.display = tab === 'drive' ? 'flex' : 'none';
+        document.getElementById('tabContentTemplates').style.display = tab === 'templates' ? 'flex' : 'none';
+
+        if (tab === 'drive' && window.renderSmartDocDriveList) {
+            window.renderSmartDocDriveList();
+        }
+    };
+
+    window.togglePaperTheme = function() {
+        const paper = document.getElementById('paperSheet');
+        const label = document.getElementById('themeToggleLabel');
+        paper.classList.toggle('dark-mode-paper');
+        if (paper.classList.contains('dark-mode-paper')) {
+            label.textContent = "Modo Claro Hoja";
+        } else {
+            label.textContent = "Modo Oscuro Hoja";
+        }
+    };
+
+    window.toggleRuler = function() {
+        const ruler = document.getElementById('docRuler');
+        ruler.style.display = (ruler.style.display === 'none') ? 'flex' : 'none';
+    };
+
+    window.toggleFullWidth = function() {
+        const paper = document.getElementById('paperSheet');
+        const ruler = document.getElementById('docRuler');
+        if (paper.style.maxWidth === '100%') {
+            paper.style.maxWidth = '820px';
+            ruler.style.maxWidth = '820px';
+        } else {
+            paper.style.maxWidth = '100%';
+            ruler.style.maxWidth = '100%';
+        }
+    };
+
+    window.applyFormat = function(format) {
+        if (!window.smartDocQuill) return;
+        const current = window.smartDocQuill.getFormat();
+        window.smartDocQuill.format(format, !current[format]);
+    };
+
+    window.undoEdit = function() {
+        if (window.smartDocQuill) window.smartDocQuill.history.undo();
+    };
+
+    window.redoEdit = function() {
+        if (window.smartDocQuill) window.smartDocQuill.history.redo();
+    };
+
+    window.selectAllText = function() {
+        if (window.smartDocQuill) window.smartDocQuill.setSelection(0, window.smartDocQuill.getLength());
+    };
+
+    window.clearFormatting = function() {
+        if (!window.smartDocQuill) return;
+        const range = window.smartDocQuill.getSelection();
+        if (range) {
+            window.smartDocQuill.removeFormat(range.index, range.length);
+        }
+    };
+
+    window.insertTable = function() {
+        if (!window.smartDocQuill) return;
+        const tableHTML = `<table style="width:100%; border-collapse:collapse; margin:15px 0;"><thead><tr><th style="border:1px solid #cbd5e1; padding:8px; background:#f8fafc;">Encabezado 1</th><th style="border:1px solid #cbd5e1; padding:8px; background:#f8fafc;">Encabezado 2</th><th style="border:1px solid #cbd5e1; padding:8px; background:#f8fafc;">Encabezado 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1; padding:8px;">Dato 1</td><td style="border:1px solid #cbd5e1; padding:8px;">Dato 2</td><td style="border:1px solid #cbd5e1; padding:8px;">Dato 3</td></tr><tr><td style="border:1px solid #cbd5e1; padding:8px;">Dato 4</td><td style="border:1px solid #cbd5e1; padding:8px;">Dato 5</td><td style="border:1px solid #cbd5e1; padding:8px;">Dato 6</td></tr></tbody></table><p><br></p>`;
+        const range = window.smartDocQuill.getSelection() || { index: window.smartDocQuill.getLength() };
+        window.smartDocQuill.clipboard.dangerouslyPasteHTML(range.index, tableHTML);
+    };
+
+    window.insertHorizontalRule = function() {
+        if (!window.smartDocQuill) return;
+        const range = window.smartDocQuill.getSelection() || { index: window.smartDocQuill.getLength() };
+        window.smartDocQuill.clipboard.dangerouslyPasteHTML(range.index, '<hr style="border:none; border-top:2px solid #cbd5e1; margin:20px 0;"><p><br></p>');
+    };
+
+    window.insertBlockquote = function() {
+        applyFormat('blockquote');
+    };
+
+    window.insertCodeBlock = function() {
+        applyFormat('code-block');
+    };
+
+    window.downloadAsWord = function() {
+        if (!window.smartDocQuill) return;
+        const title = document.getElementById('smartDocTitle').value.trim() || 'Documento';
+        const html = window.smartDocQuill.root.innerHTML;
+        const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>${html}</body></html>`], { type: 'application/msword;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${title}.doc`;
+        a.click();
+    };
+
+    window.downloadAsMarkdown = function() {
+        if (!window.smartDocQuill) return;
+        const title = document.getElementById('smartDocTitle').value.trim() || 'Documento';
+        const text = window.smartDocQuill.getText();
+        const blob = new Blob([`# ${title}\n\n${text}`], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${title}.md`;
+        a.click();
+    };
+
+    window.downloadAsTxt = function() {
+        if (!window.smartDocQuill) return;
+        const title = document.getElementById('smartDocTitle').value.trim() || 'Documento';
+        const text = window.smartDocQuill.getText();
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${title}.txt`;
+        a.click();
+    };
+
+    window.loadTemplate = function(type) {
+        if (!window.smartDocQuill) return;
+        let title = "Documento";
+        let content = "";
+
+        if (type === 'essay') {
+            title = "Ensayo Académico — Título del Tema";
+            content = "<h1>Ensayo Académico</h1><h2>1. Introducción</h2><p>Planteamiento de la tesis e hipótesis principal...</p><h2>2. Desarrollo Argumentativo</h2><p>Primer argumento respaldado por evidencia científica y fuentes académicas...</p><h2>3. Conclusión</h2><p>Síntesis de los hallazgos y reflexiones finales...</p>";
+        } else if (type === 'report') {
+            title = "Informe Técnico de Investigación";
+            content = "<h1>Informe Técnico</h1><h2>1. Resumen Ejecutivo</h2><p>Descripción general de los objetivos alcanzados...</p><h2>2. Metodología</h2><p>Procedimientos aplicados durante el análisis...</p><h2>3. Resultados</h2><p>Presentación de datos y conclusiones técnicas...</p>";
+        } else if (type === 'cv') {
+            title = "Currículum Vitae — Nombre Completo";
+            content = "<h1>Nombre Completo</h1><p><strong>Profesional en Tecnología & Investigación</strong> | correo@ejemplo.com</p><h2>Experiencia Profesional</h2><p><strong>Cargo Principal</strong> — Empresa (2022 - Presente)<br>Responsable del desarrollo de proyectos innovadores.</p><h2>Educación</h2><p><strong>Grado Universitario</strong> — Universidad (2018 - 2022)</p>";
+        } else if (type === 'notes') {
+            title = "Apuntes de Estudio — Clase";
+            content = "<h1>Notas de Estudio</h1><h2>Idea Clave 1</h2><p>Conceptos fundamentales explicados durante la sesión...</p><h2>Preguntas de Repaso</h2><p>1. ¿Cuál es la definición principal del tema?</p>";
+        }
+
+        document.getElementById('smartDocTitle').value = title;
+        window.smartDocQuill.root.innerHTML = content;
+        window.saveSmartDocTitle();
+        if (window.triggerSmartDocAutosave) window.triggerSmartDocAutosave();
+        updateMetrics();
+        updateOutline();
+    };
+
+    function updateMetrics() {
+        if (!window.smartDocQuill) return;
+        const text = window.smartDocQuill.getText().trim();
+        const words = text ? text.split(/\s+/).filter(w => w.length > 0).length : 0;
+        const chars = text.length;
+        const paragraphs = text ? text.split(/\n+/).filter(p => p.length > 0).length : 0;
+        const readTime = Math.ceil(words / 200);
+
+        document.getElementById('statWordsCount').textContent = words;
+        document.getElementById('statCharsCount').textContent = chars;
+        document.getElementById('statParagraphsCount').textContent = paragraphs;
+        document.getElementById('statReadingTime').textContent = readTime + " min";
+    }
+
+    function updateOutline() {
+        if (!window.smartDocQuill) return;
+        const listEl = document.getElementById('docsOutlineList');
+        if (!listEl) return;
+        
+        const headers = window.smartDocQuill.root.querySelectorAll('h1, h2, h3');
+        if (headers.length === 0) {
+            listEl.innerHTML = '<span style="color: rgba(255,255,255,0.35); font-style: italic;">Sin encabezados en el documento</span>';
+            return;
+        }
+
+        listEl.innerHTML = '';
+        headers.forEach((h, index) => {
+            const item = document.createElement('div');
+            const level = h.tagName.toLowerCase();
+            const indent = level === 'h1' ? '0px' : level === 'h2' ? '12px' : '24px';
+            item.style.paddingLeft = indent;
+            item.style.padding = `4px 8px 4px ${indent}`;
+            item.style.borderRadius = '6px';
+            item.style.cursor = 'pointer';
+            item.style.color = level === 'h1' ? '#60a5fa' : level === 'h2' ? '#a78bfa' : 'rgba(255,255,255,0.7)';
+            item.style.fontWeight = level === 'h1' ? '700' : '500';
+            item.textContent = h.textContent.trim() || `Encabezado ${index + 1}`;
+            item.onclick = () => {
+                h.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            };
+            listEl.appendChild(item);
+        });
+    }
+
+    window.showWordCountModal = function() {
+        if (!window.smartDocQuill) return;
+        const text = window.smartDocQuill.getText().trim();
+        const words = text ? text.split(/\s+/).filter(w => w.length > 0).length : 0;
+        const chars = text.length;
+        const charsNoSpaces = text.replace(/\s+/g, '').length;
+        const paragraphs = text ? text.split(/\n+/).filter(p => p.length > 0).length : 0;
+        
+        alert(`📊 Estadísticas de Redacción Myxsi Docs Studio:\n\n• Palabras: ${words}\n• Caracteres (con espacios): ${chars}\n• Caracteres (sin espacios): ${charsNoSpaces}\n• Párrafos: ${paragraphs}\n• Tiempo est. de lectura: ${Math.ceil(words / 200)} minuto(s)`);
+    };
+
+    window.printOrExportPDF = function() {
+        window.print();
+    };
+</script>
+
+</body>
+</html>

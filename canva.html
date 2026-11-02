@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Myxsi Canva Studio — Suite Profesional Completa de Diseño</title>
+    <meta name="description" content="Editor profesional idéntico a Canva: plantillas avanzadas, formas vectoriales, notas adhesivas, biblioteca de fotos de stock, notas del presentador, gestor de proyectos y exportación PDF/PNG.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;600;800&family=Roboto:wght@400;700&family=Playfair+Display:ital,wght@0,700;1,400&family=Outfit:wght@400;600;800&family=Fira+Code:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- jspdf para exportación profesional a PDF multipágina -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <link href="CSS/chat.css?v=5.5.0" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+
+    <style>
+        :root {
+            --canva-bg: #0b0717;
+            --canva-topbar: #120b26;
+            --canva-subbar: #180f33;
+            --canva-sidebar: #160e30;
+            --canva-panel: #1b113b;
+            --canva-accent: #8b5cf6;
+            --canva-accent-light: #a78bfa;
+            --canva-purple-grad: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+            --canva-border: rgba(255, 255, 255, 0.08);
+            --canva-card-bg: rgba(255, 255, 255, 0.03);
+            --canva-card-hover: rgba(139, 92, 246, 0.18);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--canva-bg);
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .canva-app-layout {
+            display: flex;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* 1. BARRA SUPERIOR CANVA (HEADER) */
+        .canva-topbar {
+            height: 52px;
+            background: var(--canva-topbar);
+            border-bottom: 1px solid var(--canva-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-icon-home {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .topbar-icon-home:hover {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border-color: rgba(167, 139, 250, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .topbar-menu-item {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .topbar-menu-item:hover {
+            background: rgba(139, 92, 246, 0.15);
+            color: #ffffff;
+        }
+
+        .cloud-saved-status {
+            font-size: 0.74rem;
+            color: #34d399;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-left: 6px;
+            background: rgba(52, 211, 153, 0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(52, 211, 153, 0.2);
+        }
+
+        .doc-title-input {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--canva-border);
+            border-radius: 8px;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 700;
+            padding: 6px 14px;
+            outline: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .doc-title-input:hover, .doc-title-input:focus {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--canva-accent);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-canva-purple {
+            background: var(--canva-purple-grad);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-canva-purple:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-canva-white {
+            background: #ffffff;
+            color: #0b0717;
+            font-weight: 800;
+            font-size: 0.82rem;
+            padding: 8px 16px;
+            border-radius: 9px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-canva-white:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        /* BARRA CONTEXTUAL DE EDICIÓN DE OBJETOS (TEXTO / IMÁGENES / FORMAS) */
+        .canva-object-toolbar {
+            height: 44px;
+            background: var(--canva-subbar);
+            border-bottom: 1px solid var(--canva-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 95;
+            font-size: 0.8rem;
+        }
+
+        .object-tool-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-select-input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--canva-border);
+            border-radius: 6px;
+            color: white;
+            font-size: 0.78rem;
+            padding: 4px 8px;
+            outline: none;
+        }
+
+        .tool-num-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--canva-border);
+            color: white;
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .tool-num-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+        }
+
+        /* 2. ÁREA CENTRAL (CANVA WORKSPACE) */
+        .canva-workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* BARRA LATERAL VERTICAL DE ICONOS */
+        .canva-vertical-sidebar {
+            width: 76px;
+            background: var(--canva-sidebar);
+            border-right: 1px solid var(--canva-border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 14px 0;
+            gap: 10px;
+            z-index: 80;
+            flex-shrink: 0;
+        }
+
+        .canva-nav-item {
+            width: 64px;
+            height: 58px;
+            border-radius: 12px;
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .canva-nav-item i { font-size: 1.2rem; }
+
+        .canva-nav-item:hover {
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .canva-nav-item.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--canva-accent-light);
+            border: 1px solid rgba(167, 139, 250, 0.35);
+        }
+
+        /* PANEL DESPLEGABLE DE RECURSOS */
+        .canva-panel-drawer {
+            width: 330px;
+            background: var(--canva-panel);
+            border-right: 1px solid var(--canva-border);
+            display: flex;
+            flex-direction: column;
+            padding: 18px;
+            gap: 16px;
+            z-index: 75;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            font-size: 0.98rem;
+            font-weight: 800;
+        }
+
+        .panel-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .template-card {
+            background: var(--canva-card-bg);
+            border: 1px solid var(--canva-border);
+            border-radius: 12px;
+            padding: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: all 0.25s;
+        }
+
+        .template-card:hover {
+            background: var(--canva-card-hover);
+            border-color: var(--canva-accent);
+            transform: translateY(-3px);
+        }
+
+        .template-thumb {
+            height: 85px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .template-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+        }
+
+        .stock-photo-item {
+            width: 100%;
+            height: 90px;
+            border-radius: 10px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.25s;
+        }
+
+        .stock-photo-item:hover {
+            border-color: var(--canva-accent-light);
+            transform: scale(1.04);
+        }
+
+        /* STAGE CENTRAL DE LA HOJA CENTRADA CON AMBIENTE MORADO */
+        .canva-stage-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #191233 0%, #080512 100%);
+            position: relative;
+            overflow: auto;
+            padding: 40px;
+        }
+
+        .canva-centered-sheet-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sheet-top-controls {
+            position: absolute;
+            top: -34px;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.65);
+            padding: 0 4px;
+        }
+
+        .sheet-action-icon {
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.65);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .sheet-action-icon:hover {
+            color: var(--canva-accent-light);
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        #presentationCanvas {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        /* 3. BARRA INFERIOR DE DIAPOSITIVAS (BOTTOM DOCK) */
+        .canva-bottom-dock {
+            height: 68px;
+            background: var(--canva-topbar);
+            border-top: 1px solid var(--canva-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        .dock-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dock-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--canva-border);
+            border-radius: 9px;
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 7px 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .dock-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #ffffff;
+        }
+
+        .dock-center-slides {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slide-card-thumb {
+            width: 86px;
+            height: 48px;
+            background: #ffffff;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            transition: all 0.25s;
+        }
+
+        .slide-card-thumb.active {
+            border-color: var(--canva-accent);
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.5);
+            transform: scale(1.05);
+        }
+
+        .slide-card-num {
+            position: absolute;
+            bottom: 3px;
+            left: 4px;
+            font-size: 0.6rem;
+            color: #333;
+            background: rgba(255,255,255,0.92);
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 800;
+        }
+
+        .add-slide-btn-box {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            border-radius: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .add-slide-btn-box:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--canva-accent);
+            transform: scale(1.05);
+        }
+
+        .dock-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .zoom-slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Cargando Myxsi Canva Studio...</div>
+    </div>
+
+    <div class="canva-app-layout">
+        <!-- 1. BARRA SUPERIOR CANVA -->
+        <header class="canva-topbar">
+            <div class="topbar-left">
+                <div class="topbar-icon-home" onclick="window.location.href='chat.html'" title="Inicio"><i class="fa-solid fa-house"></i></div>
+                <div class="topbar-menu-item" onclick="openFileMenu()">Archivo</div>
+                <div class="topbar-menu-item" onclick="resizeCanvasModal()">Redimensionar</div>
+                <div class="topbar-menu-item" onclick="toggleEditMenu()">Editar <i class="fa-solid fa-chevron-down" style="font-size: 0.6rem; opacity: 0.7;"></i></div>
+                
+                <div style="height: 14px; width: 1px; background: var(--canva-border);"></div>
+                <button class="sheet-action-icon" onclick="undoCanvasAction()" title="Deshacer (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+                <button class="sheet-action-icon" onclick="redoCanvasAction()" title="Rehacer (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
+
+                <div class="cloud-saved-status"><i class="fa-solid fa-cloud-check"></i> Guardado local</div>
+            </div>
+
+            <div style="display: flex; align-items: center;">
+                <input type="text" id="presentationTitle" class="doc-title-input" value="Diseño sin título: Presentación" style="width: 260px;">
+            </div>
+
+            <div class="topbar-right">
+                <button class="dock-btn" onclick="startFullscreenPresentation()"><i class="fa-solid fa-play" style="color: #a78bfa;"></i> Presentar</button>
+                <button class="btn-canva-purple" onclick="exportPresentationToPDF()"><i class="fa-solid fa-download"></i> Compartir / Exportar</button>
+                <button class="btn-canva-white" id="btnSaveToDrive" onclick="savePresentationToDrive()"><i class="fa-brands fa-google-drive"></i> Enviar a Drive</button>
+            </div>
+        </header>
+
+        <!-- BARRA CONTEXTUAL DE EDICIÓN DE OBJETOS -->
+        <div class="canva-object-toolbar" id="objectToolbar">
+            <div class="object-tool-group">
+                <span style="font-size: 0.75rem; color: #a78bfa; font-weight: 700;" id="selectedObjTypeLabel">Selección: Ninguna</span>
+                <div style="height: 14px; width: 1px; background: var(--canva-border);"></div>
+
+                <!-- Fuentes de texto -->
+                <select id="fontFamilySelect" class="tool-select-input" onchange="updateSelectedTextFont(this.value)">
+                    <option value="'Plus Jakarta Sans'">Plus Jakarta Sans</option>
+                    <option value="'Inter'">Inter</option>
+                    <option value="'Roboto'">Roboto</option>
+                    <option value="'Playfair Display'">Playfair Display (Serif)</option>
+                    <option value="'Outfit'">Outfit Modern</option>
+                    <option value="'Fira Code'">Fira Code (Monospace)</option>
+                </select>
+
+                <!-- Tamaño de texto -->
+                <button class="tool-num-btn" onclick="adjustFontSize(-2)">-</button>
+                <span id="fontSizeDisplay" style="font-size: 0.78rem; font-weight: 700; color: white;">28</span>
+                <button class="tool-num-btn" onclick="adjustFontSize(2)">+</button>
+
+                <!-- Color de texto/objeto -->
+                <input type="color" id="objColorPicker" value="#8b5cf6" onchange="updateSelectedObjColor(this.value)" style="width: 24px; height: 24px; border-radius: 50%; border: 1px solid white; cursor: pointer; background: none; padding: 0;" title="Color del objeto">
+
+                <!-- Input de edición directa en hoja para texto seleccionado (Estilo Canva) -->
+                <input type="text" id="liveTextContentInput" class="doc-title-input" placeholder="Editar texto..." oninput="updateLiveSelectedText(this.value)" style="width: 200px; font-size: 0.8rem; display: none; border-color: var(--canva-accent);">
+
+                <button class="dock-btn" onclick="toggleBoldText()" title="Negrita"><i class="fa-solid fa-bold"></i></button>
+                <button class="dock-btn" onclick="toggleItalicText()" title="Cursiva"><i class="fa-solid fa-italic"></i></button>
+                <button class="dock-btn" onclick="duplicateSelectedObject()" title="Duplicar Elemento"><i class="fa-regular fa-copy"></i></button>
+            </div>
+
+            <div class="object-tool-group">
+                <!-- Opacidad slider -->
+                <span style="font-size: 0.72rem; color: rgba(255,255,255,0.6);">Opacidad:</span>
+                <input type="range" id="opacitySlider" min="10" max="100" value="100" oninput="updateSelectedObjOpacity(this.value)" style="width: 60px; accent-color: var(--canva-accent-light);">
+
+                <button class="dock-btn" onclick="bringObjectToFront()" title="Traer al frente"><i class="fa-solid fa-layer-group"></i> Frente</button>
+                <button class="dock-btn" onclick="sendObjectToBack()" title="Enviar al fondo"><i class="fa-solid fa-layer-group"></i> Fondo</button>
+                <button class="dock-btn" onclick="deleteSelectedObject()" style="color: #ef4444;" title="Eliminar Objeto"><i class="fa-solid fa-trash-can"></i> Eliminar</button>
+            </div>
+        </div>
+
+        <!-- 2. ÁREA DE TRABAJO CENTRAL -->
+        <div class="canva-workspace">
+            <!-- BARRA LATERAL VERTICAL DE ICONOS -->
+            <aside class="canva-vertical-sidebar">
+                <button class="canva-nav-item active" id="navBtnTemplates" onclick="switchCanvaTab('templates')">
+                    <i class="fa-solid fa-layer-group"></i> <span>Plantillas</span>
+                </button>
+                <button class="canva-nav-item" id="navBtnElements" onclick="switchCanvaTab('elements')">
+                    <i class="fa-solid fa-shapes"></i> <span>Elementos</span>
+                </button>
+                <button class="canva-nav-item" id="navBtnText" onclick="switchCanvaTab('text')">
+                    <i class="fa-solid fa-font"></i> <span>Texto</span>
+                </button>
+                <button class="canva-nav-item" id="navBtnUploads" onclick="switchCanvaTab('uploads')">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> <span>Subidos</span>
+                </button>
+                <button class="canva-nav-item" id="navBtnDraw" onclick="switchCanvaTab('draw')">
+                    <i class="fa-solid fa-paintbrush"></i> <span>Dibujo</span>
+                </button>
+                <button class="canva-nav-item" id="navBtnProjects" onclick="switchCanvaTab('projects')">
+                    <i class="fa-solid fa-folder"></i> <span>Proyectos</span>
+                </button>
+            </aside>
+
+            <!-- PANEL DE RECURSOS DESPLEGABLE -->
+            <aside class="canva-panel-drawer" id="resourcePanel">
+                <!-- PESTAÑA 1: PLANTILLAS -->
+                <div id="tabContentTemplates" class="tab-panel-content">
+                    <div class="panel-header"><span>Plantillas de Presentación</span><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--canva-accent-light);"></i></div>
+                    <p style="font-size: 0.74rem; color: rgba(255,255,255,0.5); margin-top: 4px; margin-bottom: 12px;">Haz clic en una plantilla para insertarla en la hoja.</p>
+                    <div class="panel-grid-2">
+                        <div class="template-card" onclick="loadPresentationTemplate('tech')">
+                            <div class="template-thumb" style="background: linear-gradient(135deg, #1e1b4b 0%, #4338ca 100%);"><i class="fa-solid fa-laptop-code"></i></div>
+                            <div class="template-title">Tecnología e IA</div>
+                        </div>
+                        <div class="template-card" onclick="loadPresentationTemplate('business')">
+                            <div class="template-thumb" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%);"><i class="fa-solid fa-chart-line"></i></div>
+                            <div class="template-title">Negocios & Proyectos</div>
+                        </div>
+                        <div class="template-card" onclick="loadPresentationTemplate('education')">
+                            <div class="template-thumb" style="background: linear-gradient(135deg, #831843 0%, #be185d 100%);"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <div class="template-title">Ciencia & Estudio</div>
+                        </div>
+                        <div class="template-card" onclick="loadPresentationTemplate('minimal')">
+                            <div class="template-thumb" style="background: linear-gradient(135deg, #18181b 0%, #3f3f46 100%);"><i class="fa-solid fa-cube"></i></div>
+                            <div class="template-title">Minimalista</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 2: ELEMENTOS -->
+                <div id="tabContentElements" class="tab-panel-content" style="display: none;">
+                    <div class="panel-header"><span>Elementos & Formas</span><i class="fa-solid fa-shapes" style="color: var(--canva-accent-light);"></i></div>
+                    <div class="panel-grid-2" style="margin-top: 12px;">
+                        <div class="template-card" onclick="addShapeObject('rect')">
+                            <div class="template-thumb" style="background: rgba(255,255,255,0.05);"><i class="fa-regular fa-square"></i></div>
+                            <div class="template-title">Rectángulo</div>
+                        </div>
+                        <div class="template-card" onclick="addShapeObject('circle')">
+                            <div class="template-thumb" style="background: rgba(255,255,255,0.05);"><i class="fa-regular fa-circle"></i></div>
+                            <div class="template-title">Círculo</div>
+                        </div>
+                        <div class="template-card" onclick="addShapeObject('badge')">
+                            <div class="template-thumb" style="background: rgba(255,255,255,0.05);"><i class="fa-solid fa-certificate"></i></div>
+                            <div class="template-title">Insignia</div>
+                        </div>
+                        <div class="template-card" onclick="addShapeObject('sticky')">
+                            <div class="template-thumb" style="background: #fef08a; color: #000;"><i class="fa-regular fa-note-sticky"></i></div>
+                            <div class="template-title">Nota Adhesiva</div>
+                        </div>
+                        <div class="template-card" onclick="addShapeObject('line')">
+                            <div class="template-thumb" style="background: rgba(255,255,255,0.05);"><i class="fa-solid fa-minus"></i></div>
+                            <div class="template-title">Línea Divisoria</div>
+                        </div>
+                        <div class="template-card" onclick="addShapeObject('star')">
+                            <div class="template-thumb" style="background: rgba(255,255,255,0.05);"><i class="fa-solid fa-star"></i></div>
+                            <div class="template-title">Estrella</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 3: TEXTO -->
+                <div id="tabContentText" class="tab-panel-content" style="display: none;">
+                    <div class="panel-header"><span>Tipografía</span><i class="fa-solid fa-font" style="color: var(--canva-accent-light);"></i></div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                        <button class="dock-btn" onclick="addTextObject('title')" style="padding: 12px; font-size: 0.92rem; font-weight: 800;"><i class="fa-solid fa-plus"></i> Añadir Título Interactivo</button>
+                        <button class="dock-btn" onclick="addTextObject('subtitle')" style="padding: 10px; font-size: 0.84rem; font-weight: 700;"><i class="fa-solid fa-plus"></i> Añadir Subtítulo</button>
+                        <button class="dock-btn" onclick="addTextObject('body')" style="padding: 10px; font-size: 0.78rem;"><i class="fa-solid fa-plus"></i> Añadir Texto de Cuerpo</button>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 4: SUBIDOS & FOTOS -->
+                <div id="tabContentUploads" class="tab-panel-content" style="display: none;">
+                    <div class="panel-header"><span>Subir Fotos & Imágenes</span><i class="fa-solid fa-cloud-arrow-up" style="color: var(--canva-accent-light);"></i></div>
+                    <button class="btn-canva-purple" onclick="triggerCanvaImageUpload()" style="width: 100%; margin-top: 10px; justify-content: center;"><i class="fa-solid fa-upload"></i> Subir Foto Local</button>
+                    <input type="file" id="canvaImageInput" accept="image/*" style="display: none;" onchange="handleCanvaImageUpload(this)">
+
+                    <span style="font-size: 0.76rem; font-weight: 800; color: white; display: block; margin-top: 14px;">Fotos de Stock Gratuitas:</span>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+                        <img src="https://picsum.photos/id/1018/320/240" class="stock-photo-item" title="Montaña" onclick="addImageObject('https://picsum.photos/id/1018/800/600')">
+                        <img src="https://picsum.photos/id/1015/320/240" class="stock-photo-item" title="Bosque" onclick="addImageObject('https://picsum.photos/id/1015/800/600')">
+                        <img src="https://picsum.photos/id/1060/320/240" class="stock-photo-item" title="Escritorio" onclick="addImageObject('https://picsum.photos/id/1060/800/600')">
+                        <img src="https://picsum.photos/id/1071/320/240" class="stock-photo-item" title="Oficina" onclick="addImageObject('https://picsum.photos/id/1071/800/600')">
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 5: DIBUJO -->
+                <div id="tabContentDraw" class="tab-panel-content" style="display: none;">
+                    <div class="panel-header"><span>Herramientas de Dibujo</span><i class="fa-solid fa-paintbrush" style="color: var(--canva-accent-light);"></i></div>
+                    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px;">
+                        <div style="display: flex; gap: 6px;">
+                            <button class="dock-btn active" id="toolPencil" onclick="setCanvaTool('pencil')"><i class="fa-solid fa-pencil"></i> Lápiz</button>
+                            <button class="dock-btn" id="toolHighlighter" onclick="setCanvaTool('highlighter')"><i class="fa-solid fa-highlighter"></i> Resaltador</button>
+                            <button class="dock-btn" id="toolEraser" onclick="setCanvaTool('eraser')"><i class="fa-solid fa-eraser"></i> Borrador</button>
+                        </div>
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <label style="font-size: 0.78rem; color: white;">Color:</label>
+                            <input type="color" id="canvaColorPicker" value="#8b5cf6" onchange="updateCanvaColor(this.value)" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; cursor: pointer; background: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PESTAÑA 6: PROYECTOS -->
+                <div id="tabContentProjects" class="tab-panel-content" style="display: none;">
+                    <div class="panel-header"><span>Proyectos Guardados</span><i class="fa-solid fa-folder" style="color: var(--canva-accent-light);"></i></div>
+                    <div id="projectsList" style="margin-top: 10px; font-size: 0.76rem; color: rgba(255,255,255,0.7); display: flex; flex-direction: column; gap: 8px;">
+                        <div class="dock-btn" onclick="savePagesLocal(); alert('✅ ¡Proyecto guardado!');" style="justify-content: space-between;"><span>💾 Guardar Estado Actual</span><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- STAGE DE LA HOJA CENTRADA PERFECTAMENTE -->
+            <section class="canva-stage-area">
+                <div class="canva-centered-sheet-wrapper">
+                    <!-- CONTROLES SUPERIORES FLOTANTES DE LA HOJA -->
+                    <div class="sheet-top-controls">
+                        <span id="pageHeaderTitle" style="font-weight: 700;">Página 1</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <input type="color" id="pageBgPicker" value="#ffffff" onchange="changePageBackgroundColor(this.value)" title="Color de fondo de la hoja" style="width: 18px; height: 18px; border-radius: 50%; border: 1px solid white; cursor: pointer; background: none; padding: 0;">
+                            <button class="sheet-action-icon" onclick="clearCurrentPage()" title="Limpiar Hoja"><i class="fa-solid fa-eraser"></i></button>
+                            <button class="sheet-action-icon" onclick="duplicateCurrentPage()" title="Duplicar Hoja"><i class="fa-regular fa-copy"></i></button>
+                            <button class="sheet-action-icon" onclick="deleteCurrentPage()" title="Eliminar Hoja" style="color: #ef4444;"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+
+                    <canvas id="presentationCanvas" width="960" height="540"></canvas>
+                    <input type="text" id="canvasDirectTextInput" style="position: absolute; display: none; z-index: 250; background: rgba(255,255,255,0.92); border: 2px dashed var(--canva-accent); outline: none; padding: 2px 6px; border-radius: 4px; box-shadow: 0 0 15px rgba(139,92,246,0.4);" oninput="syncDirectCanvasText(this.value)" onblur="finishDirectCanvasTextEdit()" onkeydown="handleDirectCanvasTextKeydown(event)">
+                </div>
+            </section>
+        </div>
+
+        <!-- 3. BARRA INFERIOR DE DIAPOSITIVAS Y CONTROLES -->
+        <footer class="canva-bottom-dock">
+            <div class="dock-left">
+                <button class="dock-btn" onclick="openNotesModal()"><i class="fa-regular fa-note-sticky"></i> Notas</button>
+            </div>
+
+            <!-- TIRA DE MINIATURAS DE DIAPOSITIVAS (CENTRO) -->
+            <div class="dock-center-slides">
+                <div id="slidesStrip" style="display: flex; gap: 8px; align-items: center;"></div>
+                <div class="add-slide-btn-box" onclick="addNewBlankPage()" title="Añadir nueva Hoja en Blanco"><i class="fa-solid fa-plus"></i></div>
+            </div>
+
+            <div class="dock-right">
+                <div class="zoom-slider-wrapper">
+                    <input type="range" id="zoomSlider" min="20" max="150" value="50" oninput="updateSheetZoom(this.value)" style="width: 90px; accent-color: var(--canva-accent-light); cursor: pointer;">
+                    <span id="zoomPercentText">50%</span>
+                </div>
+                <span style="font-size: 0.78rem; font-weight: 700; color: white;" id="slideCounterText">Páginas 1 de 2</span>
+                <button class="dock-btn" onclick="toggleGridView()"><i class="fa-solid fa-border-all"></i></button>
+                <button class="dock-btn" onclick="startFullscreenPresentation()"><i class="fa-solid fa-expand"></i></button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL NOTAS DEL PRESENTADOR -->
+    <div id="notesModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(5px); z-index: 99999; align-items: center; justify-content: center;">
+        <div style="background: var(--canva-panel); border: 1px solid var(--canva-border); border-radius: 16px; padding: 24px; width: 440px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: white;"><i class="fa-regular fa-note-sticky" style="color: var(--canva-accent-light); margin-right: 8px;"></i> Notas Privadas del Presentador</span>
+                <button onclick="closeNotesModal()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <textarea id="slideNotesInput" placeholder="Escribe aquí tus apuntes privados para esta diapositiva..." style="width: 100%; height: 120px; background: rgba(255,255,255,0.06); border: 1px solid var(--canva-accent); border-radius: 8px; color: white; padding: 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.88rem; outline: none; resize: none;"></textarea>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="dock-btn" onclick="closeNotesModal()">Cancelar</button>
+                <button class="btn-canva-purple" onclick="saveSlideNotes()">Guardar Notas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MENÚ ARCHIVO -->
+    <div id="fileMenuModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(5px); z-index: 99999; align-items: center; justify-content: center;">
+        <div style="background: var(--canva-panel); border: 1px solid var(--canva-border); border-radius: 16px; padding: 24px; width: 400px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: white;"><i class="fa-solid fa-folder-open" style="color: var(--canva-accent-light); margin-right: 8px;"></i> Menú Archivo</span>
+                <button onclick="closeFileMenuModal()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                <button class="dock-btn" onclick="addNewBlankPage(); closeFileMenuModal();" style="padding: 12px; justify-content: flex-start;"><i class="fa-solid fa-file-circle-plus" style="color: var(--canva-accent-light);"></i> Crear Nueva Hoja en Blanco</button>
+                <button class="dock-btn" onclick="savePagesLocal(); alert('✅ ¡Proyecto guardado localmente!'); closeFileMenuModal();" style="padding: 12px; justify-content: flex-start;"><i class="fa-solid fa-floppy-disk" style="color: #34d399;"></i> Guardar Proyecto en Local</button>
+                <button class="dock-btn" onclick="exportPresentationToPDF(); closeFileMenuModal();" style="padding: 12px; justify-content: flex-start;"><i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i> Exportar Presentación a PDF</button>
+                <button class="dock-btn" onclick="downloadCurrentSlidePNG(); closeFileMenuModal();" style="padding: 12px; justify-content: flex-start;"><i class="fa-solid fa-file-image" style="color: #3b82f6;"></i> Descargar Hoja Actual en PNG</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL REDIMENSIONAR LIENZO -->
+    <div id="resizeCanvasModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(5px); z-index: 99999; align-items: center; justify-content: center;">
+        <div style="background: var(--canva-panel); border: 1px solid var(--canva-border); border-radius: 16px; padding: 24px; width: 420px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 1.05rem; color: white;"><i class="fa-solid fa-up-right-and-down-left-from-center" style="color: var(--canva-accent-light); margin-right: 8px;"></i> Redimensionar Formato de Lienzo</span>
+                <button onclick="closeResizeModal()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 1.2rem;"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="dock-btn" onclick="setCanvasDimensions(960, 540); closeResizeModal();" style="padding: 12px; justify-content: space-between;"><span>📺 16:9 Presentación Panorámica</span><span style="font-size: 0.72rem; color: rgba(255,255,255,0.5);">960 x 540</span></button>
+                <button class="dock-btn" onclick="setCanvasDimensions(800, 600); closeResizeModal();" style="padding: 12px; justify-content: space-between;"><span>🖼️ 4:3 Formato Estándar</span><span style="font-size: 0.72rem; color: rgba(255,255,255,0.5);">800 x 600</span></button>
+                <button class="dock-btn" onclick="setCanvasDimensions(700, 700); closeResizeModal();" style="padding: 12px; justify-content: space-between;"><span>🟩 1:1 Formato Cuadrado (Social)</span><span style="font-size: 0.72rem; color: rgba(255,255,255,0.5);">700 x 700</span></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VISTA EN CUADRÍCULA DE TODAS LAS HOJAS -->
+    <div id="gridViewModal" style="display: none; position: fixed; inset: 0; background: rgba(10,6,22,0.92); backdrop-filter: blur(8px); z-index: 99999; flex-direction: column; padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <span style="font-weight: 800; font-size: 1.2rem; color: white;"><i class="fa-solid fa-border-all" style="color: var(--canva-accent-light); margin-right: 10px;"></i> Vista en Cuadrícula de Hojas</span>
+            <button onclick="closeGridViewModal()" class="dock-btn" style="padding: 8px 16px;"><i class="fa-solid fa-xmark"></i> Cerrar Vista</button>
+        </div>
+        <div id="gridCardsContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; overflow-y: auto; flex: 1; padding-right: 10px;"></div>
+    </div>
+
+    <!-- MODAL PRESENTACIÓN PANTALLA COMPLETA -->
+    <div class="presentation-fullscreen-modal" id="fullscreenPresentationModal" style="position: fixed; inset: 0; background: #000; z-index: 99999; display: none; flex-direction: column; align-items: center; justify-content: center;">
+        <canvas id="fullscreenCanvas" width="1280" height="720"></canvas>
+        <div style="position: absolute; bottom: 20px; display: flex; gap: 12px; background: rgba(0,0,0,0.85); padding: 10px 20px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2);">
+            <button class="dock-btn" onclick="prevFullscreenSlide()"><i class="fa-solid fa-chevron-left"></i> Anterior</button>
+            <span id="fullscreenSlideText" style="color: white; font-size: 0.88rem; font-weight: 800; align-self: center;">1 / 1</span>
+            <button class="dock-btn" onclick="nextFullscreenSlide()">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
+            <button class="dock-btn" onclick="closeFullscreenPresentation()" style="color: #ef4444;"><i class="fa-solid fa-xmark"></i> Salir</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = { apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20", authDomain: "myxsi-e4ba3.firebaseapp.com", projectId: "myxsi-e4ba3", storageBucket: "myxsi-e4ba3.firebasestorage.app", messagingSenderId: "321958728313", appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8" };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        setTimeout(() => {
+            const ls = document.getElementById('loadingScreen');
+            if (ls) ls.classList.add('hidden');
+        }, 600);
+
+        onAuthStateChanged(auth, (user) => {
+            if (!user) { window.location.href = 'index.html'; }
+        });
+
+        // ===================================================
+        // MOTOR DE OBJETOS INTERACTIVOS (TEXTO, FOTOS, FORMAS)
+        // ===================================================
+        const canvas = document.getElementById('presentationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let pages = [];
+        let currentPageIndex = 0;
+        let selectedObjectIndex = -1;
+        let isDraggingObject = false;
+        let dragOffsetX = 0, dragOffsetY = 0;
+        let currentTool = 'select'; // select, pencil, highlighter, eraser
+        let currentColor = '#8b5cf6';
+        
+        function createBlankPage(bgColor = '#ffffff') {
+            return {
+                id: Date.now() + Math.random(),
+                bgColor: bgColor,
+                notes: '',
+                elements: []
+            };
+        }
+
+        function initStudio() {
+            const saved = localStorage.getItem('myxsi_canva_pages');
+            if (saved) {
+                try { pages = JSON.parse(saved); } catch (e) { pages = [createBlankPage('#ffffff'), createBlankPage('#ffffff')]; }
+            } else {
+                pages = [createBlankPage('#ffffff'), createBlankPage('#ffffff')];
+            }
+            currentPageIndex = 0;
+            renderPage();
+            renderSlideStrip();
+            if (window.updateSheetZoom) window.updateSheetZoom(50);
+        }
+
+        let undoStack = [];
+        let redoStack = [];
+
+        function pushUndoState() {
+            if (undoStack.length > 30) undoStack.shift();
+            undoStack.push(JSON.stringify(pages));
+            redoStack = [];
+        }
+
+        window.undoCanvasAction = function() {
+            if (undoStack.length > 0) {
+                redoStack.push(JSON.stringify(pages));
+                pages = JSON.parse(undoStack.pop());
+                if (currentPageIndex >= pages.length) currentPageIndex = pages.length - 1;
+                selectedObjectIndex = -1;
+                renderPage();
+                renderSlideStrip();
+            }
+        };
+
+        window.redoCanvasAction = function() {
+            if (redoStack.length > 0) {
+                undoStack.push(JSON.stringify(pages));
+                pages = JSON.parse(redoStack.pop());
+                if (currentPageIndex >= pages.length) currentPageIndex = pages.length - 1;
+                selectedObjectIndex = -1;
+                renderPage();
+                renderSlideStrip();
+            }
+        };
+
+        function savePagesLocal() {
+            pushUndoState();
+            localStorage.setItem('myxsi_canva_pages', JSON.stringify(pages));
+            renderSlideStrip();
+        }
+
+        function renderPage() {
+            const page = pages[currentPageIndex] || pages[0];
+            ctx.fillStyle = page.bgColor || '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Renderizar todos los elementos de la hoja
+            page.elements.forEach((obj, idx) => {
+                ctx.save();
+                ctx.globalAlpha = (obj.opacity !== undefined ? obj.opacity : 100) / 100;
+
+                if (obj.type === 'text') {
+                    ctx.fillStyle = obj.color || '#1e1b4b';
+                    ctx.font = `${obj.italic ? 'italic ' : ''}${obj.bold ? 'bold ' : ''}${obj.fontSize || 28}px ${obj.fontFamily || "'Plus Jakarta Sans'"}`;
+                    ctx.fillText(obj.text, obj.x, obj.y);
+
+                    const metrics = ctx.measureText(obj.text);
+                    obj.width = metrics.width;
+                    obj.height = obj.fontSize || 28;
+                } else if (obj.type === 'shape') {
+                    ctx.fillStyle = obj.color || currentColor;
+                    if (obj.shapeType === 'rect') {
+                        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                    } else if (obj.shapeType === 'circle') {
+                        ctx.beginPath();
+                        ctx.arc(obj.x + obj.width/2, obj.y + obj.height/2, obj.width/2, 0, 2*Math.PI);
+                        ctx.fill();
+                    } else if (obj.shapeType === 'sticky') {
+                        ctx.fillStyle = '#fef08a';
+                        ctx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                        ctx.fillStyle = '#000000';
+                        ctx.font = "16px 'Plus Jakarta Sans'";
+                        ctx.fillText(obj.text || "📌 Nota adhesiva", obj.x + 15, obj.y + 30);
+                    } else if (obj.shapeType === 'line') {
+                        ctx.strokeStyle = obj.color || currentColor;
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(obj.x, obj.y);
+                        ctx.lineTo(obj.x + obj.width, obj.y);
+                        ctx.stroke();
+                    } else if (obj.shapeType === 'star') {
+                        ctx.fillStyle = obj.color || '#f59e0b';
+                        ctx.font = `${obj.height || 40}px 'Font Awesome 6 Free'`;
+                        ctx.fillText('★', obj.x, obj.y);
+                    }
+                } else if (obj.type === 'image') {
+                    if (!obj.cachedImg) {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        img.onload = () => { obj.cachedImg = img; renderPage(); };
+                        img.src = obj.src;
+                    } else {
+                        ctx.drawImage(obj.cachedImg, obj.x, obj.y, obj.width, obj.height);
+                    }
+                }
+                ctx.restore();
+
+                // Bounding Box de Selección
+                if (idx === selectedObjectIndex) {
+                    ctx.save();
+                    ctx.strokeStyle = '#8b5cf6';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+
+                    let bx = obj.x, by = obj.y - (obj.type === 'text' ? obj.height : 0), bw = obj.width, bh = obj.height;
+                    ctx.strokeRect(bx - 4, by - 4, bw + 8, bh + 8);
+
+                    ctx.fillStyle = '#8b5cf6';
+                    ctx.fillRect(bx - 8, by - 8, 8, 8);
+                    ctx.fillRect(bx + bw, by - 8, 8, 8);
+                    ctx.fillRect(bx - 8, by + bh, 8, 8);
+                    ctx.fillRect(bx + bw, by + bh, 8, 8);
+
+                    ctx.restore();
+                }
+            });
+
+            document.getElementById('slideCounterText').textContent = `Páginas ${currentPageIndex + 1} de ${pages.length}`;
+            document.getElementById('pageHeaderTitle').textContent = `Página ${currentPageIndex + 1}`;
+            document.getElementById('pageBgPicker').value = page.bgColor || '#ffffff';
+
+            updateObjectToolbarUI();
+        }
+
+        function updateObjectToolbarUI() {
+            const page = pages[currentPageIndex];
+            const selObj = page ? page.elements[selectedObjectIndex] : null;
+            const label = document.getElementById('selectedObjTypeLabel');
+            const liveInput = document.getElementById('liveTextContentInput');
+            const opacityInput = document.getElementById('opacitySlider');
+
+            if (!selObj) {
+                label.textContent = "Selección: Hoja Completa";
+                if (liveInput) liveInput.style.display = 'none';
+                return;
+            }
+
+            if (opacityInput) opacityInput.value = selObj.opacity !== undefined ? selObj.opacity : 100;
+
+            if (selObj.type === 'text') {
+                label.textContent = `Texto`;
+                document.getElementById('fontSizeDisplay').textContent = selObj.fontSize || 28;
+                document.getElementById('fontFamilySelect').value = selObj.fontFamily || "'Plus Jakarta Sans'";
+                document.getElementById('objColorPicker').value = selObj.color || '#8b5cf6';
+                if (liveInput) {
+                    liveInput.style.display = 'inline-block';
+                    liveInput.value = selObj.text;
+                }
+            } else {
+                if (liveInput) liveInput.style.display = 'none';
+                if (selObj.type === 'image') {
+                    label.textContent = "Foto / Imagen de Stock";
+                } else if (selObj.type === 'shape') {
+                    label.textContent = `Forma: ${selObj.shapeType}`;
+                }
+            }
+        }
+
+        window.updateLiveSelectedText = function(val) {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj && selObj.type === 'text') {
+                selObj.text = val || 'Texto';
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        function renderSlideStrip() {
+            const container = document.getElementById('slidesStrip');
+            if (!container) return;
+            container.innerHTML = '';
+
+            pages.forEach((p, idx) => {
+                const card = document.createElement('div');
+                card.className = `slide-card-thumb ${idx === currentPageIndex ? 'active' : ''}`;
+                card.onclick = () => switchSlide(idx);
+                card.style.backgroundColor = p.bgColor || '#ffffff';
+
+                card.innerHTML = `<span class="slide-card-num">${idx + 1}</span>`;
+                container.appendChild(card);
+            });
+        }
+
+        window.switchSlide = function(idx) {
+            selectedObjectIndex = -1;
+            currentPageIndex = idx;
+            renderPage();
+            renderSlideStrip();
+        };
+
+        window.addNewBlankPage = function() {
+            pages.push(createBlankPage('#ffffff'));
+            currentPageIndex = pages.length - 1;
+            selectedObjectIndex = -1;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.changePageBackgroundColor = function(color) {
+            pages[currentPageIndex].bgColor = color;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.clearCurrentPage = function() {
+            pages[currentPageIndex].elements = [];
+            selectedObjectIndex = -1;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.duplicateCurrentPage = function() {
+            const pageCopy = JSON.parse(JSON.stringify(pages[currentPageIndex]));
+            pageCopy.id = Date.now();
+            pages.splice(currentPageIndex + 1, 0, pageCopy);
+            currentPageIndex++;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.deleteCurrentPage = function() {
+            if (pages.length <= 1) {
+                alert("Debes mantener al menos una hoja en tu proyecto.");
+                return;
+            }
+            pages.splice(currentPageIndex, 1);
+            if (currentPageIndex >= pages.length) currentPageIndex = pages.length - 1;
+            selectedObjectIndex = -1;
+            savePagesLocal();
+            renderPage();
+        };
+
+        // ============================================
+        // AÑADIR TEXTO, FORMAS E IMÁGENES AL LIENZO
+        // ============================================
+        window.addTextObject = function(type) {
+            const textContent = type === 'title' ? "Nuevo Título Interactivo" : (type === 'subtitle' ? "Agregar un subtítulo" : "Añadir texto de cuerpo");
+
+            const newText = {
+                id: Date.now(),
+                type: 'text',
+                text: textContent,
+                x: 120,
+                y: type === 'title' ? 140 : (type === 'subtitle' ? 220 : 280),
+                fontSize: type === 'title' ? 36 : (type === 'subtitle' ? 24 : 18),
+                fontFamily: "'Plus Jakarta Sans'",
+                color: currentColor,
+                bold: type === 'title',
+                italic: false,
+                opacity: 100,
+                width: 240,
+                height: 40
+            };
+
+            pages[currentPageIndex].elements.push(newText);
+            selectedObjectIndex = pages[currentPageIndex].elements.length - 1;
+            savePagesLocal();
+            renderPage();
+
+            startDirectCanvasTextEdit(newText);
+        };
+
+        window.addShapeObject = function(shapeType) {
+            const newShape = {
+                id: Date.now(),
+                type: 'shape',
+                shapeType: shapeType,
+                x: 250,
+                y: 180,
+                width: 180,
+                height: 120,
+                color: currentColor,
+                opacity: 100,
+                text: shapeType === 'sticky' ? '📌 Nota adhesiva' : ''
+            };
+
+            pages[currentPageIndex].elements.push(newShape);
+            selectedObjectIndex = pages[currentPageIndex].elements.length - 1;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.addImageObject = function(srcUrl) {
+            const newImg = {
+                id: Date.now(),
+                type: 'image',
+                src: srcUrl,
+                x: 200,
+                y: 120,
+                width: 320,
+                height: 220,
+                opacity: 100
+            };
+
+            pages[currentPageIndex].elements.push(newImg);
+            selectedObjectIndex = pages[currentPageIndex].elements.length - 1;
+            savePagesLocal();
+            renderPage();
+        };
+
+        window.duplicateSelectedObject = function() {
+            if (selectedObjectIndex >= 0) {
+                const obj = JSON.parse(JSON.stringify(pages[currentPageIndex].elements[selectedObjectIndex]));
+                obj.id = Date.now();
+                obj.x += 20; obj.y += 20;
+                pages[currentPageIndex].elements.push(obj);
+                selectedObjectIndex = pages[currentPageIndex].elements.length - 1;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.updateSelectedObjOpacity = function(val) {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj) {
+                selObj.opacity = parseInt(val);
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        // MODIFICADORES Y EDICIÓN DE OBJETOS
+        window.updateSelectedTextFont = function(font) {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj && selObj.type === 'text') {
+                selObj.fontFamily = font;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.adjustFontSize = function(delta) {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj && selObj.type === 'text') {
+                selObj.fontSize = Math.max(8, (selObj.fontSize || 28) + delta);
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.updateSelectedObjColor = function(color) {
+            currentColor = color;
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj) {
+                selObj.color = color;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.toggleBoldText = function() {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj && selObj.type === 'text') {
+                selObj.bold = !selObj.bold;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.toggleItalicText = function() {
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            if (selObj && selObj.type === 'text') {
+                selObj.italic = !selObj.italic;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.deleteSelectedObject = function() {
+            if (selectedObjectIndex >= 0) {
+                pages[currentPageIndex].elements.splice(selectedObjectIndex, 1);
+                selectedObjectIndex = -1;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.bringObjectToFront = function() {
+            if (selectedObjectIndex >= 0) {
+                const obj = pages[currentPageIndex].elements.splice(selectedObjectIndex, 1)[0];
+                pages[currentPageIndex].elements.push(obj);
+                selectedObjectIndex = pages[currentPageIndex].elements.length - 1;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.sendObjectToBack = function() {
+            if (selectedObjectIndex >= 0) {
+                const obj = pages[currentPageIndex].elements.splice(selectedObjectIndex, 1)[0];
+                pages[currentPageIndex].elements.unshift(obj);
+                selectedObjectIndex = 0;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        // INTERACCIÓN MOUSE / DRAG AND DROP
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const page = pages[currentPageIndex];
+            let foundIdx = -1;
+
+            for (let i = page.elements.length - 1; i >= 0; i--) {
+                const obj = page.elements[i];
+                let bx = obj.x, by = obj.y - (obj.type === 'text' ? obj.height : 0);
+                let bw = obj.width, bh = obj.height;
+
+                if (mouseX >= bx && mouseX <= bx + bw && mouseY >= by && mouseY <= by + bh) {
+                    foundIdx = i;
+                    break;
+                }
+            }
+
+            if (foundIdx !== -1) {
+                selectedObjectIndex = foundIdx;
+                isDraggingObject = true;
+                const selObj = page.elements[selectedObjectIndex];
+                dragOffsetX = mouseX - selObj.x;
+                dragOffsetY = mouseY - selObj.y;
+            } else {
+                selectedObjectIndex = -1;
+            }
+
+            renderPage();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDraggingObject || selectedObjectIndex === -1) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+            selObj.x = mouseX - dragOffsetX;
+            selObj.y = mouseY - dragOffsetY;
+
+            renderPage();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (isDraggingObject) {
+                isDraggingObject = false;
+                savePagesLocal();
+            }
+        });
+
+        // Control Interactivo de Zoom
+        window.updateSheetZoom = function(val) {
+            document.getElementById('zoomPercentText').textContent = `${val}%`;
+            document.getElementById('zoomSlider').value = val;
+            const scale = (val / 50) * 0.68;
+            canvas.style.transform = `scale(${scale})`;
+            canvas.style.transformOrigin = 'center center';
+        };
+
+        // Edición Directa de Texto sobre el Lienzo
+        let activeCanvasTextObj = null;
+
+        window.startDirectCanvasTextEdit = function(obj) {
+            if (!obj || obj.type !== 'text') return;
+            activeCanvasTextObj = obj;
+
+            const input = document.getElementById('canvasDirectTextInput');
+            if (!input) return;
+
+            const currentZoom = parseInt(document.getElementById('zoomSlider').value || 50);
+            const currentScale = (currentZoom / 50) * 0.68;
+
+            const canvasRect = canvas.getBoundingClientRect();
+            const wrapperRect = canvas.parentElement.getBoundingClientRect();
+
+            const objXOnWrapper = (canvasRect.left - wrapperRect.left) + (obj.x * currentScale);
+            const objYOnWrapper = (canvasRect.top - wrapperRect.top) + ((obj.y - (obj.height || 28)) * currentScale);
+
+            input.style.left = `${objXOnWrapper}px`;
+            input.style.top = `${objYOnWrapper}px`;
+            input.style.fontFamily = obj.fontFamily || "'Plus Jakarta Sans'";
+            input.style.fontSize = `${(obj.fontSize || 28) * currentScale}px`;
+            input.style.fontWeight = obj.bold ? '800' : '400';
+            input.style.fontStyle = obj.italic ? 'italic' : 'normal';
+            input.style.color = obj.color || '#1e1b4b';
+            input.style.minWidth = `${Math.max(160, obj.width * currentScale + 30)}px`;
+
+            input.value = obj.text;
+            input.style.display = 'block';
+
+            setTimeout(() => {
+                input.focus();
+                input.select();
+            }, 40);
+        };
+
+        window.syncDirectCanvasText = function(val) {
+            if (activeCanvasTextObj) {
+                activeCanvasTextObj.text = val || 'Texto';
+                const liveInput = document.getElementById('liveTextContentInput');
+                if (liveInput) liveInput.value = activeCanvasTextObj.text;
+                savePagesLocal();
+                renderPage();
+            }
+        };
+
+        window.finishDirectCanvasTextEdit = function() {
+            const input = document.getElementById('canvasDirectTextInput');
+            if (input) input.style.display = 'none';
+            activeCanvasTextObj = null;
+            renderPage();
+        };
+
+        window.handleDirectCanvasTextKeydown = function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                finishDirectCanvasTextEdit();
+            }
+        };
+
+        canvas.addEventListener('dblclick', () => {
+            if (selectedObjectIndex >= 0) {
+                const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+                if (selObj && selObj.type === 'text') {
+                    startDirectCanvasTextEdit(selObj);
+                }
+            }
+        });
+
+        // Atajos de teclado profesionales (Delete, Flechas, Ctrl+Z, Ctrl+Y)
+        document.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (e.shiftKey) window.redoCanvasAction();
+                else window.undoCanvasAction();
+                e.preventDefault();
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                window.redoCanvasAction();
+                e.preventDefault();
+            } else if (selectedObjectIndex >= 0) {
+                const selObj = pages[currentPageIndex].elements[selectedObjectIndex];
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    deleteSelectedObject();
+                } else if (e.key === 'ArrowLeft') {
+                    selObj.x -= e.shiftKey ? 10 : 1;
+                    savePagesLocal(); renderPage();
+                } else if (e.key === 'ArrowRight') {
+                    selObj.x += e.shiftKey ? 10 : 1;
+                    savePagesLocal(); renderPage();
+                } else if (e.key === 'ArrowUp') {
+                    selObj.y -= e.shiftKey ? 10 : 1;
+                    savePagesLocal(); renderPage();
+                } else if (e.key === 'ArrowDown') {
+                    selObj.y += e.shiftKey ? 10 : 1;
+                    savePagesLocal(); renderPage();
+                }
+            }
+        });
+
+        window.switchCanvaTab = function(tabName) {
+            document.querySelectorAll('.canva-nav-item').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel-content').forEach(p => p.style.display = 'none');
+            
+            const btn = document.getElementById(`navBtn${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+            const content = document.getElementById(`tabContent${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`);
+            
+            if (btn) btn.classList.add('active');
+            if (content) content.style.display = 'block';
+        };
+
+        window.triggerCanvaImageUpload = function() { document.getElementById('canvaImageInput').click(); };
+        window.handleCanvaImageUpload = function(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { addImageObject(e.target.result); };
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        window.loadPresentationTemplate = function(type) {
+            pages[currentPageIndex].elements = [];
+            if (type === 'tech') {
+                addTextObject('title');
+            } else if (type === 'business') {
+                addShapeObject('rect');
+            } else {
+                addTextObject('title');
+            }
+        };
+
+        window.openNotesModal = function() {
+            const page = pages[currentPageIndex];
+            document.getElementById('slideNotesInput').value = page.notes || '';
+            document.getElementById('notesModal').style.display = 'flex';
+        };
+
+        window.closeNotesModal = function() {
+            document.getElementById('notesModal').style.display = 'none';
+        };
+
+        window.saveSlideNotes = function() {
+            pages[currentPageIndex].notes = document.getElementById('slideNotesInput').value;
+            savePagesLocal();
+            closeNotesModal();
+            alert("📝 ¡Notas de diapositiva guardadas!");
+        };
+
+        window.exportPresentationToPDF = function() {
+            savePagesLocal();
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('landscape', 'px', [960, 540]);
+
+            pages.forEach((page, idx) => {
+                if (idx > 0) pdf.addPage([960, 540], 'landscape');
+                
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 960; tempCanvas.height = 540;
+                const tCtx = tempCanvas.getContext('2d');
+                tCtx.fillStyle = page.bgColor || '#ffffff';
+                tCtx.fillRect(0,0,960,540);
+
+                page.elements.forEach(obj => {
+                    if (obj.type === 'text') {
+                        tCtx.fillStyle = obj.color || '#1e1b4b';
+                        tCtx.font = `${obj.italic ? 'italic ' : ''}${obj.bold ? 'bold ' : ''}${obj.fontSize || 28}px ${obj.fontFamily || "'Plus Jakarta Sans'"}`;
+                        tCtx.fillText(obj.text, obj.x, obj.y);
+                    } else if (obj.type === 'shape') {
+                        tCtx.fillStyle = obj.color || currentColor;
+                        if (obj.shapeType === 'rect') tCtx.fillRect(obj.x, obj.y, obj.width, obj.height);
+                    } else if (obj.type === 'image' && obj.cachedImg) {
+                        tCtx.drawImage(obj.cachedImg, obj.x, obj.y, obj.width, obj.height);
+                    }
+                });
+
+                pdf.addImage(tempCanvas.toDataURL(), 'PNG', 0, 0, 960, 540);
+            });
+
+            pdf.save(`Presentacion_Canva_${Date.now()}.pdf`);
+        };
+
+        window.savePresentationToDrive = async function() {
+            savePagesLocal();
+            const token = localStorage.getItem('gdrive_access_token');
+            const btn = document.getElementById('btnSaveToDrive');
+
+            if (!token) {
+                const choice = confirm("📂 Integración con Google Drive:\n\nNo se detectó un token activo de Google Drive vinculado en tu sesión local.\n\n• Haz clic en [Aceptar] para descargar tu presentación en formato PDF directamente en tu computadora.\n• Haz clic en [Cancelar] para ir a la sección 'Archivos' y vincular tu cuenta de Google.");
+                if (choice) {
+                    exportPresentationToPDF();
+                } else {
+                    window.location.href = 'files.html';
+                }
+                return;
+            }
+
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Sincronizando...`;
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('landscape', 'px', [960, 540]);
+                pages.forEach((page, idx) => {
+                    if (idx > 0) pdf.addPage([960, 540], 'landscape');
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = 960; tempCanvas.height = 540;
+                    const tCtx = tempCanvas.getContext('2d');
+                    tCtx.fillStyle = page.bgColor || '#ffffff';
+                    tCtx.fillRect(0,0,960,540);
+                    pdf.addImage(tempCanvas.toDataURL(), 'PNG', 0, 0, 960, 540);
+                });
+
+                const blob = pdf.output('blob');
+                const fileMetadata = { name: `Presentacion_Myxsi_Canva_${new Date().toISOString().slice(0,10)}.pdf`, mimeType: 'application/pdf' };
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
+                form.append('file', blob);
+
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                    method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: form
+                });
+
+                if (response.ok) {
+                    alert("🎉 ¡Tu presentación PDF se guardó correctamente en tu Google Drive!");
+                } else {
+                    alert("⚠️ El token de Google Drive ha expirado. Se descargará el PDF en tu computadora como copia de respaldo.");
+                    exportPresentationToPDF();
+                }
+            } catch (e) {
+                console.error("Error al conectar con Google Drive API:", e);
+                alert("ℹ️ Conexión remota no disponible en entorno local. Se descargará tu documento PDF directamente.");
+                exportPresentationToPDF();
+            } finally {
+                btn.innerHTML = `<i class="fa-brands fa-google-drive"></i> Enviar a Drive`;
+            }
+        };
+
+        let fullscreenIdx = 0;
+        window.startFullscreenPresentation = function() {
+            savePagesLocal(); fullscreenIdx = 0;
+            const modal = document.getElementById('fullscreenPresentationModal');
+            modal.style.display = 'flex';
+            renderFullscreenSlide();
+        };
+
+        function renderFullscreenSlide() {
+            const fsCanvas = document.getElementById('fullscreenCanvas');
+            const fsCtx = fsCanvas.getContext('2d');
+            const page = pages[fullscreenIdx];
+
+            fsCtx.fillStyle = page.bgColor || '#ffffff';
+            fsCtx.fillRect(0, 0, fsCanvas.width, fsCanvas.height);
+
+            page.elements.forEach(obj => {
+                if (obj.type === 'text') {
+                    fsCtx.fillStyle = obj.color || '#1e1b4b';
+                    fsCtx.font = `${obj.italic ? 'italic ' : ''}${obj.bold ? 'bold ' : ''}${(obj.fontSize || 28)*1.33}px ${obj.fontFamily || "'Plus Jakarta Sans'"}`;
+                    fsCtx.fillText(obj.text, obj.x*1.33, obj.y*1.33);
+                } else if (obj.type === 'shape') {
+                    fsCtx.fillStyle = obj.color || currentColor;
+                    if (obj.shapeType === 'rect') fsCtx.fillRect(obj.x*1.33, obj.y*1.33, obj.width*1.33, obj.height*1.33);
+                } else if (obj.type === 'image' && obj.cachedImg) {
+                    fsCtx.drawImage(obj.cachedImg, obj.x*1.33, obj.y*1.33, obj.width*1.33, obj.height*1.33);
+                }
+            });
+
+            document.getElementById('fullscreenSlideText').textContent = `${fullscreenIdx + 1} / ${pages.length}`;
+        }
+
+        window.prevFullscreenSlide = function() { if (fullscreenIdx > 0) { fullscreenIdx--; renderFullscreenSlide(); } };
+        window.nextFullscreenSlide = function() { if (fullscreenIdx < pages.length - 1) { fullscreenIdx++; renderFullscreenSlide(); } };
+        window.closeFullscreenPresentation = function() { document.getElementById('fullscreenPresentationModal').style.display = 'none'; };
+
+        window.openFileMenu = function() {
+            document.getElementById('fileMenuModal').style.display = 'flex';
+        };
+        window.closeFileMenuModal = function() {
+            document.getElementById('fileMenuModal').style.display = 'none';
+        };
+
+        window.resizeCanvasModal = function() {
+            document.getElementById('resizeCanvasModal').style.display = 'flex';
+        };
+        window.closeResizeModal = function() {
+            document.getElementById('resizeCanvasModal').style.display = 'none';
+        };
+
+        window.setCanvasDimensions = function(w, h) {
+            canvas.width = w;
+            canvas.height = h;
+            renderPage();
+            alert(`📐 Lienzo redimensionado a ${w}x${h}px`);
+        };
+
+        window.toggleEditMenu = function() {
+            openFileMenu();
+        };
+
+        window.downloadCurrentSlidePNG = function() {
+            savePagesLocal();
+            const link = document.createElement('a');
+            link.download = `Hoja_${currentPageIndex + 1}_Myxsi.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        window.toggleGridView = function() {
+            const modal = document.getElementById('gridViewModal');
+            const container = document.getElementById('gridCardsContainer');
+            container.innerHTML = '';
+
+            pages.forEach((page, idx) => {
+                const card = document.createElement('div');
+                card.style.cssText = `background: ${page.bgColor || '#ffffff'}; border-radius: 12px; height: 160px; border: 2px solid ${idx === currentPageIndex ? 'var(--canva-accent)' : 'rgba(255,255,255,0.15)'}; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); transition: all 0.25s;`;
+                card.onclick = () => { switchSlide(idx); closeGridViewModal(); };
+
+                card.innerHTML = `<span style="position: absolute; bottom: 8px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 2px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 800;">Página ${idx + 1}</span>`;
+                container.appendChild(card);
+            });
+
+            modal.style.display = 'flex';
+        };
+
+        window.closeGridViewModal = function() {
+            document.getElementById('gridViewModal').style.display = 'none';
+        };
+
+        initStudio();
+    </script>
+</body>
+</html>

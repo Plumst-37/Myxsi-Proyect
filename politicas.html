@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Políticas de Privacidad y Términos de Servicio — Myxsi</title>
+    <meta name="description" content="Términos de Servicio y Políticas de Privacidad oficiales de Myxsi. Información transparente sobre nuestra integración con Google Drive API y el tratamiento de tus datos.">
+    <meta name="robots" content="noindex, follow">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+    <style>
+        :root {
+            --bg-dark: #06040f;
+            --card-glass: rgba(12, 10, 26, 0.45);
+            --border-dim: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(139, 92, 246, 0.35);
+            --violet: #8b5cf6;
+            --violet-soft: #a78bfa;
+            --violet-pale: #c4b5fd;
+            --white: #ffffff;
+            --mist: #e2e8f0;
+            --fog: #94a3b8;
+            --silver: #cbd5e1;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 12px;
+            --radius-pill: 9999px;
+            --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+            --grad-shine: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            --grad-brand: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--mist);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Ambient Atmosphere Background */
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            overflow: hidden;
+            pointer-events: none;
+            background: #04020a;
+        }
+
+        .space-grid {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center center;
+            transform: perspective(500px) rotateX(60deg) translateY(-30%) scale(1.8);
+            transform-origin: top center;
+            opacity: 0.65;
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
+            -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 30%, rgba(0,0,0,0) 80%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            opacity: 0.22;
+            pointer-events: none;
+        }
+
+        .orb-1 {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, #7c3aed 0%, #6d28d9 100%);
+            top: -10%;
+            left: -15%;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #8b5cf6 0%, #c4b5fd 100%);
+            bottom: -15%;
+            right: -10%;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #a78bfa 0%, #4c1d95 100%);
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .grain {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* Container & Card */
+        .container {
+            width: 100%;
+            max-width: 800px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Logo Area */
+        .logo-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-decoration: none;
+            letter-spacing: -0.03em;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .logo-link span {
+            background: var(--grad-shine);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* Policy Card (Glassmorphism) */
+        .policy-card {
+            background: var(--card-glass);
+            border: 1px solid var(--border-dim);
+            border-radius: var(--radius-lg);
+            padding: 3.5rem 3rem;
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: border-color 0.3s ease;
+        }
+
+        .policy-card:hover {
+            border-color: rgba(139, 92, 246, 0.25);
+        }
+
+        .policy-card h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            background: var(--grad-shine);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+        }
+
+        .last-update {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--fog);
+            margin-bottom: 3rem;
+        }
+
+        /* Tabs para alternar entre Términos y Privacidad */
+        .policy-tabs {
+            display: flex;
+            background: rgba(12, 10, 26, 0.6);
+            border-radius: var(--radius-pill);
+            padding: 0.3rem;
+            border: 1px solid var(--border-dim);
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 0.9rem 1rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-smooth);
+            border: none;
+            background: transparent;
+            color: var(--fog);
+            text-align: center;
+        }
+
+        .tab-btn.active {
+            background: var(--grad-brand);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Content Sections */
+        .policy-content-section {
+            display: none;
+            animation: fadeIn 0.4s var(--ease-smooth);
+        }
+
+        .policy-content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Text styling */
+        h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        h2 i {
+            color: var(--violet-soft);
+            font-size: 1.1rem;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            font-size: 0.96rem;
+            color: var(--silver);
+            line-height: 1.7;
+        }
+
+        ul, ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--silver);
+        }
+
+        li {
+            margin-bottom: 0.6rem;
+            font-size: 0.96rem;
+        }
+
+        li strong {
+            color: var(--white);
+        }
+
+        /* Callout Box (Premium notice) */
+        .notice-box {
+            background: rgba(139, 92, 246, 0.06);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-left: 4px solid var(--violet-soft);
+            border-radius: var(--radius-sm);
+            padding: 1.25rem 1.5rem;
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .notice-box i {
+            color: var(--violet-soft);
+            font-size: 1.2rem;
+            margin-top: 0.15rem;
+            filter: drop-shadow(0 0 4px rgba(167,139,250,0.4));
+        }
+
+        .notice-box div {
+            font-size: 0.9rem;
+            color: var(--silver);
+            line-height: 1.5;
+        }
+
+        .notice-box strong {
+            color: var(--white);
+        }
+
+        /* Footer / Back Link */
+        .back-home {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-home a {
+            color: var(--fog);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s var(--ease-smooth);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-home a:hover {
+            color: var(--violet-soft);
+            transform: translateX(-4px);
+        }
+
+        /* Code styling */
+        code {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--violet-pale);
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+
+        /* Links in content */
+        a {
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: var(--violet-pale) !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 1rem;
+            }
+
+            .policy-card {
+                padding: 2rem 1.5rem;
+                border-radius: var(--radius-md);
+            }
+
+            .policy-card h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.2rem;
+            }
+
+            .policy-tabs {
+                flex-direction: column;
+                gap: 0.3rem;
+                background: transparent;
+                border: none;
+            }
+
+            .tab-btn {
+                border-radius: var(--radius-md);
+            }
+
+            .notice-box {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .policy-card {
+                padding: 1.5rem 1rem;
+            }
+
+            .logo-link {
+                font-size: 1.4rem;
+            }
+
+            .logo-icon {
+                width: 36px;
+                height: 36px;
+            }
+        }
+    </style>
+    
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+
+    <div class="ambient">
+        <div class="space-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grain"></div>
+
+    <div class="container">
+        
+        <div class="logo-section">
+            <a href="index.html" class="logo-link">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                      <defs>
+                        <linearGradient id="gemGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#A78BFA"/>
+                          <stop offset="100%" stop-color="#6D28D9"/>
+                        </linearGradient>
+                      </defs>
+                      <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGrad)" opacity="0.9"/>
+                      <path d="M22 4L38 14L22 22L6 14L22 4Z" fill="rgba(255,255,255,0.2)"/>
+                      <path d="M22 22L38 14V30L22 22Z" fill="rgba(0,0,0,0.15)"/>
+                      <path d="M22 22L6 14V30L22 22Z" fill="rgba(255,255,255,0.08)"/>
+                      <circle cx="22" cy="22" r="4" fill="rgba(255,255,255,0.6)"/>
+                    </svg>
+                </div>
+                <span>Myxsi</span>
+            </a>
+        </div>
+
+        <div class="policy-card">
+            <h1>Legal y Privacidad</h1>
+            <p class="last-update">Última actualización: 5 de junio de 2026</p>
+
+            <div class="policy-tabs">
+                <button class="tab-btn active" id="tabTermsBtn" onclick="switchTab('terms')">
+                    <i class="fa-solid fa-file-contract"></i> Términos de Servicio
+                </button>
+                <button class="tab-btn" id="tabPrivacyBtn" onclick="switchTab('privacy')">
+                    <i class="fa-solid fa-shield-halved"></i> Política de Privacidad
+                </button>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN: TÉRMINOS DE SERVICIO -->
+            <!-- ============================================ -->
+            <div class="policy-content-section active" id="termsSection">
+                <p>Bienvenido a Myxsi. Al acceder o utilizar nuestra plataforma, aceptas estar sujeto a los siguientes Términos de Servicio. Por favor, léelos con detenimiento antes de utilizar nuestros servicios.</p>
+
+                <h2><i class="fa-solid fa-circle-info"></i> 1. Aceptación de los Términos</h2>
+                <p>Al registrarte e iniciar sesión en Myxsi, declaras tener capacidad legal para contratar y aceptas de forma expresa y sin reservas estos términos. Si no estás de acuerdo con alguna de las cláusulas, debes abstenerte de utilizar nuestros servicios inmediatamente.</p>
+
+                <h2><i class="fa-solid fa-user-shield"></i> 2. Registro de Cuentas y Responsabilidad</h2>
+                <p>Para acceder a la plataforma, debes crear una cuenta personal o empresarial proporcionando información veraz y actualizada. Eres el único responsable de:</p>
+                <ul>
+                    <li>Mantener la confidencialidad de tus credenciales de acceso.</li>
+                    <li>Todas las actividades realizadas en tu sesión, incluyendo el uso de la inteligencia artificial y la gestión de archivos.</li>
+                    <li>Notificarnos de inmediato sobre cualquier acceso no autorizado a tu cuenta a través de <a href="mailto:soporte@myxsi.com" style="color: var(--violet-soft); text-decoration: none;">soporte@myxsi.com</a>.</li>
+                </ul>
+                <p>Myxsi no será responsable por pérdidas o daños derivados del incumplimiento de estas obligaciones de seguridad por parte del usuario.</p>
+
+                <h2><i class="fa-brands fa-google-drive"></i> 3. Integración con Google Drive</h2>
+                <p>Myxsi incluye un módulo ("Archivos") diseñado para facilitar la administración de tus apuntes y material de estudio. Esta característica te permite conectar directamente tu cuenta de almacenamiento de Google Drive bajo las siguientes condiciones:</p>
+                <ul>
+                    <li><strong>Propiedad del Usuario:</strong> Todos los archivos, documentos y carpetas mostrados, subidos, renombrados o eliminados a través de Myxsi siguen alojados en tu cuenta de Google y están bajo tu exclusiva propiedad y control.</li>
+                    <li><strong>Alcance Limitado del Permiso (Mínimo Privilegio):</strong> La aplicación solicita acceso únicamente a los archivos que crees o abras explícitamente con Myxsi (ámbito restringido <code>drive.file</code>). Myxsi no solicita ni tiene capacidad técnica para ver, modificar o eliminar archivos de tu Drive que no hayas gestionado expresamente a través de nuestra interfaz.</li>
+                    <li><strong>Procesamiento en el Cliente (Client-Side):</strong> La vinculación se efectúa directamente en el navegador del usuario utilizando las APIs oficiales de Google. Myxsi no sirve de intermediario para descargar ni almacenar tus archivos en sus servidores.</li>
+                    <li><strong>Responsabilidad de Uso:</strong> Eres el único responsable del contenido al que accedes, modificas o eliminas en tu Drive a través de nuestra interfaz. Las eliminaciones de archivos realizadas en el panel se sincronizan directamente con Google Drive y pueden ser irreversibles (conforme a las políticas de papelera de Google).</li>
+                    <li><strong>Disponibilidad del Servicio:</strong> La funcionalidad depende de la disponibilidad de los servicios de Google. Myxsi no se hace responsable por interrupciones o fallos en los servicios externos de Google LLC.</li>
+                </ul>
+
+                <h2><i class="fa-solid fa-graduation-cap"></i> 4. Uso del Servicio Inteligente de Aprendizaje</h2>
+                <p>Myxsi ofrece asistencia de estudio impulsada por Inteligencia Artificial. Las respuestas proporcionadas por la IA tienen un propósito puramente educativo y de apoyo en el estudio. No garantizamos la exactitud absoluta de los contenidos generados y recomendamos contrastar la información crítica para evaluaciones oficiales o decisiones académicas importantes.</p>
+
+                <h2><i class="fa-solid fa-circle-exclamation"></i> 5. Modificaciones del Servicio</h2>
+                <p>Nos reservamos el derecho de modificar, suspender o discontinuar características de la plataforma temporal o permanentemente en cualquier momento, notificando a los usuarios a través del sitio web oficial de Myxsi o por correo electrónico cuando corresponda y con antelación razonable.</p>
+
+                <h2><i class="fa-solid fa-scale-balanced"></i> 6. Limitación de Responsabilidad</h2>
+                <p>Myxsi se proporciona "tal cual" y "según disponibilidad". No otorgamos garantías explícitas o implícitas sobre la idoneidad del servicio para un propósito particular. En ningún caso Myxsi será responsable por daños indirectos, incidentales o consecuentes derivados del uso del servicio.</p>
+
+                <h2><i class="fa-solid fa-gavel"></i> 7. Ley Aplicable</h2>
+                <p>Estos términos se rigen por las leyes aplicables y cualquier disputa será resuelta en los tribunales competentes correspondientes al domicilio del prestador del servicio.</p>
+            </div>
+
+            <!-- ============================================ -->
+            <!-- SECCIÓN: POLÍTICA DE PRIVACIDAD -->
+            <!-- ============================================ -->
+            <div class="policy-content-section" id="privacySection">
+                <p>En Myxsi valoramos y protegemos tu privacidad. Esta política de privacidad detalla qué información recopilamos, cómo la tratamos, con quién la compartimos y las estrictas medidas de seguridad que implementamos para proteger tus datos personales, en cumplimiento con el Reglamento General de Protección de Datos (GDPR) y otras normativas aplicables.</p>
+
+                <div class="notice-box">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <div>
+                        <strong>Privacidad Garantizada en tu Google Drive:</strong> Myxsi utiliza un flujo seguro 100% del lado del cliente (Client-Side). <strong>Nuestros servidores nunca reciben, registran ni almacenan tus contraseñas, tokens de acceso de Google o archivos personales.</strong> La conexión con Google Drive se realiza exclusivamente entre tu navegador y los servidores de Google.
+                    </div>
+                </div>
+
+                <h2><i class="fa-solid fa-database"></i> 1. Información que Recopilamos</h2>
+                <p>Recopilamos la información estrictamente necesaria para brindarte la mejor experiencia de aprendizaje personalizada:</p>
+                <ul>
+                    <li><strong>Datos de Cuenta:</strong> Dirección de correo electrónico, nombre para mostrar y datos básicos del perfil (XP, nivel, racha de estudio) para sincronizar tu progreso en nuestras bases de datos seguras (Cloudflare D1 y Firebase Auth).</li>
+                    <li><strong>Historial de Chat de Estudio:</strong> Preguntas y respuestas intercambiadas con el asistente inteligente para permitirte reanudar conversaciones y mejorar la continuidad de tu aprendizaje.</li>
+                    <li><strong>Datos de Uso Anónimos:</strong> Métricas agregadas y anónimas sobre el uso de la plataforma para mejorar nuestros servicios (sin identificar usuarios individuales).</li>
+                </ul>
+
+                <h2><i class="fa-brands fa-google-drive"></i> 2. Uso y Acceso a Datos de Google Drive</h2>
+                <p>Cuando habilitas de forma voluntaria la sección "Archivos", solicitamos autorización específica a través de Google OAuth 2.0 para conectarnos a la <strong>Google Drive API</strong>. Esta sección describe de manera transparente cómo manejamos esta integración:</p>
+                <ul>
+                    <li><strong>Permiso Solicitado y Principio de Mínimo Privilegio:</strong> Solicitamos únicamente el ámbito (scope) <code>https://www.googleapis.com/auth/drive.file</code>. Este permiso restringido garantiza que nuestra aplicación <strong>no tiene acceso a todos tus archivos de Drive</strong>. Solo podemos ver, crear, modificar y eliminar los archivos y carpetas que hayan sido <strong>creados por Myxsi</strong> o que tú hayas <strong>abierto explícitamente</strong> con nuestra aplicación mediante el selector de archivos de Google (Google Picker).</li>
+                    <li><strong>Almacenamiento Local de Tokens:</strong> El token de acceso temporal provisto de forma segura por Google se guarda exclusivamente en el almacenamiento local de tu navegador (<code>localStorage</code>) con una duración limitada de 1 hora. No utilizamos cookies de terceros ni almacenamiento en servidores para este fin.</li>
+                    <li><strong>Flujo de Datos 100% Cliente-Servidor Google:</strong> Todas las llamadas a la API para listar, leer, renombrar, subir o eliminar archivos se envían directamente desde tu navegador a los servidores oficiales de Google (Google APIs) a través de conexiones HTTPS cifradas. El backend de Myxsi no actúa como intermediario, no tiene acceso a tus archivos y no los almacena en ningún momento.</li>
+                    <li><strong>Control Total y Revocación Inmediata:</strong> Puedes desconectar tu Google Drive al instante pulsando el botón <strong>"Desvincular"</strong> en la sección de Archivos, lo que eliminará de inmediato todos los tokens de acceso de tu navegador. Adicionalmente, puedes revocar los permisos de forma permanente y definitiva desde la <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style="color: var(--violet-soft); text-decoration: none;">página de permisos de aplicaciones de tu cuenta de Google</a>.</li>
+                </ul>
+
+                <h2><i class="fa-solid fa-lock"></i> 3. Seguridad de Datos</h2>
+                <p>Implementamos múltiples capas de seguridad técnicas y organizativas para salvaguardar tu información personal:</p>
+                <ul>
+                    <li>Cifrado HTTPS absoluto (TLS 1.3) en todas las transferencias de datos entre tu navegador y nuestros servidores.</li>
+                    <li>Autenticación segura federada mediante Firebase Authentication con estándares OAuth 2.0 y OpenID Connect.</li>
+                    <li>Protección perimetral mediante cortafuegos de aplicaciones web (WAF) y mitigaciones DDoS en la red global de Cloudflare.</li>
+                    <li>Bases de datos aisladas y cifradas en reposo (Cloudflare D1).</li>
+                    <li>Monitoreo continuo de seguridad y actualizaciones regulares de dependencias.</li>
+                </ul>
+
+                 <h2 id="retencion-eliminacion"><i class="fa-solid fa-trash-can"></i> 4. Retención y Eliminación de Datos</h2>
+                <p><strong>Tus datos te pertenecen.</strong> Mantendremos tu información de cuenta e historial de estudio únicamente mientras tu cuenta permanezca activa. Te ofrecemos control total sobre tus datos:</p>
+                <ul>
+                    <li><strong>Eliminación de Cuenta:</strong> Puedes solicitar la eliminación completa y permanente de tu cuenta y todos los datos asociados en cualquier momento desde la configuración de tu perfil dentro de la aplicación o escribiendo a <a href="mailto:soporte@myxsi.com" style="color: var(--violet-soft); text-decoration: none;">soporte@myxsi.com</a>. Procesaremos la solicitud y eliminaremos todos tus datos personales de nuestras bases de datos seguras (Cloudflare D1 y Firebase) en un plazo máximo de 30 días naturales, notificándote una vez completado el proceso.</li>
+                    <li><strong>Datos en Google Drive:</strong> Como se mencionó en la sección 2, Myxsi no almacena copias de tus archivos de Google Drive. Para revocar el acceso, puedes hacerlo instantáneamente desde nuestra aplicación o desde la <a href="https://myaccount.google.com/permissions" target="_blank" rel="noopener noreferrer" style="color: var(--violet-soft); text-decoration: none;">configuración de seguridad de Google</a>.</li>
+                    <li><strong>Datos de IA:</strong> Las conversaciones con la inteligencia artificial se almacenan para mantener el contexto de estudio, pero puedes solicitar su eliminación en cualquier momento sin necesidad de eliminar tu cuenta completa.</li>
+                </ul>
+
+                <h2><i class="fa-solid fa-user-shield"></i> 5. Tus Derechos sobre tus Datos</h2>
+                <p>Como usuario, tienes los siguientes derechos sobre tu información personal:</p>
+                <ul>
+                    <li><strong>Acceso:</strong> Solicitar una copia de los datos personales que mantenemos sobre ti.</li>
+                    <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos.</li>
+                    <li><strong>Supresión:</strong> Solicitar la eliminación de tus datos ("derecho al olvido").</li>
+                    <li><strong>Portabilidad:</strong> Recibir tus datos en un formato estructurado y de uso común.</li>
+                    <li><strong>Oposición:</strong> Oponerte al procesamiento de tus datos para fines específicos.</li>
+                </ul>
+                <p>Para ejercer cualquiera de estos derechos, contáctanos en <a href="mailto:soporte@myxsi.com" style="color: var(--violet-soft); text-decoration: none;">soporte@myxsi.com</a>. Responderemos a tu solicitud en un plazo máximo de 30 días.</p>
+
+                <h2><i class="fa-solid fa-share-nodes"></i> 6. Compartición de Datos con Terceros</h2>
+                <p><strong>No vendemos, alquilamos ni compartimos tus datos personales con terceros</strong> con fines comerciales o publicitarios. Utilizamos los siguientes proveedores de infraestructura como encargados del tratamiento, únicamente para operar el servicio:</p>
+                <ul>
+                    <li><strong>Google LLC</strong> (Firebase Auth, Google Drive API) — solo para autenticación y la funcionalidad de archivos que tú actives explícitamente.</li>
+                    <li><strong>Cloudflare Inc.</strong> (D1 Database, WAF, CDN) — para almacenamiento seguro de datos y protección de la infraestructura.</li>
+                </ul>
+                <p>Estos proveedores están sujetos a cláusulas contractuales estándar y cumplen con las normativas de protección de datos aplicables (GDPR, CCPA).</p>
+
+                <h2><i class="fa-solid fa-cookie-bite"></i> 7. Cookies y Tecnologías de Seguimiento</h2>
+                <p>Myxsi utiliza exclusivamente cookies técnicas esenciales para mantener tu sesión activa y garantizar la seguridad de tu cuenta. <strong>No utilizamos cookies de seguimiento, publicidad comportamental ni tecnologías de fingerprinting.</strong> No integramos servicios de analítica de terceros que rastreen tu actividad entre sitios web.</p>
+
+                <h2><i class="fa-solid fa-child"></i> 8. Privacidad de Menores</h2>
+                <p>Myxsi no está dirigido a menores de 13 años. No recopilamos conscientemente información personal de niños. Si eres padre/madre o tutor y tienes conocimiento de que un menor ha proporcionado datos personales sin consentimiento, contáctanos de inmediato para proceder a su eliminación.</p>
+
+                <h2><i class="fa-solid fa-pen-to-square"></i> 9. Cambios en esta Política</h2>
+                <p>Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento. Los cambios entrarán en vigor inmediatamente después de su publicación en esta página. Te notificaremos por correo electrónico o mediante un aviso destacado en la plataforma en caso de cambios sustanciales. Te recomendamos revisar esta página periódicamente para estar informado de cómo protegemos tu información.</p>
+
+                <h2><i class="fa-solid fa-envelope"></i> 10. Contacto y Delegado de Protección de Datos</h2>
+                <p>Si tienes preguntas, inquietudes o deseas presentar una reclamación sobre cómo manejamos tus datos personales, no dudes en contactarnos a través de los siguientes canales:</p>
+                <ul>
+                    <li><strong>Correo electrónico:</strong> <a href="mailto:soporte@myxsi.com" style="color: var(--violet-soft); text-decoration: none;">soporte@myxsi.com</a></li>
+                    <li><strong>Tiempo de respuesta:</strong> Nos comprometemos a responder todas las consultas relacionadas con privacidad en un plazo máximo de 48 horas hábiles.</li>
+                <h2><i class="fa-solid fa-code-branch"></i> 6. Créditos y Licencias de Código Abierto</h2>
+                <p>En Myxsi respaldamos el software de código abierto y otorgamos el debido reconocimiento a los desarrolladores y creadores de los proyectos cuya tecnología inspira y potencia nuestra suite de herramientas:</p>
+                <ul>
+                    <li><strong>HyCanvas Engine:</strong> Creado por NetTantra Technologies (India) Private Limited / HyScaler (licenciado bajo Elastic License 2.0). La arquitectura de dibujo vectorial, lienzo interactivo y herramientas de diseño serve como motor fundamental para la experiencia de esquemas y diagramas en <strong>Myxsi Canva</strong>.</li>
+                    <li><strong>Casual Office Suite (Casual Docs, Casual Sheets, PDF Editor):</strong> Desarrollado como proyecto open source bajo licencias libres <strong>MIT</strong> y <strong>Apache 2.0</strong>. Provee los principios de compatibilidad con archivos <code>.docx</code>, <code>.xlsx</code> y procesamiento de hojas de cálculo y documentos de oficina en Myxsi.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="back-home">
+            <a href="index.html"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio de Sesión</a>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const termsBtn = document.getElementById('tabTermsBtn');
+            const privacyBtn = document.getElementById('tabPrivacyBtn');
+            const termsSection = document.getElementById('termsSection');
+            const privacySection = document.getElementById('privacySection');
+
+            if (tab === 'terms') {
+                termsBtn.classList.add('active');
+                privacyBtn.classList.remove('active');
+                termsSection.classList.add('active');
+                privacySection.classList.remove('active');
+                // Update URL hash without reloading page
+                history.replaceState(null, null, '#terms');
+            } else {
+                termsBtn.classList.remove('active');
+                privacyBtn.classList.add('active');
+                termsSection.classList.remove('active');
+                privacySection.classList.add('active');
+                // Update URL hash without reloading page
+                history.replaceState(null, null, '#privacy');
+            }
+        }
+        
+        // Make switchTab available globally
+        window.switchTab = switchTab;
+
+        // Soporte para leer el hash de la URL y abrir la pestaña correspondiente automáticamente
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash;
+            if (hash === '#privacy') {
+                switchTab('privacy');
+            } else if (hash === '#terms') {
+                switchTab('terms');
+            } else {
+                // Default: mostrar términos activo
+                switchTab('terms');
+            }
+        });
+    </script>
+<!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4bc0f4c7ccb04906a6a10e2d597b8b8d"}'></script><!-- Cloudflare Pages Analytics --></body>
+</html>

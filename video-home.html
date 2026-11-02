@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myxsi Video Studio — Editor de Video Profesional con Motor Drift</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Google Fonts oficiales de Myxsi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- CSS Base de Myxsi Chat -->
+    <link rel="stylesheet" href="CSS/chat.css?v=5.7.0">
+
+    <script>
+        (function() {
+            function syncBrowserTheme() {
+                const saved = localStorage.getItem('myxsi_theme') || localStorage.getItem('theme');
+                let isDark = true;
+                if (saved) {
+                    isDark = (saved === 'dark');
+                } else if (window.matchMedia) {
+                    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.classList.add('dark');
+                    if (document.body) document.body.classList.add('dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    document.documentElement.classList.remove('dark');
+                    if (document.body) document.body.classList.remove('dark');
+                }
+            }
+            syncBrowserTheme();
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncBrowserTheme);
+            }
+        })();
+    </script>
+
+    <style>
+        :root {
+            --mx-bg-base: #f1f4f9;
+            --mx-surface-panel: rgba(255, 255, 255, 0.85);
+            --mx-surface-card: #ffffff;
+            --mx-border-subtle: rgba(203, 213, 225, 0.7);
+            --mx-border-focus: rgba(254, 181, 4, 0.5);
+            --mx-brand-grad: linear-gradient(135deg, #feb504 0%, #ea580c 100%);
+            --mx-brand-primary: #feb504;
+            --mx-txt-main: #0f172a;
+            --mx-txt-sub: #475569;
+            --mx-txt-mute: #94a3b8;
+            --mx-header-bg: rgba(255, 255, 255, 0.85);
+            --mx-sidebar-bg: rgba(255, 255, 255, 0.95);
+            --mx-accent-amber: #feb504;
+            --mx-accent-glow: rgba(254, 181, 4, 0.25);
+        }
+
+        html.dark {
+            --mx-bg-base: #090614;
+            --mx-surface-panel: rgba(18, 12, 36, 0.85);
+            --mx-surface-card: rgba(24, 16, 48, 0.85);
+            --mx-border-subtle: rgba(255, 255, 255, 0.08);
+            --mx-border-focus: rgba(254, 181, 4, 0.5);
+            --mx-brand-grad: linear-gradient(135deg, #feb504 0%, #f97316 100%);
+            --mx-brand-primary: #feb504;
+            --mx-txt-main: #f8fafc;
+            --mx-txt-sub: #94a3b8;
+            --mx-txt-mute: #64748b;
+            --mx-header-bg: rgba(13, 8, 28, 0.85);
+            --mx-sidebar-bg: rgba(16, 10, 34, 0.95);
+            --mx-accent-amber: #feb504;
+            --mx-accent-glow: rgba(254, 181, 4, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--mx-bg-base);
+            color: var(--mx-txt-main);
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+            height: 100dvh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* LAYOUT PRINCIPAL */
+        .myxsi-studio-layout {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* BARRA LATERAL (SIDEBAR) */
+        .myxsi-sidebar, .sidebar {
+            width: 280px !important;
+            min-width: 280px !important;
+            height: 100% !important;
+            background: var(--mx-sidebar-bg) !important;
+            border-right: 1px solid var(--mx-border-subtle) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 0.85rem 0.75rem !important;
+            z-index: 50 !important;
+            backdrop-filter: blur(20px) !important;
+            transition: all 0.25s ease !important;
+            box-sizing: border-box !important;
+        }
+
+        .myxsi-sidebar.collapsed, .sidebar.collapsed {
+            width: 0 !important;
+            min-width: 0 !important;
+            padding: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+            overflow: hidden !important;
+        }
+
+        .sidebar-brand-area, .main-sidebar-brand-area {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            text-align: center !important;
+            margin-bottom: 0.5rem !important;
+            padding: 2px 0 !important;
+            height: 50px !important;
+            border-bottom: none !important;
+            box-sizing: border-box !important;
+        }
+
+        .sidebar-brand-logo, .brand-logo {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            text-decoration: none !important;
+        }
+
+        .sidebar-brand-logo img, .brand-logo-img {
+            height: 24px !important;
+            width: auto !important;
+            max-width: 160px !important;
+            margin: 0 auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            filter: drop-shadow(0 2px 10px rgba(254, 181, 4, 0.25)) !important;
+        }
+
+        .btn-new-project-main {
+            width: 100% !important;
+            padding: 6px 12px !important;
+            height: 34px !important;
+            border-radius: 9px !important;
+            background: linear-gradient(135deg, #feb504 0%, #ea580c 100%) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            color: #000000 !important;
+            font-weight: 700 !important;
+            font-size: 0.82rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
+            cursor: pointer !important;
+            box-shadow: 0 2px 10px rgba(254, 181, 4, 0.3) !important;
+            transition: all 0.2s ease !important;
+            margin-bottom: 8px !important;
+            box-sizing: border-box !important;
+        }
+
+        .btn-new-project-main:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(254, 181, 4, 0.45);
+            filter: brightness(1.05);
+        }
+
+        .main-sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 0.35rem;
+        }
+
+        .main-sidebar-menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 10px;
+            height: 32px;
+            min-height: 32px;
+            border-radius: 8px;
+            color: var(--mx-txt-sub);
+            text-decoration: none;
+            font-size: 0.81rem;
+            font-weight: 550;
+            transition: all 0.18s ease;
+            box-sizing: border-box;
+        }
+
+        .main-sidebar-menu .menu-item i {
+            font-size: 0.85rem;
+            width: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .main-sidebar-menu .menu-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--mx-txt-main);
+        }
+
+        .main-sidebar-menu .menu-item.active {
+            background: rgba(254, 181, 4, 0.15);
+            color: #feb504;
+            border: 1px solid rgba(254, 181, 4, 0.3);
+            font-weight: 700;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: var(--mx-border-subtle);
+            margin: 8px 0;
+        }
+
+        /* DRIFT ENGINE BADGE IN SIDEBAR */
+        .drift-badge-box {
+            margin-top: auto;
+            background: rgba(254, 181, 4, 0.06);
+            border: 1px solid rgba(254, 181, 4, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .drift-badge-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #feb504;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: 900;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .drift-badge-text h5 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            margin-bottom: 2px;
+        }
+
+        .drift-badge-text p {
+            font-size: 0.68rem;
+            color: var(--mx-txt-sub);
+        }
+
+        /* ÁREA PRINCIPAL DE CONTENIDO */
+        .video-viewport-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+            background: radial-gradient(circle at 80% 10%, rgba(254, 181, 4, 0.05) 0%, transparent 40%),
+                        radial-gradient(circle at 20% 90%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+        }
+
+        /* TOPBAR DEL DASHBOARD */
+        .video-header-bar {
+            height: 64px;
+            background: var(--mx-header-bg);
+            border-bottom: 1px solid var(--mx-border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            backdrop-filter: blur(16px);
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--mx-txt-sub);
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle-sidebar:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--mx-txt-main);
+        }
+
+        .video-brand-heading {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--mx-txt-main);
+        }
+
+        .video-brand-heading span {
+            color: #feb504;
+        }
+
+        .badge-drift-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 6px;
+            background: rgba(254, 181, 4, 0.15);
+            border: 1px solid rgba(254, 181, 4, 0.35);
+            color: #feb504;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .header-search-container {
+            flex: 1;
+            max-width: 520px;
+            position: relative;
+        }
+
+        .header-search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--mx-border-subtle);
+            border-radius: 9999px;
+            padding: 8px 16px;
+            gap: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .header-search-box:focus-within {
+            border-color: #feb504;
+            box-shadow: 0 0 15px rgba(254, 181, 4, 0.2);
+        }
+
+        .header-search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--mx-txt-main);
+            font-size: 0.88rem;
+            flex: 1;
+        }
+
+        .header-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-round-action {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--mx-border-subtle);
+            color: var(--mx-txt-sub);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-round-action:hover {
+            color: var(--mx-txt-main);
+            border-color: #feb504;
+            background: rgba(254, 181, 4, 0.1);
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .video-content-body {
+            padding: 2.2rem 2.5rem 4rem;
+            max-width: 1320px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2.4rem;
+        }
+
+        /* HERO BANNER */
+        .video-hero-banner {
+            background: linear-gradient(135deg, rgba(25, 17, 46, 0.9) 0%, rgba(16, 10, 32, 0.95) 100%);
+            border: 1px solid rgba(254, 181, 4, 0.25);
+            border-radius: 20px;
+            padding: 2.4rem 2.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .video-hero-banner::before {
+            content: '';
+            position: absolute;
+            top: -60px;
+            right: -60px;
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, rgba(254, 181, 4, 0.25) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .hero-banner-content {
+            max-width: 680px;
+            z-index: 2;
+        }
+
+        .hero-banner-content h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 850;
+            line-height: 1.15;
+            color: #ffffff;
+            margin-bottom: 0.8rem;
+            letter-spacing: -0.03em;
+        }
+
+        .hero-banner-content h1 span {
+            background: linear-gradient(135deg, #feb504 20%, #f97316 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-banner-content p {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 1.6rem;
+        }
+
+        .hero-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-launch-editor {
+            padding: 11px 22px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #feb504 0%, #ea580c 100%);
+            border: none;
+            color: #000000;
+            font-weight: 750;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 20px rgba(254, 181, 4, 0.35);
+        }
+
+        .btn-launch-editor:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(254, 181, 4, 0.5);
+            filter: brightness(1.05);
+        }
+
+        .btn-open-files-action {
+            padding: 11px 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-weight: 650;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-open-files-action:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(254, 181, 4, 0.5);
+            color: #feb504;
+        }
+
+        .hero-banner-icon-side {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .drift-logo-hero {
+            width: 140px;
+            height: 140px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 25px rgba(254, 181, 4, 0.4));
+            animation: heroFloat 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes heroFloat {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-8px) scale(1.02); }
+        }
+
+        /* FORMAT PRESETS ROW (FORMATOS SOCIALES Y CINEMA) */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.1rem;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 750;
+            color: var(--mx-txt-main);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #feb504;
+        }
+
+        .preset-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 16px;
+        }
+
+        .preset-card {
+            background: var(--mx-surface-card);
+            border: 1px solid var(--mx-border-subtle);
+            border-radius: 16px;
+            padding: 1.4rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preset-card:hover {
+            border-color: rgba(254, 181, 4, 0.5);
+            box-shadow: 0 10px 25px rgba(254, 181, 4, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .preset-card-preview {
+            width: 68px;
+            height: 68px;
+            border-radius: 14px;
+            background: rgba(254, 181, 4, 0.08);
+            border: 1px solid rgba(254, 181, 4, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #feb504;
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .preset-card:hover .preset-card-preview {
+            background: #feb504;
+            color: #000000;
+            transform: scale(1.08);
+        }
+
+        .preset-card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            margin-bottom: 4px;
+        }
+
+        .preset-card-ratio {
+            font-size: 0.76rem;
+            font-weight: 650;
+            color: #feb504;
+            background: rgba(254, 181, 4, 0.12);
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .preset-card-desc {
+            font-size: 0.74rem;
+            color: var(--mx-txt-sub);
+            line-height: 1.4;
+        }
+
+        /* ZONA DE CARGA LOCAL DE VIDEOS */
+        .video-local-upload-section {
+            margin: 1.5rem 0 2rem;
+        }
+
+        .video-local-dropzone {
+            background: linear-gradient(135deg, rgba(254, 181, 4, 0.05) 0%, rgba(139, 92, 246, 0.04) 100%);
+            border: 2px dashed rgba(254, 181, 4, 0.35);
+            border-radius: 20px;
+            padding: 2.2rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+        }
+
+        .video-local-dropzone:hover, .video-local-dropzone.drag-over {
+            background: linear-gradient(135deg, rgba(254, 181, 4, 0.12) 0%, rgba(139, 92, 246, 0.08) 100%);
+            border-color: #feb504;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(254, 181, 4, 0.15);
+        }
+
+        .dropzone-icon-circle {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            background: rgba(254, 181, 4, 0.15);
+            border: 1px solid rgba(254, 181, 4, 0.4);
+            color: #feb504;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            flex-shrink: 0;
+            transition: all 0.25s ease;
+        }
+
+        .video-local-dropzone:hover .dropzone-icon-circle {
+            transform: scale(1.08);
+            background: #feb504;
+            color: #0b0716;
+        }
+
+        .dropzone-text-group {
+            flex: 1;
+        }
+
+        .dropzone-text-group h3 {
+            font-size: 1.05rem;
+            font-weight: 750;
+            color: var(--mx-txt-main);
+            margin-bottom: 4px;
+        }
+
+        .dropzone-text-group p {
+            font-size: 0.82rem;
+            color: var(--mx-txt-sub);
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .dropzone-formats-tag {
+            display: inline-block;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #feb504;
+            background: rgba(254, 181, 4, 0.1);
+            padding: 2px 10px;
+            border-radius: 6px;
+        }
+
+        .btn-dropzone-browse {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #feb504 0%, #e09b00 100%);
+            color: #0b0716;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-dropzone-browse:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(254, 181, 4, 0.4);
+        }
+
+        /* PROYECTOS RECIENTES */
+        .projects-list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 18px;
+        }
+
+        .project-card {
+            background: var(--mx-surface-card);
+            border: 1px solid var(--mx-border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.25s ease;
+        }
+
+        .project-card:hover {
+            border-color: rgba(254, 181, 4, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .project-thumbnail-area {
+            height: 150px;
+            background: #0f0a20;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .project-thumb-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.65;
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover .project-thumb-bg {
+            transform: scale(1.05);
+            opacity: 0.8;
+        }
+
+        .project-play-hover {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(254, 181, 4, 0.9);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.2s ease;
+        }
+
+        .project-card:hover .project-play-hover {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .project-badge-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.75);
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 6px;
+            backdrop-filter: blur(4px);
+        }
+
+        .project-badge-ratio {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(254, 181, 4, 0.9);
+            color: #000;
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 6px;
+        }
+
+        .project-info-area {
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .project-title {
+            font-size: 0.92rem;
+            font-weight: 750;
+            color: var(--mx-txt-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .project-meta-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.74rem;
+            color: var(--mx-txt-mute);
+        }
+
+        .project-actions-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid var(--mx-border-subtle);
+        }
+
+        .btn-project-edit {
+            flex: 1;
+            padding: 7px 12px;
+            border-radius: 8px;
+            background: rgba(254, 181, 4, 0.12);
+            border: 1px solid rgba(254, 181, 4, 0.25);
+            color: #feb504;
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-project-edit:hover {
+            background: #feb504;
+            color: #000000;
+        }
+
+        .btn-project-delete {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-project-delete:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .empty-projects-state {
+            grid-column: 1 / -1;
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--mx-surface-card);
+            border: 1px dashed var(--mx-border-subtle);
+            border-radius: 20px;
+        }
+
+        .empty-projects-state i {
+            font-size: 2.8rem;
+            color: #feb504;
+            margin-bottom: 12px;
+        }
+
+        .empty-projects-state h3 {
+            font-size: 1.15rem;
+            font-weight: 750;
+            margin-bottom: 6px;
+        }
+
+        .empty-projects-state p {
+            font-size: 0.84rem;
+            color: var(--mx-txt-sub);
+            max-width: 440px;
+            margin: 0 auto 1.4rem;
+        }
+
+        @media (max-width: 900px) {
+            .myxsi-sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                transform: translateX(-100%);
+            }
+            .myxsi-sidebar.open {
+                transform: translateX(0);
+            }
+            .video-hero-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1.8rem;
+            }
+            .hero-banner-icon-side {
+                display: none;
+            }
+            .video-content-body {
+                padding: 1.5rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="myxsi-studio-layout">
+        
+        <!-- SIDEBAR DE NAVEGACIÓN -->
+        <aside class="sidebar myxsi-sidebar" id="sidebar">
+            <div class="main-sidebar-brand-area sidebar-brand-area" style="display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 0.5rem; padding: 2px 0;">
+                <a href="index.html" class="brand-logo sidebar-brand-logo" title="Ir al Inicio de Myxsi" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
+                    <img src="assets/designer_corner_logo.png" alt="Myxsi" class="brand-logo-img brand-logo-light" style="height: 24px; width: auto;">
+                    <img src="assets/designer_corner_logo_dark.png" alt="Myxsi" class="brand-logo-img brand-logo-dark" style="height: 24px; width: auto;">
+                </a>
+            </div>
+
+            <button class="sidebar-new-chat-btn btn-new-project-main" onclick="createNewProject('16:9')">
+                <i class="fa-solid fa-plus" style="font-size: 0.8rem;"></i> <span>Nuevo Proyecto</span>
+            </button>
+
+            <!-- Menú de Navegación Myxsi -->
+            <nav class="main-sidebar-menu">
+                <a href="chat.html" class="menu-item" id="menuBtnInicio">
+                    <i class="fa-regular fa-comment-dots" style="font-size: 0.85rem; width: 16px; text-align: center; color: #a78bfa;"></i> <span>Chat IA</span>
+                </a>
+                <a href="docs-home.html" class="menu-item" id="menuBtnDocs">
+                    <i class="fa-regular fa-file-lines" style="font-size: 0.85rem; width: 16px; text-align: center; color: #60a5fa;"></i> <span>Docs Studio</span>
+                </a>
+                <a href="sheets-home.html" class="menu-item" id="menuBtnSheets">
+                    <i class="fa-solid fa-table-cells" style="font-size: 0.85rem; width: 16px; text-align: center; color: #34d399;"></i> <span>Sheets Studio</span>
+                </a>
+                <a href="canva-home.html" class="menu-item" id="menuBtnCanva">
+                    <i class="fa-solid fa-palette" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f472b6;"></i> <span>Canva Studio</span>
+                </a>
+                <a href="video-home.html" class="menu-item active" id="menuBtnVideo">
+                    <i class="fa-solid fa-video" style="font-size: 0.85rem; width: 16px; text-align: center; color: #feb504;"></i> <span>Video Studio</span>
+                </a>
+                <a href="files.html" class="menu-item" id="menuBtnResources">
+                    <i class="fa-regular fa-folder" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f59e0b;"></i> <span>Archivos</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- DRIFT ENGINE INFO BADGE -->
+            <div class="drift-badge-box">
+                <div class="drift-badge-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div class="drift-badge-text">
+                    <h5>Motor Drift Integrado</h5>
+                    <p>Shader FX & Multipista Pro</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ESCENARIO DE VISTA Y CONTENIDO -->
+        <main class="video-viewport-stage">
+            
+            <!-- TOPBAR ELEGANTE -->
+            <header class="video-header-bar">
+                <div class="header-title-box">
+                    <button class="btn-toggle-sidebar" onclick="toggleSidebar()" title="Alternar menú lateral">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <span class="video-brand-heading">Myxsi <span>Video</span></span>
+                    <span class="badge-drift-tag">Drift Engine</span>
+                </div>
+
+                <div class="header-search-container">
+                    <div class="header-search-box">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--mx-txt-mute); font-size: 0.85rem;"></i>
+                        <input type="text" id="videoSearchInput" placeholder="Buscar en tus proyectos de video y plantillas..." oninput="filterProjects(this.value)">
+                    </div>
+                </div>
+
+                <div class="header-right-actions">
+                    <button class="btn-round-action" onclick="toggleTheme()" title="Cambiar tema">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <a href="chat.html" class="btn-round-action" title="Ir a Chat IA">
+                        <i class="fa-regular fa-comment-dots"></i>
+                    </a>
+                </div>
+            </header>
+
+            <!-- CUERPO DEL HUB -->
+            <div class="video-content-body">
+                
+                <!-- HERO BANNER -->
+                <section class="video-hero-banner">
+                    <div class="hero-banner-content">
+                        <h1>Crea videos extraordinarios. <span>Potenciado por Drift.</span></h1>
+                        <p>
+                            Editor de video profesional multipista con más de 70 efectos visuales GLSL, transiciones cinemáticas, animaciones de texto y mezclador de audio integrado. Exporta en Full HD y 4K sin marcas de agua ni suscripciones.
+                        </p>
+                        <div class="hero-banner-actions">
+                            <a href="video.html" class="btn-launch-editor">
+                                <i class="fa-solid fa-play"></i> Abrir Video Studio
+                            </a>
+                            <button class="btn-open-files-action" onclick="document.getElementById('fileUploadInput').click()">
+                                <i class="fa-solid fa-file-import"></i> Importar Video / Audio
+                            </button>
+                            <input type="file" id="fileUploadInput" accept="video/*,audio/*,image/*" style="display: none;" onchange="handleDirectImport(event)">
+                        </div>
+                    </div>
+                    <div class="hero-banner-icon-side">
+                        <img src="assets/drift_icon.png" alt="Drift Video Engine" class="drift-logo-hero" onerror="this.style.display='none'">
+                    </div>
+                </section>
+
+                <!-- FORMATOS SOCIALES Y PRESETS -->
+                <section>
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa-solid fa-clapperboard"></i> Formato de Proyecto Rápido
+                        </h2>
+                    </div>
+
+                    <div class="preset-cards-grid">
+                        <!-- 16:9 Panorámico -->
+                        <div class="preset-card" onclick="createNewProject('16:9')">
+                            <div class="preset-card-preview">
+                                <i class="fa-solid fa-desktop"></i>
+                            </div>
+                            <span class="preset-card-ratio">16:9 (1920x1080)</span>
+                            <h3 class="preset-card-title">YouTube & Cinema</h3>
+                            <p class="preset-card-desc">Videos horizontales, tutoriales, podcasts y documentales.</p>
+                        </div>
+
+                        <!-- 9:16 Vertical -->
+                        <div class="preset-card" onclick="createNewProject('9:16')">
+                            <div class="preset-card-preview">
+                                <i class="fa-solid fa-mobile-screen"></i>
+                            </div>
+                            <span class="preset-card-ratio">9:16 (1080x1920)</span>
+                            <h3 class="preset-card-title">Reels, Shorts & TikTok</h3>
+                            <p class="preset-card-desc">Formato vertical de alta retención para redes sociales.</p>
+                        </div>
+
+                        <!-- 1:1 Cuadrado -->
+                        <div class="preset-card" onclick="createNewProject('1:1')">
+                            <div class="preset-card-preview">
+                                <i class="fa-solid fa-square"></i>
+                            </div>
+                            <span class="preset-card-ratio">1:1 (1080x1080)</span>
+                            <h3 class="preset-card-title">Feed Social Cuadrado</h3>
+                            <p class="preset-card-desc">Perfecto para carruseles, publicaciones y anuncios.</p>
+                        </div>
+
+                        <!-- 4:5 Retrato -->
+                        <div class="preset-card" onclick="createNewProject('4:5')">
+                            <div class="preset-card-preview">
+                                <i class="fa-solid fa-image"></i>
+                            </div>
+                            <span class="preset-card-ratio">4:5 (1080x1350)</span>
+                            <h3 class="preset-card-title">Retrato Instagram</h3>
+                            <p class="preset-card-desc">Ocupa el máximo espacio vertical en el feed móvil.</p>
+                        </div>
+
+                        <!-- Plantilla Drift FX -->
+                        <div class="preset-card" onclick="createNewProject('16:9', 'drift_template')">
+                            <div class="preset-card-preview" style="background: rgba(254, 181, 4, 0.2);">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <span class="preset-card-ratio">Plantilla Drift FX</span>
+                            <h3 class="preset-card-title">Cinematic Glow & VHS</h3>
+                            <p class="preset-card-desc">Preconfigurado con efectos retro, títulos y audio.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ZONA DE IMPORTACIÓN LOCAL DE VIDEOS (100% LOCAL Y PRIVADO) -->
+                <section class="video-local-upload-section">
+                    <div class="video-local-dropzone" id="videoHomeDropzone" onclick="document.getElementById('fileUploadInput').click()">
+                        <div class="dropzone-icon-circle">
+                            <i class="fa-solid fa-cloud-arrow-up"></i>
+                        </div>
+                        <div class="dropzone-text-group">
+                            <h3>Subir Video desde tu Equipo</h3>
+                            <p>Arrastra tu archivo aquí o haz clic para explorar. Los videos se procesan y almacenan 100% de forma local en tu navegador.</p>
+                            <span class="dropzone-formats-tag">Formatos compatibles: MP4, WebM, MOV, MKV, AVI, Audio MP3 / WAV</span>
+                        </div>
+                        <button type="button" class="btn-dropzone-browse">
+                            <i class="fa-solid fa-folder-open"></i> Seleccionar archivo
+                        </button>
+                    </div>
+                </section>
+
+                <!-- MIS PROYECTOS RECIENTES -->
+                <section>
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa-solid fa-folder-open"></i> Proyectos Recientes
+                        </h2>
+                        <button class="btn-launch-editor" onclick="createNewProject('16:9')" style="padding: 7px 16px; font-size: 0.82rem;">
+                            <i class="fa-solid fa-plus"></i> Crear proyecto
+                        </button>
+                    </div>
+
+                    <div class="projects-list-container" id="projectsListContainer">
+                        <!-- Inyectado dinámicamente con JavaScript -->
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="js/video-db.js"></script>
+    <script>
+        // Gestor de Tema
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('myxsi_theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('myxsi_theme', 'dark');
+            }
+        }
+
+        function toggleSidebar() {
+            const sb = document.getElementById('sidebar');
+            if (sb) sb.classList.toggle('collapsed');
+        }
+
+        function getEditorPage() {
+            return (window.innerWidth <= 850 || ('ontouchstart' in window && window.innerWidth <= 1024)) ? 'video-mobile.html' : 'video.html';
+        }
+
+        // Crear nuevo proyecto
+        async function createNewProject(ratio, template) {
+            const timestamp = Date.now();
+            const projectId = 'video_' + timestamp;
+            const projectTitle = 'Video Proyecto #' + String(timestamp).slice(-4);
+
+            const newProject = {
+                id: projectId,
+                title: projectTitle,
+                ratio: ratio || '16:9',
+                template: template || 'blank',
+                duration: 10,
+                updatedAt: timestamp,
+                clips: []
+            };
+
+            if (window.MyxsiVideoDB) {
+                await window.MyxsiVideoDB.saveProject(newProject);
+            }
+
+            // Guardar en myxsi_local_files para sincronización del ecosistema Myxsi
+            const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            localFiles.unshift({
+                id: projectId,
+                name: projectTitle + '.mp4',
+                mimeType: 'video/mp4',
+                updatedAt: timestamp,
+                isVideo: true,
+                isLocal: true,
+                ratio: ratio || '16:9'
+            });
+            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+
+            // Redirigir al editor de video según dispositivo
+            window.location.href = `${getEditorPage()}?id=${projectId}&ratio=${ratio || '16:9'}&template=${template || ''}`;
+        }
+
+        // Importación directa de archivos locales
+        async function handleDirectImport(event) {
+            const file = event.target ? event.target.files[0] : event;
+            if (!file) return;
+
+            const title = file.name.replace(/\.[^/.]+$/, "");
+            const timestamp = Date.now();
+            const projectId = 'video_' + timestamp;
+
+            // Determinar dimensiones y duración real del video local
+            let duration = 8.0;
+            let width = 1920;
+            let height = 1080;
+            let mediaType = file.type.startsWith('audio') ? 'audio' : (file.type.startsWith('image') ? 'image' : 'video');
+
+            if (mediaType === 'video' || mediaType === 'audio') {
+                try {
+                    const tempMedia = document.createElement(mediaType);
+                    tempMedia.preload = 'metadata';
+                    tempMedia.src = URL.createObjectURL(file);
+                    await new Promise((res) => {
+                        tempMedia.onloadedmetadata = () => {
+                            if (tempMedia.duration && !isNaN(tempMedia.duration)) duration = tempMedia.duration;
+                            if (tempMedia.videoWidth) width = tempMedia.videoWidth;
+                            if (tempMedia.videoHeight) height = tempMedia.videoHeight;
+                            res();
+                        };
+                        tempMedia.onerror = () => res();
+                        setTimeout(res, 2000);
+                    });
+                    URL.revokeObjectURL(tempMedia.src);
+                } catch (e) {
+                    console.warn('[VideoHome] Error analizando metadatos:', e);
+                }
+            }
+
+            // Ratio automático
+            let ratio = '16:9';
+            if (height > width * 1.2) ratio = '9:16';
+            else if (Math.abs(width - height) < 50) ratio = '1:1';
+
+            // Guardar archivo completo en IndexedDB local
+            let assetId = 'asset_' + timestamp;
+            if (window.MyxsiVideoDB) {
+                const savedAsset = await window.MyxsiVideoDB.saveAsset(file, {
+                    id: assetId,
+                    name: file.name,
+                    duration: duration,
+                    width: width,
+                    height: height
+                });
+                if (savedAsset && savedAsset.id) assetId = savedAsset.id;
+            }
+
+            // Crear proyecto inicial con el clip cargado
+            const newProject = {
+                id: projectId,
+                title: title,
+                ratio: ratio,
+                duration: Math.max(Math.ceil(duration), 5),
+                updatedAt: timestamp,
+                clips: [
+                    {
+                        id: 'clip_' + timestamp,
+                        track: mediaType === 'audio' ? 'track-audio' : 'track-video1',
+                        type: mediaType,
+                        assetId: assetId,
+                        title: title,
+                        start: 0,
+                        duration: duration,
+                        inPoint: 0,
+                        volume: 1.0,
+                        speed: 1.0
+                    }
+                ]
+            };
+
+            if (window.MyxsiVideoDB) {
+                await window.MyxsiVideoDB.saveProject(newProject);
+            }
+
+            window.location.href = `${getEditorPage()}?id=${projectId}&imported=1`;
+        }
+
+        // Cargar Proyectos Recientes (IndexedDB + LocalStorage)
+        async function loadRecentProjects() {
+            const container = document.getElementById('projectsListContainer');
+            if (!container) return;
+
+            let projects = [];
+            if (window.MyxsiVideoDB) {
+                try {
+                    projects = await window.MyxsiVideoDB.getAllProjects();
+                } catch (e) {
+                    console.warn('[VideoHome] Fallback proyectos:', e);
+                }
+            }
+
+            if (!projects || projects.length === 0) {
+                try {
+                    projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
+                } catch(e) {
+                    projects = [];
+                }
+            }
+
+            // Si está vacío, crear un proyecto demo guiado
+            if (projects.length === 0) {
+                projects = [
+                    {
+                        id: 'demo_drift_intro',
+                        title: 'Demo Reel Myxsi — Drift Engine',
+                        ratio: '16:9',
+                        duration: 12,
+                        updatedAt: Date.now() - 3600000,
+                        isDemo: true
+                    },
+                    {
+                        id: 'demo_social_reel',
+                        title: 'TikTok & Shorts — Filtro VHS Retro',
+                        ratio: '9:16',
+                        duration: 8,
+                        updatedAt: Date.now() - 7200000,
+                        isDemo: true
+                    }
+                ];
+                localStorage.setItem('myxsi_video_projects', JSON.stringify(projects));
+            }
+
+            renderProjects(projects);
+            setupDropzoneEvents();
+        }
+
+        function setupDropzoneEvents() {
+            const dropzone = document.getElementById('videoHomeDropzone');
+            if (!dropzone) return;
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add('drag-over');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove('drag-over');
+                }, false);
+            });
+
+            dropzone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) handleDirectImport(file);
+            });
+        }
+
+        function renderProjects(list) {
+            const container = document.getElementById('projectsListContainer');
+            if (!container) return;
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-projects-state">
+                        <i class="fa-solid fa-film"></i>
+                        <h3>Aún no tienes proyectos de video</h3>
+                        <p>Crea tu primer video con formato 16:9 para YouTube, 9:16 para TikTok y Reels, o importa tus propios clips.</p>
+                        <button class="btn-launch-editor" onclick="createNewProject('16:9')" style="margin: 0 auto;">
+                            <i class="fa-solid fa-plus"></i> Crear mi primer video
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = list.map(p => {
+                const dateStr = new Date(p.updatedAt || Date.now()).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+                const durStr = p.duration ? `${p.duration}s` : '10s';
+                return `
+                    <div class="project-card">
+                        <div class="project-thumbnail-area" onclick="window.location.href=\`\${getEditorPage()}?id=${p.id}\`" style="cursor: pointer;">
+                            <img src="assets/cosmic_waves_bg.webp" alt="${p.title}" class="project-thumb-bg" onerror="this.src='assets/designer_corner_logo.png'">
+                            <span class="project-badge-ratio">${p.ratio || '16:9'}</span>
+                            <span class="project-badge-duration">${durStr}</span>
+                            <div class="project-play-hover">
+                                <i class="fa-solid fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="project-info-area">
+                            <h4 class="project-title" title="${p.title}">${p.title}</h4>
+                            <div class="project-meta-row">
+                                <span><i class="fa-regular fa-clock"></i> ${dateStr}</span>
+                                <span style="color: #feb504; font-weight: 700;">Drift Core</span>
+                            </div>
+                            <div class="project-actions-row">
+                                <a href="video.html?id=${p.id}" onclick="event.preventDefault(); window.location.href=\`\${getEditorPage()}?id=${p.id}\`;" class="btn-project-edit">
+                                    <i class="fa-solid fa-pen-to-square"></i> Abrir en Editor
+                                </a>
+                                <button class="btn-project-delete" onclick="deleteProject('${p.id}')" title="Eliminar proyecto">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteProject(id) {
+            if (!confirm('¿Deseas eliminar este proyecto de video?')) return;
+            if (window.MyxsiVideoDB) {
+                await window.MyxsiVideoDB.deleteProject(id);
+            } else {
+                let projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
+                projects = projects.filter(p => p.id !== id);
+                localStorage.setItem('myxsi_video_projects', JSON.stringify(projects));
+            }
+
+            let localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            localFiles = localFiles.filter(f => f.id !== id);
+            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+
+            loadRecentProjects();
+        }
+
+        async function filterProjects(query) {
+            const q = (query || '').toLowerCase().trim();
+            let projects = [];
+            if (window.MyxsiVideoDB) projects = await window.MyxsiVideoDB.getAllProjects();
+            else projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
+
+            if (!q) {
+                renderProjects(projects);
+                return;
+            }
+            const filtered = projects.filter(p => p.title.toLowerCase().includes(q) || (p.ratio || '').includes(q));
+            renderProjects(filtered);
+        }
+
+        // Iniciar
+        document.addEventListener('DOMContentLoaded', loadRecentProjects);
+    </script>
+</body>
+</html>

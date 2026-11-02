@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Crear Cuenta — Myxsi</title>
+    <meta name="description" content="Crea tu cuenta gratis en Myxsi. Potencia tu aprendizaje, prepárate para la PAES y desarrolla tus proyectos con ayuda de Inteligencia Artificial premium.">
+    <meta name="keywords" content="crear cuenta myxsi, registrarse myxsi, registro myxsi, unirse myxsi, myxsi gratis">
+    <meta name="robots" content="index, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/registro.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+</head>
+<body>
+
+    <!-- Ambient Atmosphere -->
+    <div class="ambient">
+        <div class="space-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grain"></div>
+
+    <!-- Alerta -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- Modal de verificación -->
+    <div class="modal-overlay" id="verificationModal">
+        <div class="modal-box">
+            <div class="modal-icon">📧</div>
+            <h2>¡Revisa tu correo!</h2>
+            <p>Hemos enviado un enlace de verificación a</p>
+            <div class="modal-email" id="modalEmail">tu@correo.com</div>
+            <p>
+                Para activar tu cuenta y comenzar a usar Myxsi, 
+                haz clic en el enlace que te enviamos.
+            </p>
+            <div class="modal-note">
+                <i class="fas fa-info-circle"></i>
+                <span>Si no ves el correo, revisa tu bandeja de spam o correos no deseados.</span>
+            </div>
+            <div class="modal-buttons">
+                <a href="index.html" class="btn-modal-primary">
+                    <i class="fas fa-sign-in-alt"></i> Ir a Iniciar Sesión
+                </a>
+                <button class="btn-modal-secondary" onclick="closeVerificationModal()">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Back Button -->
+    <a href="index.html" class="floating-back">
+        <i class="fas fa-arrow-left"></i> Volver al inicio
+    </a>
+
+    <!-- Registro -->
+    <div class="split-container">
+        <!-- Columna Izquierda: Sección Informativa -->
+        <div class="info-column">
+            <div class="brand-section">
+                <div class="logo-icon-large">
+                    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                      <defs>
+                        <linearGradient id="gemGradLarge" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#A78BFA"/>
+                          <stop offset="100%" stop-color="#6D28D9"/>
+                        </linearGradient>
+                        <filter id="gemGlowLarge">
+                          <feGaussianBlur stdDeviation="2" result="blur"/>
+                          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                      </defs>
+                      <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGradLarge)" filter="url(#gemGlowLarge)" opacity="0.9"/>
+                      <path d="M22 4L38 14L22 22L6 14L22 4Z" fill="rgba(255,255,255,0.2)"/>
+                      <path d="M22 22L38 14V30L22 22Z" fill="rgba(0,0,0,0.15)"/>
+                      <path d="M22 22L6 14V30L22 22Z" fill="rgba(255,255,255,0.08)"/>
+                      <circle cx="22" cy="22" r="4" fill="rgba(255,255,255,0.6)"/>
+                    </svg>
+                </div>
+                <h1>Bienvenido a <span class="text-violet">Myxsi</span></h1>
+                <p class="brand-subtitle">Tu plataforma de inteligencia artificial para aprender, crear y crecer <span class="text-violet">sin límites</span>.</p>
+            </div>
+
+            <!-- Tarjetas de Características -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Aprende más</h3>
+                        <p>Accede a herramientas inteligentes para potenciar tu estudio.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Crea sin límites</h3>
+                        <p>Desarrolla tus ideas y proyectos con el poder de la IA.</p>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div class="feature-content">
+                        <h3>Ahorra tiempo</h3>
+                        <p>Optimiza tu productividad y enfócate en lo que realmente importa.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testimonio Social Proof -->
+            <div class="testimonial-bar">
+                <div class="quote-icon-wrapper">
+                    <i class="fa-solid fa-quote-left"></i>
+                </div>
+                <div class="avatar-group">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Usuario 1">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80" alt="Usuario 2">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80" alt="Usuario 3">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80" alt="Usuario 4">
+                </div>
+                <p class="testimonial-text">
+                    Únete a <span class="text-violet">miles de usuarios</span> que ya están transformando su forma de aprender y crear.
+                </p>
+            </div>
+        </div>
+
+        <!-- Columna Derecha: Formulario -->
+        <div class="form-column">
+            <!-- Wrapper del Formulario con Selector -->
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
+                <!-- Selector de tipo -->
+                <div class="type-selector" id="typeSelector">
+                    <div class="type-slider" id="typeSlider"></div>
+                    <button class="type-btn active" onclick="switchRegisterType('personal', this)" id="btnPersonal">
+                        <i class="fas fa-user"></i> Personal
+                    </button>
+                    <button class="type-btn" onclick="switchRegisterType('business', this)" id="btnBusiness">
+                        <i class="fas fa-building"></i> Empresarial
+                    </button>
+                </div>
+
+                <!-- Formulario -->
+                <div class="register-card">
+            <!-- Card Header with Logo -->
+            <div class="card-header">
+                <div class="logo-icon-small">
+                    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                      <defs>
+                        <linearGradient id="gemGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#A78BFA"/>
+                          <stop offset="100%" stop-color="#6D28D9"/>
+                        </linearGradient>
+                        <filter id="gemGlow">
+                          <feGaussianBlur stdDeviation="2" result="blur"/>
+                          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                      </defs>
+                      <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGrad)" filter="url(#gemGlow)" opacity="0.9"/>
+                      <path d="M22 4L38 14L22 22L6 14L22 4Z" fill="rgba(255,255,255,0.2)"/>
+                      <path d="M22 22L38 14V30L22 22Z" fill="rgba(0,0,0,0.15)"/>
+                      <path d="M22 22L6 14V30L22 22Z" fill="rgba(255,255,255,0.08)"/>
+                      <circle cx="22" cy="22" r="4" fill="rgba(255,255,255,0.6)"/>
+                    </svg>
+                </div>
+                <h2 id="registerTitle">Crear <span class="text-violet">cuenta</span></h2>
+            </div>
+            <p class="register-subtitle" id="registerSubtitle">Únete a Myxsi y potencia tu potencial</p>
+
+            <!-- Barra de progreso -->
+            <div class="progress-bar">
+                <div class="progress-step active" id="step1"></div>
+                <div class="progress-step" id="step2"></div>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <!-- Paso 1: Datos básicos -->
+                <div class="form-step active" id="formStep1">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="fullName" placeholder="Nombre completo" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" placeholder="Correo electrónico" required oninput="validateEmail()">
+                        </div>
+                        <span class="validation-message" id="emailMessage"></span>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="btn-register" onclick="nextStep()">
+                            Continuar <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Paso 2: Contraseña y finalizar -->
+                <div class="form-step" id="formStep2">
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" placeholder="Contraseña (mínimo 8 caracteres)" required oninput="validatePassword()">
+                            <button type="button" class="toggle-password" onclick="togglePassword('password', 'toggleIcon1')">
+                                <i class="fas fa-eye" id="toggleIcon1"></i>
+                            </button>
+                        </div>
+                        <div class="password-requirements">
+                            <p>La contraseña debe tener:</p>
+                            <div class="requirement" id="reqLength"><i class="fas fa-circle"></i> Mínimo 8 caracteres</div>
+                            <div class="requirement" id="reqUpper"><i class="fas fa-circle"></i> Una letra mayúscula</div>
+                            <div class="requirement" id="reqLower"><i class="fas fa-circle"></i> Una letra minúscula</div>
+                            <div class="requirement" id="reqNumber"><i class="fas fa-circle"></i> Un número</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" placeholder="Confirmar contraseña" required oninput="validateConfirmPassword()">
+                            <button type="button" class="toggle-password" onclick="togglePassword('confirmPassword', 'toggleIcon2')">
+                                <i class="fas fa-eye" id="toggleIcon2"></i>
+                            </button>
+                        </div>
+                        <span class="validation-message" id="confirmMessage"></span>
+                    </div>
+
+                    <div class="policy-agreement">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="termsCheck" required>
+                            <span class="checkbox-checkmark"></span>
+                            <span class="checkbox-text">
+                                Acepto los <a href="registro.html#" onclick="event.preventDefault(); openTermsModal();">Términos y Políticas</a> de Myxsi
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="button" class="btn-back" onclick="prevStep()">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </button>
+                        <button type="submit" class="btn-register" id="registerButton">
+                            <span class="spinner" id="spinner"></span>
+                            <span id="registerButtonText"><i class="fas fa-user-plus"></i> Crear cuenta</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="divider">o regístrate con</div>
+
+            <button class="btn-google" onclick="handleGoogleRegister()">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
+                </svg>
+                Registrarse con Google
+            </button>
+
+            <p class="login-link">
+                ¿Ya tienes una cuenta? <a href="index.html">Iniciar sesión</a>
+            </p>
+        </div>
+        </div> <!-- Fin de wrapper con selector -->
+    </div>
+</div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword,
+            signInWithPopup,
+            GoogleAuthProvider,
+            updateProfile,
+            sendEmailVerification,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
+            authDomain: "myxsi-e4ba3.firebaseapp.com",
+            projectId: "myxsi-e4ba3",
+            storageBucket: "myxsi-e4ba3.firebasestorage.app",
+            messagingSenderId: "321958728313",
+            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8",
+            measurementId: "G-54WPJGNXHP"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
+        const googleProvider = new GoogleAuthProvider();
+        googleProvider.addScope('https://www.googleapis.com/auth/drive');
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+
+        // Persistencia permanente de sesión por defecto
+        import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js").then(({ setPersistence, browserLocalPersistence }) => {
+            setPersistence(auth, browserLocalPersistence).catch(() => {});
+        });
+
+        window.auth = auth;
+        window.googleProvider = googleProvider;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithPopup = signInWithPopup;
+        window.updateProfile = updateProfile;
+        window.sendEmailVerification = sendEmailVerification;
+        window.onAuthStateChanged = onAuthStateChanged;
+
+        // Redirigir instantáneamente si ya hay sesión activa
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.replace('chat.html');
+            }
+        });
+
+        console.log('✅ Firebase inicializado correctamente');
+    </script>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE API MYXSI
+        // ============================================
+        const MYXSI_API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
+
+        let currentType = 'personal';
+        let currentStep = 1;
+
+        // ============================================
+        // SINCRONIZAR USUARIO CON GOOGLE DRIVE
+        // ============================================
+        async function syncUserWithDrive(user) {
+            try {
+                const response = await fetch(MYXSI_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'createUser',
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0]
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    console.log('✅ Usuario creado en Google Drive:', data.exists ? 'ya existía' : 'nuevo');
+                    
+                    // Guardar configuración inicial
+                    if (data.userData && data.userData.settings) {
+                        localStorage.setItem('myxsi_model', data.userData.settings.model || 'groq');
+                        localStorage.setItem('myxsi_theme', data.userData.settings.theme || 'dark');
+                    }
+                } else {
+                    console.error('❌ Error al crear usuario en Drive:', data.error);
+                }
+            } catch (error) {
+                console.error('❌ Error al sincronizar con Drive:', error);
+            }
+        }
+
+        // ============================================
+        // VERIFICAR SESIÓN AL CARGAR
+        // ============================================
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.onAuthStateChanged && window.auth) {
+                    window.onAuthStateChanged(window.auth, (user) => {
+                        if (user) {
+                            console.log('👤 Usuario autenticado:', user.email);
+                            sessionStorage.setItem('myxsi_user_type', currentType);
+                            sessionStorage.setItem('myxsi_user_email', user.email);
+                            sessionStorage.setItem('myxsi_user_name', user.displayName || user.email.split('@')[0]);
+                            
+                            syncUserWithDrive(user).then(() => {
+                                 completeLoginRedirect();
+                             });
+                        }
+                    });
+                }
+            }, 1000);
+
+            // Pre-llenar email si viene del login
+            const preFillEmail = sessionStorage.getItem('preFillEmail');
+            if (preFillEmail) {
+                document.getElementById('email').value = preFillEmail;
+                sessionStorage.removeItem('preFillEmail');
+            }
+        });
+
+        function completeLoginRedirect() {
+            const redirectPath = sessionStorage.getItem('redirect_after_login') || 'chat.html';
+            sessionStorage.removeItem('redirect_after_login');
+            window.location.href = redirectPath;
+        }
+
+        // ============================================
+        // CAMBIAR TIPO DE REGISTRO
+        // ============================================
+        function switchRegisterType(type, btn) {
+            currentType = type;
+            document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const typeSlider = document.getElementById('typeSlider');
+            const registerTitle = document.getElementById('registerTitle');
+            const registerSubtitle = document.getElementById('registerSubtitle');
+            const registerButtonText = document.getElementById('registerButtonText');
+
+            if (type === 'business') {
+                typeSlider.classList.add('right');
+                registerTitle.textContent = 'Crear Cuenta Empresarial';
+                registerSubtitle.textContent = 'Registra tu empresa en Myxsi';
+                registerButtonText.innerHTML = '<i class="fas fa-user-plus"></i> Registrar empresa';
+            } else {
+                typeSlider.classList.remove('right');
+                registerTitle.textContent = 'Crear Cuenta';
+                registerSubtitle.textContent = 'Únete a Myxsi y potencia tu potencial';
+                registerButtonText.innerHTML = '<i class="fas fa-user-plus"></i> Crear cuenta';
+            }
+        }
+
+        // ============================================
+        // NAVEGACIÓN DE PASOS
+        // ============================================
+        function nextStep() {
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const emailValid = validateEmail();
+
+            if (!fullName) {
+                showAlert('Por favor ingresa tu nombre completo', 'warning');
+                return;
+            }
+            if (!email || !emailValid) {
+                showAlert('Por favor ingresa un correo electrónico válido', 'warning');
+                return;
+            }
+
+            currentStep = 2;
+            document.getElementById('formStep1').classList.remove('active');
+            document.getElementById('formStep2').classList.add('active');
+            document.getElementById('step1').classList.add('done');
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+        }
+
+        function prevStep() {
+            currentStep = 1;
+            document.getElementById('formStep2').classList.remove('active');
+            document.getElementById('formStep1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step1').classList.remove('done');
+        }
+
+        // ============================================
+        // VALIDACIONES
+        // ============================================
+        function validateEmail() {
+            const email = document.getElementById('email').value.trim();
+            const emailMessage = document.getElementById('emailMessage');
+            const emailInput = document.getElementById('email');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!email) {
+                emailMessage.textContent = '';
+                emailMessage.className = 'validation-message';
+                emailInput.classList.remove('valid', 'invalid');
+                return false;
+            }
+
+            if (emailRegex.test(email)) {
+                emailMessage.textContent = '✓ Correo válido';
+                emailMessage.className = 'validation-message success';
+                emailInput.classList.add('valid');
+                emailInput.classList.remove('invalid');
+                return true;
+            } else {
+                emailMessage.textContent = 'Ingresa un correo electrónico válido';
+                emailMessage.className = 'validation-message error';
+                emailInput.classList.add('invalid');
+                emailInput.classList.remove('valid');
+                return false;
+            }
+        }
+
+        function validatePassword() {
+            const password = document.getElementById('password').value;
+            const reqLength = document.getElementById('reqLength');
+            const reqUpper = document.getElementById('reqUpper');
+            const reqLower = document.getElementById('reqLower');
+            const reqNumber = document.getElementById('reqNumber');
+
+            if (password.length >= 8) {
+                reqLength.classList.add('met');
+                reqLength.querySelector('i').className = 'fas fa-check-circle';
+            } else {
+                reqLength.classList.remove('met');
+                reqLength.querySelector('i').className = 'fas fa-circle';
+            }
+
+            if (/[A-Z]/.test(password)) {
+                reqUpper.classList.add('met');
+                reqUpper.querySelector('i').className = 'fas fa-check-circle';
+            } else {
+                reqUpper.classList.remove('met');
+                reqUpper.querySelector('i').className = 'fas fa-circle';
+            }
+
+            if (/[a-z]/.test(password)) {
+                reqLower.classList.add('met');
+                reqLower.querySelector('i').className = 'fas fa-check-circle';
+            } else {
+                reqLower.classList.remove('met');
+                reqLower.querySelector('i').className = 'fas fa-circle';
+            }
+
+            if (/\d/.test(password)) {
+                reqNumber.classList.add('met');
+                reqNumber.querySelector('i').className = 'fas fa-check-circle';
+            } else {
+                reqNumber.classList.remove('met');
+                reqNumber.querySelector('i').className = 'fas fa-circle';
+            }
+
+            validateConfirmPassword();
+            return password.length >= 8 && /[A-Z]/.test(password) && /[a-z]/.test(password) && /\d/.test(password);
+        }
+
+        function validateConfirmPassword() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const confirmMessage = document.getElementById('confirmMessage');
+            const confirmInput = document.getElementById('confirmPassword');
+
+            if (!confirmPassword) {
+                confirmMessage.textContent = '';
+                confirmMessage.className = 'validation-message';
+                confirmInput.classList.remove('valid', 'invalid');
+                return false;
+            }
+
+            if (password === confirmPassword) {
+                confirmMessage.textContent = '✓ Las contraseñas coinciden';
+                confirmMessage.className = 'validation-message success';
+                confirmInput.classList.add('valid');
+                confirmInput.classList.remove('invalid');
+                return true;
+            } else {
+                confirmMessage.textContent = 'Las contraseñas no coinciden';
+                confirmMessage.className = 'validation-message error';
+                confirmInput.classList.add('invalid');
+                confirmInput.classList.remove('valid');
+                return false;
+            }
+        }
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = message;
+            alertBox.className = 'alert ' + type;
+            alertBox.style.display = 'block';
+            setTimeout(() => {
+                alertBox.className = 'alert';
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function setLoading(loading) {
+            const spinner = document.getElementById('spinner');
+            const registerButton = document.getElementById('registerButton');
+            if (loading) {
+                spinner.style.display = 'block';
+                registerButton.disabled = true;
+            } else {
+                spinner.style.display = 'none';
+                registerButton.disabled = false;
+            }
+        }
+
+        function showVerificationModal(email) {
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('verificationModal').classList.add('active');
+        }
+
+        function closeVerificationModal() {
+            document.getElementById('verificationModal').classList.remove('active');
+        }
+
+        // ============================================
+        // REGISTRAR USUARIO
+        // ============================================
+        async function handleRegister(event) {
+            event.preventDefault();
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const termsCheck = document.getElementById('termsCheck').checked;
+
+            if (!fullName || !email || !password || !confirmPassword) {
+                showAlert('Por favor completa todos los campos', 'warning');
+                return;
+            }
+
+            if (!validateEmail()) {
+                showAlert('Ingresa un correo electrónico válido', 'warning');
+                return;
+            }
+
+            if (!validatePassword()) {
+                showAlert('La contraseña no cumple con los requisitos', 'warning');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert('Las contraseñas no coinciden', 'warning');
+                return;
+            }
+
+            if (!termsCheck) {
+                showAlert('Debes aceptar los Términos de Servicio', 'warning');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                // Crear usuario en Firebase
+                const userCredential = await window.createUserWithEmailAndPassword(
+                    window.auth,
+                    email,
+                    password
+                );
+
+                const user = userCredential.user;
+
+                // Actualizar perfil con el nombre
+                await window.updateProfile(user, {
+                    displayName: fullName
+                });
+
+                // Enviar correo de verificación
+                await window.sendEmailVerification(user);
+
+                console.log('✅ Cuenta creada exitosamente:', user.email);
+                console.log('📧 Correo de verificación enviado a:', user.email);
+
+                // Sincronizar con Google Drive
+                await syncUserWithDrive(user);
+
+                // Guardar datos de sesión
+                sessionStorage.setItem('myxsi_user_type', currentType);
+                sessionStorage.setItem('myxsi_user_email', user.email);
+                sessionStorage.setItem('myxsi_user_name', fullName);
+
+                // Mostrar modal de verificación
+                showVerificationModal(user.email);
+
+                // Limpiar formulario
+                document.getElementById('registerForm').reset();
+                prevStep();
+                document.getElementById('step1').classList.remove('done');
+                document.getElementById('step1').classList.add('active');
+                document.getElementById('step2').classList.remove('active');
+
+            } catch (error) {
+                console.error('❌ Error al crear cuenta:', error);
+
+                let errorMessage = 'Error al crear la cuenta';
+                switch (error.code) {
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Este correo ya está registrado. <a href="index.html" style="color:#c4b5fd;">Inicia sesión</a> o recupera tu contraseña';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'El correo electrónico no es válido';
+                        break;
+                    case 'auth/operation-not-allowed':
+                        errorMessage = 'El registro no está habilitado en este momento';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'La contraseña es muy débil. Usa una más segura';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                showAlert(errorMessage, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // ============================================
+        // REGISTRO CON GOOGLE
+        // ============================================
+        async function handleGoogleRegister() {
+            setLoading(true);
+            try {
+                const result = await window.signInWithPopup(window.auth, window.googleProvider);
+                const user = result.user;
+                console.log('✅ Registro con Google exitoso:', user.email);
+
+                // Guardar token de Google Drive unificado
+                const credential = window.GoogleAuthProvider.credentialFromResult(result);
+                if (credential && credential.accessToken) {
+                    localStorage.setItem('gdrive_access_token', credential.accessToken);
+                    localStorage.setItem('gdrive_token_expires_at', (Date.now() + 365 * 24 * 3600 * 1000).toString());
+                    console.log('✅ Token de Google Drive guardado unificado y permanente (registro)');
+                }
+
+                // Guardar datos de sesión
+                sessionStorage.setItem('myxsi_user_type', currentType);
+                sessionStorage.setItem('myxsi_user_email', user.email);
+                sessionStorage.setItem('myxsi_user_name', user.displayName || user.email.split('@')[0]);
+
+                // Sincronizar con Google Drive
+                await syncUserWithDrive(user);
+
+                showAlert('✅ Registro exitoso. Redirigiendo...', 'success');
+                setTimeout(() => {
+                    completeLoginRedirect();
+                }, 1000);
+
+            } catch (error) {
+                console.error('❌ Error con Google:', error);
+                setLoading(false);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    if (error.code === 'auth/account-exists-with-different-credential') {
+                        showAlert('Ya existe una cuenta con este correo. <a href="index.html" style="color:#c4b5fd;">Inicia sesión</a> con otro método', 'warning');
+                    } else {
+                        showAlert('Error al registrarse con Google', 'error');
+                    }
+                }
+            }
+        }
+
+        // ============================================
+        // SWIPE EN TOGGLE (MÓVIL)
+        // ============================================
+        const typeSelector = document.getElementById('typeSelector');
+        const typeSlider = document.getElementById('typeSlider');
+        const btnPersonal = document.getElementById('btnPersonal');
+        const btnBusiness = document.getElementById('btnBusiness');
+        let touchStartX = 0;
+
+        typeSelector.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        typeSelector.addEventListener('touchend', (e) => {
+            const diff = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(diff) > 40) {
+                if (diff > 0 && typeSlider.classList.contains('right')) {
+                    switchRegisterType('personal', btnPersonal);
+                } else if (diff < 0 && !typeSlider.classList.contains('right')) {
+                    switchRegisterType('business', btnBusiness);
+                }
+            }
+        });
+
+        // ============================================
+        // EFECTO MAGNÉTICO INTERACTIVO PREMIUM EN LA TARJETA
+        // ============================================
+        const registerCard = document.querySelector('.register-card');
+        if (registerCard) {
+            registerCard.addEventListener('mousemove', e => {
+                const r = registerCard.getBoundingClientRect();
+                const x = e.clientX - r.left;
+                const y = e.clientY - r.top;
+                registerCard.style.transform = `perspective(1000px) rotateX(${((y - r.height/2)/r.height/2)*-4}deg) rotateY(${((x - r.width/2)/r.width/2)*4}deg) scale3d(1.01, 1.01, 1.01)`;
+                registerCard.style.setProperty('--mouse-x', `${x}px`);
+                registerCard.style.setProperty('--mouse-y', `${y}px`);
+            });
+            registerCard.addEventListener('mouseleave', () => {
+                registerCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        }
+
+        function openTermsModal() {
+            const modal = document.getElementById('termsModal');
+            modal.style.display = 'flex';
+        }
+        function closeTermsModal() {
+            const modal = document.getElementById('termsModal');
+            modal.style.display = 'none';
+        }
+        window.openTermsModal = openTermsModal;
+        window.closeTermsModal = closeTermsModal;
+    </script>
+
+    <!-- Modal de Términos y Condiciones Premium -->
+    <div class="custom-modal-overlay" id="termsModal" style="display: none; position: fixed; inset: 0; background: rgba(2, 1, 8, 0.75); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); z-index: 10000; align-items: center; justify-content: center;">
+        <div class="custom-modal-card" style="max-width: 500px; width: 90%; background: rgba(12, 10, 26, 0.85); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 24px; padding: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.5); text-align: left; position: relative;">
+            <button onclick="closeTermsModal()" style="position: absolute; top: 1.2rem; right: 1.2rem; background: transparent; border: none; color: var(--fog); font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-xmark"></i></button>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.2rem;">
+                <i class="fa-solid fa-circle-info" style="color: var(--violet-soft); font-size: 1.5rem; filter: drop-shadow(0 0 5px rgba(167,139,250,0.4));"></i>
+                <h3 style="margin: 0; font-size: 1.3rem; font-weight: 800; background: var(--grad-shine); -webkit-background-clip: text; background-clip: text; color: transparent; font-family: 'Plus Jakarta Sans', sans-serif;">Términos de Servicio de Myxsi</h3>
+            </div>
+            <div style="max-height: 250px; overflow-y: auto; font-size: 0.82rem; color: var(--silver); line-height: 1.5; padding-right: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; font-family: 'Plus Jakarta Sans', sans-serif;">
+                <p style="margin-bottom: 0.8rem;">Bienvenido a <strong>Myxsi</strong>, una plataforma de inteligencia artificial avanzada desarrollada por <strong>Inoxway</strong>.</p>
+                <p style="margin-bottom: 0.8rem;">Al registrarte y utilizar nuestros servicios, aceptas de manera libre y expresa los siguientes términos y condiciones de uso:</p>
+                <p style="margin-bottom: 0.8rem;"><strong>1. Uso de Datos para Mejora de IA:</strong> Para perfeccionar la precisión didáctica y cognitiva del sistema, algunos de tus chats e interacciones podrán ser analizados de forma encriptada y completamente anónima con el fin de entrenar y calibrar progresivamente nuestros modelos de inteligencia artificial.</p>
+                <p style="margin-bottom: 0.8rem;"><strong>2. Publicidad y Monetización:</strong> Nos reservamos el derecho de implementar publicidad en la plataforma, y de utilizar datos de navegación no sensibles para desplegar anuncios personalizados que nos permitan financiar, sustentar y mantener el servicio gratuito.</p>
+                <p style="margin-bottom: 0.8rem;"><strong>3. Cambios en el Servicio:</strong> Como plataforma tecnológica en constante evolución, el servicio, su diseño, bases de datos o características del sistema pueden cambiar, modificarse, suspenderse o desaparecer temporal o permanentemente con el tiempo sin previo aviso.</p>
+                <p style="margin-bottom: 0.8rem;"><strong>4. Exclusión de Responsabilidad:</strong> No nos hacemos responsables de pérdidas de archivos, pérdida de progreso de estudio, caídas técnicas de servidor o imprecisiones didácticas en las respuestas de la IA. El uso del tutor inteligente y tu rendimiento en exámenes oficiales es de tu exclusiva responsabilidad.</p>
+            </div>
+            <button onclick="closeTermsModal()" class="btn-register" style="width: 100%; padding: 0.8rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: var(--grad-brand); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">Entendido y Acepto</button>
+        </div>
+    </div>
+
+    <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4bc0f4c7ccb04906a6a10e2d597b8b8d"}'></script><!-- Cloudflare Pages Analytics --></body>
+</html>

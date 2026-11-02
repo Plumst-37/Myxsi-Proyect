@@ -1,0 +1,56 @@
+# Ambientes y Credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+
+# Cloudflare & Wrangler
+.wrangler/
+.mf/
+
+# Dependencias y Builds
+node_modules/
+dist/
+build/
+.cache/
+
+# Firebase & Vercel
+.firebase/
+.firebaserc
+.vercel/
+
+# Pruebas y Reportes
+playwright-report/
+test-results/
+coverage/
+e2e-tests/
+playwright.config.js
+test_resizable_panels.js
+
+# Agentes de IA Internos y Logs
+.agents/
+.agent_logs/
+.agent_pids/
+.agent_prompts/
+monitor_agents.sh
+panel.sh
+run_agents.sh
+scripts/agent_interactive_permission_engine.py
+scripts/agent_live_workers.py
+scripts/process_user_prompt.py
+docs/
+
+# Carpetas de Respaldo y Scripts Temporales
+local_backup/
+scratch/
+.git_old/
+path/
+
+# Sistema Operativo y Editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

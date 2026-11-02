@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myxsi Sheets — Panel de Hojas de Cálculo</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    
+    <!-- Google Fonts oficiales de Myxsi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- CSS Base de Myxsi Chat -->
+    <link rel="stylesheet" href="CSS/chat.css?v=5.7.0">
+
+    <script>
+        (function() {
+            function syncBrowserTheme() {
+                const saved = localStorage.getItem('myxsi_theme') || localStorage.getItem('theme');
+                let isDark = true;
+                if (saved) {
+                    isDark = (saved === 'dark');
+                } else if (window.matchMedia) {
+                    isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
+                if (isDark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    document.documentElement.classList.add('dark');
+                    if (document.body) document.body.classList.add('dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    document.documentElement.classList.remove('dark');
+                    if (document.body) document.body.classList.remove('dark');
+                }
+            }
+            syncBrowserTheme();
+            if (window.matchMedia) {
+                window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncBrowserTheme);
+            }
+        })();
+    </script>
+
+    <style>
+        :root {
+            --mx-bg-base: #f1f4f9;
+            --mx-surface-panel: rgba(255, 255, 255, 0.85);
+            --mx-surface-card: #ffffff;
+            --mx-border-subtle: rgba(203, 213, 225, 0.7);
+            --mx-border-focus: rgba(16, 185, 129, 0.5);
+            --mx-brand-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --mx-brand-primary: #10b981;
+            --mx-txt-main: #0f172a;
+            --mx-txt-sub: #475569;
+            --mx-txt-mute: #94a3b8;
+            --mx-header-bg: rgba(255, 255, 255, 0.85);
+            --mx-sidebar-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        :root[data-theme="dark"], html.dark, body.dark {
+            --mx-bg-base: #090614;
+            --mx-surface-panel: rgba(18, 13, 34, 0.75);
+            --mx-surface-card: rgba(26, 18, 48, 0.7);
+            --mx-border-subtle: rgba(167, 139, 250, 0.16);
+            --mx-border-focus: rgba(52, 211, 153, 0.6);
+            --mx-brand-grad: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --mx-brand-primary: #34d399;
+            --mx-txt-main: #f8fafc;
+            --mx-txt-sub: #cbd5e1;
+            --mx-txt-mute: #94a3b8;
+            --mx-header-bg: rgba(12, 8, 24, 0.8);
+            --mx-sidebar-bg: rgba(13, 9, 26, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--mx-bg-base);
+            color: var(--mx-txt-main);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .myxsi-layout-container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .mx-bg-clouds {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .mx-cloud {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.45;
+            pointer-events: none;
+        }
+
+        .mx-cloud-1 {
+            width: 650px;
+            height: 480px;
+            top: -10%;
+            left: -5%;
+            background: radial-gradient(ellipse, rgba(16, 185, 129, 0.28), transparent 70%);
+        }
+
+        .mx-cloud-2 {
+            width: 550px;
+            height: 400px;
+            bottom: 5%;
+            right: -5%;
+            background: radial-gradient(ellipse, rgba(124, 58, 237, 0.22), transparent 70%);
+        }
+
+        /* Barra lateral y marca */
+        .main-sidebar-brand-area {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            text-align: center !important;
+            margin-bottom: 0.5rem !important;
+            padding: 2px 0 !important;
+            height: 50px !important;
+            box-sizing: border-box !important;
+        }
+
+        .brand-logo {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            text-align: center !important;
+            text-decoration: none !important;
+        }
+
+        .brand-logo-img {
+            height: 24px !important;
+            width: auto !important;
+            max-width: 160px !important;
+            margin: 0 auto !important;
+            object-fit: contain !important;
+            display: block !important;
+            transition: transform 0.2s ease !important;
+            filter: drop-shadow(0 2px 10px rgba(16, 185, 129, 0.25)) !important;
+        }
+
+        .brand-logo-dark { display: none !important; }
+        .brand-logo-light { display: block !important; }
+
+        :root[data-theme="dark"] .brand-logo-light,
+        html.dark .brand-logo-light,
+        body.dark .brand-logo-light {
+            display: none !important;
+        }
+
+        :root[data-theme="dark"] .brand-logo-dark,
+        html.dark .brand-logo-dark,
+        body.dark .brand-logo-dark {
+            display: block !important;
+        }
+
+        .btn-myxsi-new-doc {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            border-radius: 9px !important;
+            font-weight: 600 !important;
+            font-size: 0.82rem !important;
+            padding: 6px 12px !important;
+            height: 34px !important;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25) !important;
+            border: 1px solid rgba(255, 255, 255, 0.12) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 7px !important;
+            transition: all 0.2s ease !important;
+            width: 100% !important;
+            cursor: pointer !important;
+            margin-bottom: 8px !important;
+            outline: none !important;
+        }
+
+        .btn-myxsi-new-doc:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.42) !important;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        }
+
+        .main-sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin-bottom: 0.35rem;
+        }
+
+        .menu-item {
+            color: #475569 !important;
+            border-radius: 8px !important;
+            font-weight: 550 !important;
+            transition: all 0.18s ease !important;
+            padding: 5px 10px !important;
+            height: 32px !important;
+            min-height: 32px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            text-decoration: none !important;
+            font-size: 0.81rem !important;
+            box-sizing: border-box !important;
+        }
+
+        .menu-item i {
+            font-size: 0.85rem !important;
+            width: 16px !important;
+            text-align: center !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .menu-item:hover {
+            background: #f1f5f9 !important;
+            color: #0f172a !important;
+        }
+
+        body.dark .menu-item, html.dark .menu-item, :root[data-theme="dark"] .menu-item {
+            color: #94a3b8 !important;
+        }
+
+        body.dark .menu-item:hover, html.dark .menu-item:hover, :root[data-theme="dark"] .menu-item:hover {
+            background: rgba(255, 255, 255, 0.06) !important;
+            color: #f8fafc !important;
+        }
+
+        .menu-item.active {
+            background: rgba(16, 185, 129, 0.12) !important;
+            color: #10b981 !important;
+            font-weight: 700 !important;
+            border: 1px solid rgba(16, 185, 129, 0.25) !important;
+        }
+
+        body.dark .menu-item.active, html.dark .menu-item.active, :root[data-theme="dark"] .menu-item.active {
+            background: rgba(16, 185, 129, 0.18) !important;
+            color: #34d399 !important;
+            border: 1px solid rgba(16, 185, 129, 0.35) !important;
+        }
+
+        .racha-card-premium {
+            background: rgba(16, 185, 129, 0.06) !important;
+            border: 1px solid rgba(16, 185, 129, 0.18) !important;
+            border-radius: 14px !important;
+            color: #10b981 !important;
+            padding: 12px 14px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .racha-card-header { color: #64748b !important; }
+        .racha-card-value { color: #10b981 !important; }
+        .racha-card-right {
+            color: #10b981 !important;
+            filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.35)) !important;
+        }
+
+        body.dark .racha-card-premium, html.dark .racha-card-premium, :root[data-theme="dark"] .racha-card-premium {
+            background: rgba(16, 185, 129, 0.08) !important;
+            border: 1px solid rgba(16, 185, 129, 0.22) !important;
+            color: #34d399 !important;
+        }
+
+        body.dark .racha-card-header { color: #94a3b8 !important; }
+        body.dark .racha-card-value { color: #34d399 !important; }
+        body.dark .racha-card-right {
+            color: #34d399 !important;
+            filter: drop-shadow(0 0 10px rgba(52, 211, 153, 0.6)) !important;
+        }
+
+        /* Escenario principal y topbar */
+        .docs-viewport-stage {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+            min-width: 0;
+            z-index: 1;
+        }
+
+        .mx-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1.8rem;
+            background: var(--mx-header-bg);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border-bottom: 1px solid var(--mx-border-subtle);
+            z-index: 10;
+            gap: 16px;
+        }
+
+        .header-title-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .docs-brand-heading {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            letter-spacing: -0.2px;
+        }
+
+        .badge-studio-tag {
+            font-size: 0.65rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--mx-border-focus);
+            color: var(--mx-brand-primary);
+        }
+
+        .search-pill-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 9999px !important;
+            padding: 0.55rem 1.2rem !important;
+            transition: all 0.2s ease;
+        }
+
+        .search-pill-container:focus-within {
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .search-pill-container input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--mx-txt-main);
+            font-family: inherit;
+            font-size: 0.88rem;
+        }
+
+        .btn-header-round-action {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            background: rgba(255, 255, 255, 0.04) !important;
+            color: #94a3b8 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease !important;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-header-round-action:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #f8fafc !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            transform: translateY(-1px) !important;
+        }
+
+        /* Contenido sin cajas / Desencasillado y Centrado */
+        .docs-main-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2.2rem 2.8rem 3.5rem 2.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .templates-gallery-section, .recent-sheets-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            max-width: 1160px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        @media (max-width: 1100px) {
+            .templates-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            .templates-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .template-card {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            overflow: visible;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-decoration: none;
+            user-select: none;
+            min-width: 0;
+            width: 100%;
+        }
+
+        .template-preview {
+            width: 100%;
+            aspect-ratio: 1 / 1.34;
+            background: #ffffff;
+            border: 1px solid var(--mx-paper-border, #e2e8f0);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .template-card:hover .template-preview {
+            border-color: #10b981;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.25);
+        }
+
+        .template-body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 3px;
+            width: 100%;
+        }
+
+        .template-name {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.25;
+            text-align: center;
+            width: 100%;
+        }
+
+        .template-desc {
+            font-size: 0.74rem;
+            color: var(--mx-txt-mute);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+            width: 100%;
+        }
+
+        .sheets-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--mx-border-subtle);
+        }
+
+        .filter-tab {
+            background: transparent;
+            border: none;
+            color: var(--mx-txt-sub);
+            padding: 0.45rem 1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-tab.active, .filter-tab:hover {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.22));
+            color: var(--mx-txt-main);
+        }
+
+        .recent-sheets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 18px;
+        }
+
+        .sheet-item-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--mx-border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.25s ease;
+        }
+
+        .sheet-item-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .sheet-card-thumb {
+            height: 110px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sheet-thumb-grid {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 6px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sheet-cell-mock {
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+        }
+
+        .sheet-cell-mock.header {
+            background: rgba(16, 185, 129, 0.35);
+        }
+
+        .sheet-card-info {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sheet-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--mx-txt-main);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sheet-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.76rem;
+            color: var(--mx-txt-mute);
+        }
+
+        .sheet-cloud-badge {
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sheet-open-btn {
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            padding: 0.55rem 0.9rem;
+            border-radius: 10px;
+            font-size: 0.84rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .sheet-open-btn:hover {
+            filter: brightness(1.1);
+        }
+
+        .empty-sheets-wrapper {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--mx-border-subtle);
+            border-radius: 20px;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .empty-sheets-icon {
+            font-size: 3rem;
+            color: #10b981;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="myxsi-layout-container">
+        
+        <!-- Nubes de fondo ambientales -->
+        <div class="mx-bg-clouds">
+            <span class="mx-cloud mx-cloud-1"></span>
+            <span class="mx-cloud mx-cloud-2"></span>
+        </div>
+
+        <!-- OVERLAY PARA MÓVILES -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="window.toggleSidebar()"></div>
+
+        <!-- BARRA LATERAL UNIFICADA -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Logo oficial Myxsi -->
+            <div class="main-sidebar-brand-area" style="display: flex; align-items: center; justify-content: center; width: 100%; margin-bottom: 0.5rem; padding: 2px 0;">
+                <a href="index.html" class="brand-logo" style="display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none;">
+                    <img src="assets/designer_corner_logo.png" alt="Myxsi" class="brand-logo-img brand-logo-light" style="height: 24px; width: auto;">
+                    <img src="assets/designer_corner_logo_dark.png" alt="Myxsi" class="brand-logo-img brand-logo-dark" style="height: 24px; width: auto;">
+                </a>
+            </div>
+
+            <!-- Botón Principal: + Nueva Hoja -->
+            <button class="sidebar-new-chat-btn btn-myxsi-new-doc" onclick="createNewSheet('blank')">
+                <i class="fa-solid fa-plus" style="font-size: 0.8rem;"></i> <span>Nueva hoja de cálculo</span>
+            </button>
+
+            <!-- Menú de Navegación Myxsi -->
+            <nav class="main-sidebar-menu">
+                <a href="chat.html" class="menu-item" id="menuBtnInicio">
+                    <i class="fa-regular fa-comment-dots" style="font-size: 0.85rem; width: 16px; text-align: center; color: #a78bfa;"></i> <span>Chat IA</span>
+                </a>
+                <a href="docs-home.html" class="menu-item" id="menuBtnDocs">
+                    <i class="fa-regular fa-file-lines" style="font-size: 0.85rem; width: 16px; text-align: center; color: #60a5fa;"></i> <span>Docs Studio</span>
+                </a>
+                <a href="sheets-home.html" class="menu-item active" id="menuBtnSheets">
+                    <i class="fa-solid fa-table-cells" style="font-size: 0.85rem; width: 16px; text-align: center; color: #34d399;"></i> <span>Sheets Studio</span>
+                </a>
+                <a href="canva-home.html" class="menu-item" id="menuBtnCanva">
+                    <i class="fa-solid fa-palette" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f472b6;"></i> <span>Canva Studio</span>
+                </a>
+                <a href="video-home.html" class="menu-item" id="menuBtnVideo">
+                    <i class="fa-solid fa-video" style="font-size: 0.85rem; width: 16px; text-align: center; color: #feb504;"></i> <span>Video Studio</span>
+                </a>
+                <a href="files.html" class="menu-item" id="menuBtnResources">
+                    <i class="fa-regular fa-folder" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f59e0b;"></i> <span>Archivos</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- Widget Racha Diaria -->
+            <div style="margin-top: auto; display: flex; flex-direction: column; gap: 0.75rem;">
+                <div class="racha-card-premium" id="sidebarRachaWidget" title="Racha de estudio diaria">
+                    <div class="racha-card-left">
+                        <div class="racha-card-header" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.75;">Racha de estudio</div>
+                        <div class="racha-card-value" style="font-size: 14px; font-weight: 700;"><span id="sidebarRachaNum">0</span> días</div>
+                    </div>
+                    <div class="racha-card-right" style="font-size: 1.5rem;">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ESCENARIO PRINCIPAL -->
+        <main class="docs-viewport-stage">
+            
+            <!-- TOPBAR ELEGANTE -->
+            <header class="mx-header-bar">
+                <div class="header-title-box">
+                    <button class="bottom-sidebar-btn" onclick="window.toggleSidebar()" title="Ver menú" style="background: none; border: none; color: var(--mx-txt-sub); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <button class="desktop-sidebar-toggle-btn" onclick="window.toggleSidebarDesktop()" title="Ocultar barra lateral" style="background: none; border: none; color: var(--mx-txt-sub); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    
+                    <span class="docs-brand-heading">Myxsi Sheets</span>
+                    <span class="badge-studio-tag">Studio Pro</span>
+                </div>
+
+                <!-- BUSCADOR -->
+                <div style="flex: 1; max-width: 580px; display: flex; justify-content: center; margin: 0 auto; position: relative;">
+                    <div class="search-pill-container" style="width: 100%;">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--mx-txt-mute); font-size: 0.85rem;"></i>
+                        <input type="text" id="sheetsSearchInput" placeholder="Buscar en tus hojas de cálculo..." oninput="filterSheets(this.value)" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- ACCIONES DERECHA -->
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <!-- Racha diaria -->
+                    <div class="mx-streak" id="headerStreakBadge" title="Racha de estudio diaria" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 9999px;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; font-size: 14px; filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));">🔥</span>
+                        <span id="headerStreakCount" style="color: #fbbf24; font-weight: 800; font-size: 0.85rem; letter-spacing: -0.01em;">0</span>
+                    </div>
+
+                    <button class="btn-header-round-action" id="themeToggleBtn" onclick="toggleTheme()" title="Cambiar tema">
+                        <i class="fa-solid fa-moon" id="themeIcon"></i>
+                    </button>
+
+                    <a href="files.html" class="btn-header-round-action" title="Ir a Archivos">
+                        <i class="fa-regular fa-folder-open"></i>
+                    </a>
+
+                    <button class="btn-header-round-action" id="btnUserDetails" title="Perfil de usuario" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important; color: #ffffff !important; font-weight: 750; border: none !important;">
+                        <span id="userInitialChar">R</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ÁREA DE SCROLL (DESENCASILLADA) -->
+            <div class="docs-main-scroll">
+                
+                <!-- 1. GALERÍA DE PLANTILLAS -->
+                <section class="templates-gallery-section">
+                    <div class="section-header">
+                        <h2 class="section-title">
+                            <i class="fa-solid fa-table" style="color: #10b981;"></i> Iniciar una nueva hoja de cálculo
+                        </h2>
+                        <div style="font-size: 0.82rem; color: var(--mx-txt-sub); font-weight: 600;">Plantillas Financieras y Analíticas</div>
+                    </div>
+
+                    <div class="templates-grid">
+                        <!-- 1. En blanco -->
+                        <div onclick="createNewSheet('blank')" class="template-card" title="Comenzar libro en blanco">
+                            <div class="template-preview" style="align-items: center; justify-content: center; background: #ffffff;">
+                                <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)); border: 1px solid rgba(16, 185, 129, 0.35); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 14px;">
+                                    <i class="fa-solid fa-plus"></i>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Libro en blanco</div>
+                                <div class="template-desc">Desde cero</div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Presupuesto Mensual -->
+                        <div onclick="createNewSheet('budget')" class="template-card" title="Presupuesto Financiero Mensual">
+                            <div class="template-preview" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: #ffffff;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #10b981; padding-bottom: 3px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 7px; font-weight: 800; color: #065f46;">PRESUPUESTO</span>
+                                    <i class="fa-solid fa-calculator" style="font-size: 8px; color: #10b981;"></i>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #ecfdf5; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #047857;">Categoría</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #047857; text-align: right;">Monto ($)</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 1px;">
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 85%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 65%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 90%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 75%;"></div>
+                                </div>
+                                <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; background: #10b981; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">TOTAL</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">$2,450.00</span>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Presupuesto Mensual</div>
+                                <div class="template-desc">Ingresos y gastos</div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Lista de Tareas / Proyecto -->
+                        <div onclick="createNewSheet('tasks')" class="template-card" title="Lista de Tareas y Seguimiento">
+                            <div class="template-preview" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: #ffffff;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #3b82f6; padding-bottom: 3px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 7px; font-weight: 800; color: #1e3a8a;">PROYECTO</span>
+                                    <i class="fa-solid fa-list-check" style="font-size: 8px; color: #3b82f6;"></i>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2px; background: #eff6ff; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #1d4ed8;">Tarea</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #1d4ed8; text-align: right;">Estado</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #cbd5e1; border-radius: 2px; width: 60%;"></div>
+                                        <span style="font-size: 4px; background: #dcfce7; color: #15803d; padding: 1px 3px; border-radius: 2px; font-weight: 700;">Hecho</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #cbd5e1; border-radius: 2px; width: 50%;"></div>
+                                        <span style="font-size: 4px; background: #fef3c7; color: #b45309; padding: 1px 3px; border-radius: 2px; font-weight: 700;">En curso</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #cbd5e1; border-radius: 2px; width: 70%;"></div>
+                                        <span style="font-size: 4px; background: #fee2e2; color: #b91c1c; padding: 1px 3px; border-radius: 2px; font-weight: 700;">Pendiente</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: auto; display: flex; align-items: center; gap: 3px;">
+                                    <div style="flex: 1; height: 3px; background: #e2e8f0; border-radius: 2px; overflow: hidden;">
+                                        <div style="width: 70%; height: 100%; background: #3b82f6;"></div>
+                                    </div>
+                                    <span style="font-size: 5px; font-weight: 700; color: #3b82f6;">70%</span>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Lista de Tareas</div>
+                                <div class="template-desc">Control de proyecto</div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Registro Financiero / Ventas -->
+                        <div onclick="createNewSheet('sales')" class="template-card" title="Registro de Ventas e Ingresos">
+                            <div class="template-preview" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: #ffffff;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #f59e0b; padding-bottom: 3px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 7px; font-weight: 800; color: #78350f;">VENTAS Q1</span>
+                                    <i class="fa-solid fa-chart-column" style="font-size: 8px; color: #f59e0b;"></i>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #fffbeb; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #b45309;">Mes</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #b45309; text-align: right;">Total</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 1px;">
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 75%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 85%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 60%;"></div>
+                                    <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 90%;"></div>
+                                </div>
+                                <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; background: #f59e0b; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">SUMA</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">$18,920.00</span>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Registro de Ventas</div>
+                                <div class="template-desc">Fórmulas & totales</div>
+                            </div>
+                        </div>
+
+                        <!-- 5. Planificador Semanal -->
+                        <div onclick="createNewSheet('planner')" class="template-card" title="Planificador Semanal de Horarios">
+                            <div class="template-preview" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: #ffffff;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #8b5cf6; padding-bottom: 3px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 7px; font-weight: 800; color: #4c1d95;">HORARIOS</span>
+                                    <i class="fa-solid fa-calendar-days" style="font-size: 8px; color: #8b5cf6;"></i>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: #f5f3ff; padding: 2px; border-radius: 3px; text-align: center;">
+                                    <span style="font-size: 4px; font-weight: 700; color: #6d28d9;">L</span>
+                                    <span style="font-size: 4px; font-weight: 700; color: #6d28d9;">M</span>
+                                    <span style="font-size: 4px; font-weight: 700; color: #6d28d9;">X</span>
+                                    <span style="font-size: 4px; font-weight: 700; color: #6d28d9;">J</span>
+                                    <span style="font-size: 4px; font-weight: 700; color: #6d28d9;">V</span>
+                                </div>
+                                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-top: 1px;">
+                                    <div style="height: 12px; background: #ede9fe; border-radius: 2px;"></div>
+                                    <div style="height: 12px; background: #fae8ff; border-radius: 2px;"></div>
+                                    <div style="height: 12px; background: #ede9fe; border-radius: 2px;"></div>
+                                    <div style="height: 12px; background: #fae8ff; border-radius: 2px;"></div>
+                                    <div style="height: 12px; background: #ede9fe; border-radius: 2px;"></div>
+                                </div>
+                                <div style="margin-top: auto; display: flex; align-items: center; justify-content: center; background: #8b5cf6; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">5 DÍAS / SEMANA</span>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Planificador Semanal</div>
+                                <div class="template-desc">Organización y horarios</div>
+                            </div>
+                        </div>
+
+                        <!-- 6. Control de Inventario & Stock -->
+                        <div onclick="createNewSheet('inventory')" class="template-card" title="Control de Inventario y Stock">
+                            <div class="template-preview" style="padding: 10px 8px; display: flex; flex-direction: column; gap: 4px; background: #ffffff;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #06b6d4; padding-bottom: 3px;">
+                                    <span style="font-family: 'Outfit', sans-serif; font-size: 7px; font-weight: 800; color: #164e63;">INVENTARIO</span>
+                                    <i class="fa-solid fa-boxes-stacked" style="font-size: 8px; color: #06b6d4;"></i>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2px; background: #ecfeff; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #0e7490;">Item</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #0e7490; text-align: right;">Stock</span>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 2px; margin-top: 1px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 55%;"></div>
+                                        <span style="font-size: 4px; font-weight: 700; color: #0e7490;">142 u.</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 65%;"></div>
+                                        <span style="font-size: 4px; font-weight: 700; color: #0e7490;">89 u.</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div style="height: 3px; background: #e2e8f0; border-radius: 2px; width: 45%;"></div>
+                                        <span style="font-size: 4px; font-weight: 700; color: #ef4444;">12 u.</span>
+                                    </div>
+                                </div>
+                                <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; background: #06b6d4; padding: 2px 4px; border-radius: 3px;">
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">ITEMS: 24</span>
+                                    <span style="font-size: 5px; font-weight: 700; color: #ffffff;">OK</span>
+                                </div>
+                            </div>
+                            <div class="template-body">
+                                <div class="template-name">Control de Inventario</div>
+                                <div class="template-desc">Stock y productos</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. HOJAS RECIENTES -->
+                <section class="recent-sheets-section">
+                    <div class="sheets-filter-bar">
+                        <div class="section-title" style="margin: 0;">
+                            <i class="fa-solid fa-clock-rotate-left" style="color: #10b981;"></i> Hojas de cálculo recientes
+                        </div>
+
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="filterTab('all', this)">Todos</button>
+                            <button class="filter-tab" onclick="filterTab('cloud', this)">☁️ Google Drive</button>
+                            <button class="filter-tab" onclick="filterTab('local', this)">💾 Guardados en Myxsi</button>
+                        </div>
+                    </div>
+
+                    <div class="recent-sheets-grid" id="sheetsGrid">
+                        <!-- Renderizado por JS -->
+                    </div>
+
+                    <div class="empty-sheets-wrapper" id="emptySheetsState" style="display: none;">
+                        <i class="fa-regular fa-file-excel empty-sheets-icon"></i>
+                        <h3 style="margin: 0; font-size: 1.2rem; font-weight: 750; color: var(--mx-txt-main);">Aún no tienes hojas de cálculo guardadas</h3>
+                        <p style="margin: 0; color: var(--mx-txt-mute); max-width: 440px; font-size: 0.88rem;">Crea un nuevo libro en blanco o utiliza una plantilla con fórmulas automáticas para organizar tus datos.</p>
+                        <button onclick="createNewSheet('blank')" class="btn-myxsi-new-doc" style="max-width: 220px; margin-top: 8px;">
+                            <i class="fa-solid fa-plus"></i> Crear libro de cálculo
+                        </button>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPT DE GESTIÓN DE SHEETS -->
+    <script>
+        let allSheetsList = [];
+
+        window.toggleSidebar = function() {
+            const sb = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (sb) sb.classList.toggle('open');
+            if (overlay) overlay.classList.toggle('show');
+        };
+
+        window.toggleSidebarDesktop = function() {
+            const sb = document.getElementById('sidebar');
+            if (sb) {
+                sb.classList.toggle('collapsed');
+                localStorage.setItem('sidebarCollapsed', sb.classList.contains('collapsed') ? 'true' : 'false');
+            }
+        };
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark') || document.documentElement.getAttribute('data-theme') === 'dark';
+            const nextDark = !isDark;
+            if (nextDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.documentElement.classList.add('dark');
+                if (document.body) document.body.classList.add('dark');
+                localStorage.setItem('myxsi_theme', 'dark');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.documentElement.classList.remove('dark');
+                if (document.body) document.body.classList.remove('dark');
+                localStorage.setItem('myxsi_theme', 'light');
+            }
+            const icon = document.getElementById('themeIcon');
+            if (icon) icon.className = nextDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        }
+
+        function syncUserDataAndStreak() {
+            try {
+                const streak = localStorage.getItem('myxsi_duo_streak') || '0';
+                const sNum = document.getElementById('sidebarRachaNum');
+                const hNum = document.getElementById('headerStreakCount');
+                if (sNum) sNum.textContent = streak;
+                if (hNum) hNum.textContent = streak;
+
+                const userStr = localStorage.getItem('myxsi_user');
+                if (userStr) {
+                    const u = JSON.parse(userStr);
+                    const name = u.displayName || u.email || 'R';
+                    const initChar = name.trim().charAt(0).toUpperCase();
+                    const el = document.getElementById('userInitialChar');
+                    if (el) el.textContent = initChar;
+                }
+                const isDark = document.documentElement.classList.contains('dark') || document.documentElement.getAttribute('data-theme') === 'dark';
+                const icon = document.getElementById('themeIcon');
+                if (icon) icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+            } catch(e) {}
+        }
+
+        async function createNewSheet(type = 'blank') {
+            const titleMap = {
+                'blank': 'Libro de cálculo sin título',
+                'budget': 'Presupuesto Mensual Personal',
+                'tasks': 'Lista de Tareas y Seguimiento',
+                'sales': 'Registro de Ventas e Ingresos',
+                'planner': 'Planificador de Horarios Semanal',
+                'inventory': 'Control de Inventario y Stock'
+            };
+
+            const sheetTitle = titleMap[type] || 'Libro de cálculo sin título';
+            const docId = 'sheet_' + Date.now();
+
+            let localFiles = [];
+            try {
+                localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            } catch(e) {
+                localFiles = [];
+            }
+
+            const newFile = {
+                id: docId,
+                name: sheetTitle,
+                mimeType: 'application/vnd.google-apps.spreadsheet',
+                updatedAt: Date.now(),
+                isLocal: true,
+                isSheet: true
+            };
+
+            localFiles.unshift(newFile);
+            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+            localStorage.setItem('sheets_studio_title_' + docId, sheetTitle);
+
+            const accessToken = localStorage.getItem('gdrive_access_token');
+            if (accessToken) {
+                try {
+                    const meta = {
+                        name: sheetTitle,
+                        mimeType: 'application/vnd.google-apps.spreadsheet'
+                    };
+                    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(meta)
+                    });
+                    if (res.ok) {
+                        const driveFile = await res.json();
+                        newFile.id = driveFile.id;
+                        newFile.isLocal = false;
+                        newFile.isCloud = true;
+                    }
+                } catch(e) {
+                    console.warn("Could not sync new Sheet to Google Drive:", e);
+                }
+            }
+
+            window.location.href = `sheets.html?sheetId=${newFile.id}&template=${type}`;
+        }
+        window.createNewSheet = createNewSheet;
+
+        async function loadUserSheets() {
+            let cloudSheets = [];
+            const accessToken = localStorage.getItem('gdrive_access_token');
+
+            if (accessToken) {
+                try {
+                    const query = "(mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or name contains '.csv' or name contains '.xlsx') and trashed = false";
+                    const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,size,webViewLink,createdTime,modifiedTime)&pageSize=50`;
+                    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                    if (res.ok) {
+                        const data = await res.json();
+                        cloudSheets = (data.files || []).map(f => ({
+                            id: f.id,
+                            name: f.name,
+                            mimeType: f.mimeType,
+                            updatedAt: f.modifiedTime || f.createdTime,
+                            webViewLink: f.webViewLink,
+                            isCloud: true
+                        }));
+                    }
+                } catch(e) {
+                    console.warn("Could not load Google Drive Sheets files:", e);
+                }
+            }
+
+            let localFiles = [];
+            try {
+                localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
+                    .filter(f => f.mimeType === 'application/vnd.google-apps.spreadsheet' || (f.name && (f.name.endsWith('.xlsx') || f.name.endsWith('.csv'))) || f.isSheet);
+                
+                const mainSheetTitle = localStorage.getItem('sheets_studio_title') || 'Libro de cálculo sin título';
+                const mainSheetData = localStorage.getItem('sheets_studio_data');
+
+                if (mainSheetData || mainSheetTitle) {
+                    localFiles.unshift({
+                        id: 'main_sheets_doc',
+                        name: mainSheetTitle,
+                        mimeType: 'application/vnd.google-apps.spreadsheet',
+                        updatedAt: Date.now(),
+                        isLocal: true,
+                        isMain: true
+                    });
+                }
+            } catch(e){}
+
+            allSheetsList = [...cloudSheets, ...localFiles];
+            renderSheetsGrid(allSheetsList);
+        }
+
+        function renderSheetsGrid(sheets) {
+            const grid = document.getElementById('sheetsGrid');
+            const emptyState = document.getElementById('emptySheetsState');
+
+            if (!grid) return;
+
+            if (sheets.length === 0) {
+                grid.style.display = 'none';
+                if (emptyState) emptyState.style.display = 'flex';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            if (emptyState) emptyState.style.display = 'none';
+
+            grid.innerHTML = '';
+            sheets.forEach(sheet => {
+                const dateStr = sheet.updatedAt ? new Date(sheet.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Reciente';
+
+                const card = document.createElement('div');
+                card.className = 'sheet-item-card';
+                card.innerHTML = `
+                    <div class="sheet-card-thumb">
+                        <div class="sheet-thumb-grid">
+                            <div class="sheet-cell-mock header"></div>
+                            <div class="sheet-cell-mock header"></div>
+                            <div class="sheet-cell-mock header"></div>
+                            <div class="sheet-cell-mock"></div>
+                            <div class="sheet-cell-mock"></div>
+                            <div class="sheet-cell-mock"></div>
+                            <div class="sheet-cell-mock"></div>
+                            <div class="sheet-cell-mock"></div>
+                            <div class="sheet-cell-mock"></div>
+                        </div>
+                    </div>
+                    <div class="sheet-card-info">
+                        <h3 class="sheet-title" title="${escapeHtml(sheet.name)}">${escapeHtml(sheet.name)}</h3>
+                        <div class="sheet-meta">
+                            <span class="sheet-cloud-badge">
+                                <i class="fa-solid ${sheet.isCloud ? 'fa-cloud' : 'fa-hard-drive'}"></i>
+                                ${sheet.isCloud ? 'Google Drive' : 'Guardado local'}
+                            </span>
+                            <span>• ${dateStr}</span>
+                        </div>
+                        ${sheet.isCloud && sheet.webViewLink ? 
+                            `<a href="${sheet.webViewLink}" target="_blank" class="sheet-open-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en Drive</a>` :
+                            `<a href="sheets.html?sheetId=${sheet.id}" class="sheet-open-btn"><i class="fa-solid fa-pen-to-square"></i> Abrir / Editar</a>`
+                        }
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterSheets(query) {
+            const q = query.toLowerCase().trim();
+            const filtered = allSheetsList.filter(s => s.name.toLowerCase().includes(q));
+            renderSheetsGrid(filtered);
+        }
+
+        function filterTab(type, el) {
+            document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            if (type === 'all') {
+                renderSheetsGrid(allSheetsList);
+            } else if (type === 'cloud') {
+                renderSheetsGrid(allSheetsList.filter(s => !s.isLocal));
+            } else if (type === 'local') {
+                renderSheetsGrid(allSheetsList.filter(s => s.isLocal));
+            }
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            syncUserDataAndStreak();
+            loadUserSheets();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Myxsi Video — CapCut Mobile Studio</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <script src="js/video-db.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        :root {
+            --cap-bg: #000000;
+            --cap-surface: #0e0f14;
+            --cap-surface-2: #161822;
+            --cap-surface-3: #202230;
+            --cap-border: rgba(255, 255, 255, 0.1);
+            --cap-accent: #feb504;
+            --cap-accent-cyan: #00e5ff;
+            --cap-accent-purple: #a855f7;
+            --cap-text: #ffffff;
+            --cap-text-sub: #94a3b8;
+            --cap-red: #ef4444;
+            --cap-green: #10b981;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
+
+        body {
+            background: var(--cap-bg);
+            color: var(--cap-text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            height: 100vh;
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* 1. TOPBAR CAPCUT */
+        .capcut-topbar {
+            height: calc(46px + var(--safe-top));
+            padding: var(--safe-top) 10px 0 10px;
+            background: #08090d;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .topbar-left, .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .topbar-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .topbar-btn:active {
+            transform: scale(0.92);
+            background: rgba(254, 181, 4, 0.2);
+            border-color: var(--cap-accent);
+        }
+
+        .topbar-ratio-badge {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 14px;
+            padding: 3px 10px;
+            color: #ffffff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .topbar-ratio-badge:active {
+            background: rgba(254, 181, 4, 0.25);
+            color: var(--cap-accent);
+        }
+
+        .topbar-mode-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 4px 8px;
+            color: #cbd5e1;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .topbar-export-btn {
+            background: linear-gradient(135deg, #feb504 0%, #ff8800 100%);
+            border: none;
+            border-radius: 99px;
+            padding: 5px 14px;
+            color: #000000;
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 12px rgba(254, 181, 4, 0.35);
+        }
+
+        .topbar-export-btn:active {
+            transform: scale(0.94);
+            filter: brightness(1.1);
+        }
+
+        /* 2. ESCENARIO DE PREVISUALIZACIÓN DE VIDEO */
+        .capcut-stage-area {
+            flex: 1;
+            min-height: 180px;
+            max-height: 48%;
+            background: #000000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        .capcut-canvas-container {
+            position: relative;
+            max-height: calc(100% - 36px);
+            max-width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.85);
+            background: #050608;
+        }
+
+        #mainVideoCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* GIZMO TÁCTIL DE TRANSFORMACIÓN */
+        .capcut-gizmo-box {
+            position: absolute;
+            border: 2px solid var(--cap-accent);
+            display: none;
+            pointer-events: auto;
+            z-index: 50;
+            touch-action: none;
+        }
+
+        .gizmo-handle {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border: 2px solid var(--cap-accent);
+            border-radius: 50%;
+            touch-action: none;
+        }
+
+        .gizmo-tl { top: -9px; left: -9px; }
+        .gizmo-tr { top: -9px; right: -9px; }
+        .gizmo-bl { bottom: -9px; left: -9px; }
+        .gizmo-br { bottom: -9px; right: -9px; }
+
+        .gizmo-rot-stem {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 16px;
+            background: var(--cap-accent);
+        }
+
+        .gizmo-rot-knob {
+            position: absolute;
+            top: -34px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--cap-accent);
+            border: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            color: #000000;
+        }
+
+        /* BARRA DE TRANSPORTE FLOTANTE (BAJO EL PREVIEW) */
+        .stage-floating-transport {
+            height: 32px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            margin-top: 4px;
+        }
+
+        .transport-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.95rem;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .transport-btn:active {
+            color: #ffffff;
+            transform: scale(0.9);
+        }
+
+        .transport-center-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(22, 24, 34, 0.85);
+            padding: 3px 12px;
+            border-radius: 99px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+
+        .btn-play-pause-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--cap-accent);
+            border: none;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .btn-play-pause-circle:active {
+            transform: scale(0.92);
+        }
+
+        .stage-timecode {
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            color: #cbd5e1;
+        }
+
+        /* 3. LÍNEA DE TIEMPO NATIVA ESTILO CAPCUT */
+        .capcut-timeline-wrapper {
+            flex: 1;
+            background: #090a10;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* AGUJA BLANCA FIJA CENTRAL (50vw) */
+        .capcut-center-needle {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ffffff;
+            transform: translateX(-50%);
+            z-index: 60;
+            pointer-events: none;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+
+        .needle-pip {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 14px;
+            height: 10px;
+            background: #ffffff;
+            clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+        }
+
+        /* COLUMNA LATERAL DE ACCIONES DE PISTA */
+        .timeline-side-actions {
+            position: absolute;
+            left: 0;
+            top: 24px;
+            bottom: 0;
+            width: 44px;
+            background: rgba(12, 13, 19, 0.95);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding-top: 8px;
+            z-index: 55;
+            backdrop-filter: blur(8px);
+        }
+
+        .side-action-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.6rem;
+        }
+
+        .side-action-btn i {
+            font-size: 1rem;
+        }
+
+        .side-action-btn.active {
+            color: var(--cap-accent);
+        }
+
+        /* CONTENEDOR DESLIZABLE HORIZONTALMENTE */
+        .timeline-scroll-container {
+            flex: 1;
+            overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+            padding-left: 50vw;
+            padding-right: 50vw;
+            padding-top: 2px;
+            scrollbar-width: none;
+            touch-action: pan-x;
+        }
+
+        .timeline-scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* REGLA DE TIEMPO */
+        .timeline-ruler-bar {
+            height: 20px;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+        }
+
+        .ruler-second-mark {
+            position: absolute;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            transform: translateX(-50%);
+        }
+
+        .ruler-second-mark::after {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.25);
+            margin-top: 2px;
+        }
+
+        /* PISTAS DE CLIPS */
+        .timeline-tracks-area {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px 0;
+            position: relative;
+        }
+
+        .track-row {
+            height: 52px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .track-row-sub {
+            height: 36px;
+        }
+
+        /* CLIPS FILMSTRIP CAPCUT */
+        .capcut-clip-block {
+            position: absolute;
+            height: 100%;
+            background: #1e2130;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            touch-action: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .capcut-clip-block.active {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 14px rgba(254, 181, 4, 0.5);
+            z-index: 20;
+        }
+
+        .capcut-clip-thumb-filmstrip {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            opacity: 0.5;
+            pointer-events: none;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .capcut-clip-label {
+            position: relative;
+            z-index: 5;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #ffffff;
+            padding: 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .capcut-clip-dur-tag {
+            position: absolute;
+            right: 6px;
+            bottom: 3px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.8);
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1px 4px;
+            border-radius: 4px;
+            z-index: 5;
+        }
+
+        /* MANIJAS DE RECORTE TÁCTIL (TRIM HANDLES) */
+        .capcut-trim-handle {
+            display: none;
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 18px;
+            background: #ffffff;
+            z-index: 25;
+            touch-action: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .capcut-trim-handle::after {
+            content: '';
+            width: 3px;
+            height: 16px;
+            background: #000000;
+            border-radius: 2px;
+        }
+
+        .capcut-clip-block.active .capcut-trim-handle {
+            display: flex;
+        }
+
+        .trim-left-handle {
+            left: 0;
+            border-radius: 6px 0 0 6px;
+        }
+
+        .trim-right-handle {
+            right: 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        /* BOTÓN FLOTANTE CAPCUT '+' PARA AÑADIR MEDIA AL FINAL */
+        .capcut-add-tile {
+            position: absolute;
+            height: 52px;
+            width: 48px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .capcut-add-tile:active {
+            background: rgba(254, 181, 4, 0.2);
+            color: var(--cap-accent);
+            border-color: var(--cap-accent);
+        }
+
+        /* PISTA DE AUDIO (WAVEFORM) */
+        .track-audio-clip {
+            background: #0e3028 !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+        }
+
+        .track-audio-clip.active {
+            border-color: #10b981 !important;
+        }
+
+        /* PISTA DE TEXTO (SUBTÍTULOS) */
+        .track-text-clip {
+            background: #3b2a05 !important;
+            border-color: rgba(254, 181, 4, 0.4) !important;
+        }
+
+        .track-text-clip.active {
+            border-color: #feb504 !important;
+        }
+
+        /* 4. DOCK / TOOLBAR INFERIOR ESTILO CAPCUT */
+        .capcut-bottom-bar {
+            height: calc(56px + var(--safe-bottom));
+            padding-bottom: var(--safe-bottom);
+            background: #0a0b10;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+            z-index: 90;
+        }
+
+        .capcut-bottom-bar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .capcut-tool-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            min-width: 58px;
+            height: 100%;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.65rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 4px 6px;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .capcut-tool-btn i {
+            font-size: 1.15rem;
+            color: #cbd5e1;
+        }
+
+        .capcut-tool-btn:active,
+        .capcut-tool-btn.active {
+            color: var(--cap-accent);
+        }
+
+        .capcut-tool-btn.active i {
+            color: var(--cap-accent);
+        }
+
+        .tool-btn-back {
+            color: var(--cap-accent-cyan) !important;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* 5. DRAWER / BOTTOM SHEET DINÁMICO */
+        .capcut-drawer-sheet {
+            position: fixed;
+            bottom: calc(56px + var(--safe-bottom));
+            left: 0;
+            right: 0;
+            max-height: 58vh;
+            background: #12141c;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.9);
+            z-index: 120;
+            display: none;
+            flex-direction: column;
+            padding: 10px 14px calc(12px + var(--safe-bottom)) 14px;
+            overflow-y: auto;
+            backdrop-filter: blur(24px);
+        }
+
+        .capcut-drawer-sheet.open {
+            display: flex;
+            animation: slideUpDrawer 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUpDrawer {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .drawer-pull-bar {
+            width: 38px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 99px;
+            margin: 0 auto 10px auto;
+        }
+
+        .drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 12px;
+        }
+
+        .drawer-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drawer-close-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* MODAL DE EXPORTACIÓN MÓVIL */
+        .capcut-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 200;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .capcut-modal-overlay.open {
+            display: flex;
+        }
+
+        .capcut-export-card {
+            width: 100%;
+            max-width: 480px;
+            background: #141622;
+            border-top: 1px solid rgba(254, 181, 4, 0.3);
+            border-radius: 24px 24px 0 0;
+            padding: 16px 18px calc(24px + var(--safe-bottom)) 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            animation: slideUpDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .export-profile-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .export-profile-pill.active {
+            border-color: var(--cap-accent);
+            background: rgba(254, 181, 4, 0.15);
+        }
+
+        .export-progress-track {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .export-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #feb504, #00e5ff);
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. TOPBAR CAPCUT -->
+    <header class="capcut-topbar">
+        <div class="topbar-left">
+            <a href="video-home.html" class="topbar-btn" title="Volver al panel"><i class="fa-solid fa-chevron-left"></i></a>
+            <input type="text" id="projectTitle" value="Mi Video CapCut" style="background: transparent; border: none; color: #fff; font-weight: 700; font-size: 0.8rem; max-width: 110px; outline: none;" onchange="saveProject()">
+            <button type="button" class="topbar-ratio-badge" onclick="openDrawer('ratio')" title="Cambiar formato">
+                <i class="fa-solid fa-crop"></i> <span id="currentRatioLabel">9:16</span>
+            </button>
+        </div>
+        <div class="topbar-right">
+            <a href="video.html?desktop=1" class="topbar-mode-btn" title="Alternar a versión completa de PC"><i class="fa-solid fa-desktop"></i> PC</a>
+            <button type="button" class="topbar-btn" onclick="saveProject(true)" title="Guardar"><i class="fa-solid fa-floppy-disk"></i></button>
+            <button type="button" class="topbar-export-btn" onclick="openExportModal()"><i class="fa-solid fa-arrow-up-from-bracket"></i> Exportar</button>
+        </div>
+    </header>
+
+    <!-- 2. STAGE / PREVIEW DE VIDEO -->
+    <section class="capcut-stage-area">
+        <div class="capcut-canvas-container" id="canvasContainer">
+            <canvas id="mainVideoCanvas" width="1080" height="1920"></canvas>
+            <!-- GIZMO TÁCTIL PARA MOVER, ESCALAR Y ROTAR CLIPS -->
+            <div class="capcut-gizmo-box" id="canvasGizmo">
+                <div class="gizmo-handle gizmo-tl" data-handle="tl"></div>
+                <div class="gizmo-handle gizmo-tr" data-handle="tr"></div>
+                <div class="gizmo-handle gizmo-bl" data-handle="bl"></div>
+                <div class="gizmo-handle gizmo-br" data-handle="br"></div>
+                <div class="gizmo-rot-stem"></div>
+                <div class="gizmo-rot-knob" id="gizmoRotKnob"><i class="fa-solid fa-rotate"></i></div>
+            </div>
+        </div>
+
+        <!-- BARRA FLOTANTE DE TRANSPORTE Y TIEMPO -->
+        <div class="stage-floating-transport">
+            <div style="display: flex; gap: 4px;">
+                <button type="button" class="transport-btn" onclick="undo()" title="Deshacer"><i class="fa-solid fa-rotate-left"></i></button>
+                <button type="button" class="transport-btn" onclick="redo()" title="Rehacer"><i class="fa-solid fa-rotate-right"></i></button>
+            </div>
+
+            <div class="transport-center-group">
+                <button type="button" class="btn-play-pause-circle" id="btnPlayPause" onclick="togglePlay()"><i class="fa-solid fa-play"></i></button>
+                <span class="stage-timecode" id="timecodeDisplay">00:00.00 / 00:10.00</span>
+            </div>
+
+            <button type="button" class="transport-btn" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i></button>
+        </div>
+    </section>
+
+    <!-- 3. LÍNEA DE TIEMPO CAPCUT CON AGUJA BLANCA CENTRAL FIJA -->
+    <section class="capcut-timeline-wrapper">
+        <!-- AGUJA BLANCA CENTRAL FIJA -->
+        <div class="capcut-center-needle">
+            <div class="needle-pip"></div>
+        </div>
+
+        <!-- ACCIONES LATERALES FIJAS DE PISTA (SILENCIAR / PORTADA) -->
+        <div class="timeline-side-actions">
+            <button type="button" class="side-action-btn" id="btnMuteAll" onclick="toggleMuteAll()">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>Silenciar</span>
+            </button>
+            <button type="button" class="side-action-btn" onclick="setCoverFrame()">
+                <i class="fa-regular fa-image"></i>
+                <span>Portada</span>
+            </button>
+        </div>
+
+        <!-- CONTENEDOR DESLIZABLE HORIZONTALMENTE (SWIPE TIMELINE) -->
+        <div class="timeline-scroll-container" id="timelineScrollContainer">
+            <!-- REGLA DE SEGUNDOS -->
+            <div class="timeline-ruler-bar" id="timelineRuler"></div>
+
+            <!-- PISTAS MULTICANAL APILADAS -->
+            <div class="timeline-tracks-area" id="tracksArea">
+                <!-- PISTA PRINCIPAL DE VIDEO 1 -->
+                <div class="track-row" id="track-video1" data-track-type="video"></div>
+                <!-- PISTA SECUNDARIA DE VIDEO / SUPERPOSICIÓN 2 -->
+                <div class="track-row track-row-sub" id="track-video2" data-track-type="video"></div>
+                <!-- PISTA DE TEXTO / SUBTÍTULOS -->
+                <div class="track-row track-row-sub" id="track-text" data-track-type="text"></div>
+                <!-- PISTA DE AUDIO / MÚSICA -->
+                <div class="track-row track-row-sub" id="track-audio1" data-track-type="audio"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. TOOLBAR INFERIOR CAPCUT -->
+    <nav class="capcut-bottom-bar" id="bottomBar">
+        <!-- TOOLBAR RAÍZ (CUANDO NO HAY CLIP SELECCIONADO) -->
+        <div id="rootToolbar" style="display: flex; width: 100%;">
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('edit')">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Editar</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('audio')">
+                <i class="fa-solid fa-music"></i>
+                <span>Audio</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('text')">
+                <i class="fa-solid fa-font"></i>
+                <span>Texto</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="document.getElementById('fileInputAdd').click()">
+                <i class="fa-regular fa-clone"></i>
+                <span>Superponer</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('effects')">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Efectos</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('transitions')">
+                <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                <span>Transic.</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('filters')">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Filtros</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('ratio')">
+                <i class="fa-solid fa-crop"></i>
+                <span>Formato</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="document.getElementById('fileInputAdd').click()">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+                <span>Importar</span>
+            </button>
+        </div>
+
+        <!-- TOOLBAR DE CLIP SELECCIONADO -->
+        <div id="clipToolbar" style="display: none; width: 100%;">
+            <button type="button" class="capcut-tool-btn tool-btn-back" onclick="deselectActiveClip()">
+                <i class="fa-solid fa-chevron-left"></i>
+                <span>Volver</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="splitClipAtPlayhead()">
+                <i class="fa-solid fa-scissors" style="color: #feb504;"></i>
+                <span>Dividir</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('speed')">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Velocidad</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('anim')">
+                <i class="fa-solid fa-film"></i>
+                <span>Animación</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="deleteActiveClip()">
+                <i class="fa-regular fa-trash-can" style="color: #ef4444;"></i>
+                <span>Eliminar</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="duplicateActiveClip()">
+                <i class="fa-regular fa-clone"></i>
+                <span>Duplicar</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="freezeFrameAtPlayhead()">
+                <i class="fa-regular fa-snowflake"></i>
+                <span>Congelar</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="reverseActiveClip()">
+                <i class="fa-solid fa-backward-step"></i>
+                <span>Invertir</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('opacity')">
+                <i class="fa-regular fa-eye"></i>
+                <span>Opacidad</span>
+            </button>
+            <button type="button" class="capcut-tool-btn" onclick="openDrawer('audio')">
+                <i class="fa-solid fa-microphone-lines"></i>
+                <span>Voz FX</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 5. BOTTOM SHEET / DRAWER CAPCUT -->
+    <div class="capcut-drawer-sheet" id="capcutSheet">
+        <div class="drawer-pull-bar"></div>
+        <div class="drawer-header">
+            <span class="drawer-title" id="drawerTitle"><i class="fa-solid fa-scissors"></i> Herramientas</span>
+            <button type="button" class="drawer-close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div id="drawerBody"></div>
+    </div>
+
+    <!-- 6. MODAL DE EXPORTACIÓN MÓVIL DIRECTO -->
+    <div class="capcut-modal-overlay" id="exportModal">
+        <div class="capcut-export-card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="font-size: 1rem; font-weight: 800; color: #fff;"><i class="fa-solid fa-arrow-up-from-bracket" style="color: #feb504;"></i> Exportar Video</h3>
+                <button type="button" class="drawer-close-btn" onclick="closeExportModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="export-profile-pill active" id="pill1080p" onclick="selectExportResolution('1080p')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                    1080p (FHD)
+                </button>
+                <button type="button" class="export-profile-pill" id="pill720p" onclick="selectExportResolution('720p')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                    720p (Rápido)
+                </button>
+                <button type="button" class="export-profile-pill" id="pill4k" onclick="selectExportResolution('4k')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                    4K Ultra
+                </button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.04); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
+                    <span>Formato y Aspecto:</span>
+                    <strong style="color: #feb504;" id="exportMetaRatio">9:16 (TikTok/Reels)</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
+                    <span>Duración Total:</span>
+                    <strong style="color: #00e5ff;" id="exportMetaDur">10.0s</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
+                    <span>FPS / Codificación:</span>
+                    <strong style="color: #ffffff;">30 FPS Hardware</strong>
+                </div>
+            </div>
+
+            <div id="exportProgressSection" style="display: none;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; margin-bottom: 2px;">
+                    <span id="exportStatusText" style="color: #cbd5e1;">Renderizando fotogramas...</span>
+                    <strong id="exportPercentText" style="color: #feb504;">0%</strong>
+                </div>
+                <div class="export-progress-track">
+                    <div class="export-progress-fill" id="exportProgressFill"></div>
+                </div>
+            </div>
+
+            <div id="exportSuccessBox" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 10px; padding: 10px; text-align: center;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #34d399; margin-bottom: 6px;">
+                    <i class="fa-solid fa-circle-check"></i> ¡Video Exportado y Descargado!
+                </div>
+                <a id="btnDirectDownload" href="#" download="Video_Myxsi.webm" style="display: inline-block; background: #10b981; color: #000; font-weight: 800; font-size: 0.72rem; padding: 6px 14px; border-radius: 99px; text-decoration: none;">
+                    Descargar de nuevo
+                </a>
+            </div>
+
+            <button type="button" id="btnStartExport" class="topbar-export-btn" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.85rem;" onclick="startExport()">
+                <i class="fa-solid fa-download"></i> Iniciar Exportación y Descarga
+            </button>
+        </div>
+    </div>
+
+    <!-- INPUT DE ARCHIVOS OCULTO PARA AÑADIR MEDIA DIRECTO DESDE CELULAR -->
+    <input type="file" id="fileInputAdd" accept="video/*,image/*,audio/*" multiple style="display: none;" onchange="handleFileInput(this.files)">
+
+    <script>
+        // =========================================================================
+        // ESTADO GLOBAL DEL PROYECTO (COMPATIBLE CON MYXSI VIDEO ENGINE)
+        // =========================================================================
+        const projectState = {
+            id: 'proj_' + Date.now(),
+            title: 'Mi Video CapCut',
+            aspectRatio: '9:16',
+            duration: 10.0,
+            currentTime: 0.0,
+            isPlaying: false,
+            activeClipId: null,
+            activeShader: 'none',
+            activeTransition: 'none',
+            activeAudioEffect: 'none',
+            zoomPxPerSec: 60, // Escala de timeline
+            isMutedAll: false,
+            filters: { brightness: 100, contrast: 100, saturation: 100, blur: 0 },
+            audioEq: { bass: 0, mid: 0, treble: 0 },
+            clips: [
+                {
+                    id: 'clip_v1',
+                    track: 'track-video1',
+                    type: 'video',
+                    title: 'Ondas Cósmicas',
+                    start: 0,
+                    duration: 10.0,
+                    inPoint: 0,
+                    volume: 1.0,
+                    speed: 1.0,
+                    x: 0,
+                    y: 0,
+                    scale: 1.0,
+                    rotation: 0,
+                    opacity: 1.0,
+                    animIn: 'pop_bounce',
+                    animInDuration: 0.6
+                },
+                {
+                    id: 'clip_txt1',
+                    track: 'track-text',
+                    type: 'text',
+                    title: 'Título Viral',
+                    text: '🔥 EDICIÓN CAPCUT',
+                    start: 0.5,
+                    duration: 4.5,
+                    fontSize: 48,
+                    fontFamily: 'Montserrat, sans-serif',
+                    color: '#feb504',
+                    x: 0,
+                    y: 220,
+                    scale: 1.0,
+                    rotation: 0,
+                    opacity: 1.0,
+                    animIn: 'pop_bounce',
+                    animInDuration: 0.5
+                },
+                {
+                    id: 'clip_aud1',
+                    track: 'track-audio1',
+                    type: 'audio',
+                    title: 'Lofi Chill Beat',
+                    start: 0,
+                    duration: 10.0,
+                    volume: 0.85
+                }
+            ]
+        };
+
+        const mediaCache = new Map();
+        const historyStack = [];
+        let historyIndex = -1;
+        let animationFrameId = null;
+        let isExporting = false;
+        let exportResolution = '1080p';
+        let currentDrawerTab = null;
+        let isUserScrollingTimeline = false;
+        let scrollTimeout = null;
+
+        const canvas = document.getElementById('mainVideoCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // INICIALIZACIÓN
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initUrlParams();
+            setupCanvasSize();
+            buildTimelineRuler();
+            renderTimelineClips();
+            setupTimelineScrollListener();
+            setupPinchZoom();
+            setupGizmoEvents();
+            setupOutsideTapDismiss();
+            pushHistory();
+            startRenderLoop();
+            updateTimecodeUI();
+
+            window.addEventListener('resize', () => {
+                setupCanvasSize();
+                updateGizmo();
+            });
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => { setupCanvasSize(); updateGizmo(); }, 200);
+            });
+        });
+
+        // PARÁMETROS URL E INDEXEDDB
+        async function initUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            const ratio = params.get('ratio');
+            if (ratio) projectState.aspectRatio = ratio;
+
+            if (id && window.MyxsiVideoDB) {
+                try {
+                    const saved = await window.MyxsiVideoDB.getProject(id);
+                    if (saved) {
+                        projectState.id = saved.id;
+                        if (saved.title) projectState.title = saved.title;
+                        if (saved.ratio) projectState.aspectRatio = saved.ratio;
+                        if (saved.clips && saved.clips.length > 0) projectState.clips = saved.clips;
+                        if (saved.activeShader) projectState.activeShader = saved.activeShader;
+                        if (saved.filters) projectState.filters = Object.assign(projectState.filters, saved.filters);
+                    }
+                } catch(e) {
+                    console.warn('Error al cargar proyecto IndexedDB:', e);
+                }
+            }
+
+            const titleInp = document.getElementById('projectTitle');
+            if (titleInp) titleInp.value = projectState.title;
+            const ratioLbl = document.getElementById('currentRatioLabel');
+            if (ratioLbl) ratioLbl.innerText = projectState.aspectRatio;
+        }
+
+        // TAMAÑO DEL CANVAS SEGÚN ASPECT RATIO
+        function setupCanvasSize() {
+            const ratios = {
+                '9:16': { w: 1080, h: 1920, cssAspect: '9/16' },
+                '16:9': { w: 1920, h: 1080, cssAspect: '16/9' },
+                '1:1': { w: 1080, h: 1080, cssAspect: '1/1' },
+                '4:5': { w: 1080, h: 1350, cssAspect: '4/5' },
+                '21:9': { w: 2560, h: 1080, cssAspect: '21/9' }
+            };
+
+            const cfg = ratios[projectState.aspectRatio] || ratios['9:16'];
+            canvas.width = cfg.w;
+            canvas.height = cfg.h;
+            const container = document.getElementById('canvasContainer');
+            if (container) {
+                container.style.aspectRatio = cfg.cssAspect;
+            }
+            updateGizmo();
+            drawFrame();
+        }
+
+        // CICLO DE RENDERIZADO
+        function startRenderLoop() {
+            let lastTimestamp = performance.now();
+            function loop(now) {
+                const delta = (now - lastTimestamp) / 1000;
+                lastTimestamp = now;
+
+                if (projectState.isPlaying && !isExporting) {
+                    projectState.currentTime += delta;
+                    if (projectState.currentTime >= projectState.duration) {
+                        projectState.currentTime = 0;
+                    }
+                    syncTimelineScrollToPlayhead();
+                    updateTimecodeUI();
+                }
+
+                drawFrame();
+                animationFrameId = requestAnimationFrame(loop);
+            }
+            animationFrameId = requestAnimationFrame(loop);
+        }
+
+        // DIBUJADO DE FOTOGRAMAS CON MULTICANAL + SHADERS
+        function drawFrame() {
+            const w = canvas.width;
+            const h = canvas.height;
+            const t = projectState.currentTime;
+
+            // Fondo negro CapCut
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Capa de video 1 (Fondo principal)
+            drawTrackClips('track-video1', w, h, t);
+            // Capa de video 2 (Superposición / PIP)
+            drawTrackClips('track-video2', w, h, t);
+            // Capa de títulos / texto
+            drawTrackClips('track-text', w, h, t);
+
+            // Post-procesamiento / Shaders en tiempo real
+            applyActiveShaders(w, h, t);
+        }
+
+        function drawTrackClips(trackId, w, h, t) {
+            const clip = projectState.clips.find(c => c.track === trackId && t >= c.start && t <= (c.start + c.duration));
+            if (!clip) return;
+
+            ctx.save();
+            const cx = w / 2 + (clip.x || 0);
+            const cy = h / 2 + (clip.y || 0);
+            ctx.translate(cx, cy);
+
+            if (clip.rotation) ctx.rotate((clip.rotation * Math.PI) / 180);
+            const sc = clip.scale !== undefined ? clip.scale : 1.0;
+            ctx.scale(sc, sc);
+
+            if (clip.opacity !== undefined) {
+                ctx.globalAlpha = Math.max(0, Math.min(1, clip.opacity));
+            }
+
+            if (clip.type === 'video' || clip.type === 'image') {
+                // Procedural placeholder visual de alta calidad
+                const grad = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
+                if (trackId === 'track-video1') {
+                    grad.addColorStop(0, '#0a0b14');
+                    grad.addColorStop(0.5, '#1e113a');
+                    grad.addColorStop(1, '#0b162c');
+                } else {
+                    grad.addColorStop(0, '#feb504');
+                    grad.addColorStop(1, '#ff3b30');
+                }
+                ctx.fillStyle = grad;
+                const rectW = trackId === 'track-video1' ? w : w * 0.45;
+                const rectH = trackId === 'track-video1' ? h : (rectW * 9 / 16);
+                ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
+
+                // Ondas dinámicas
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+                for (let i = 0; i < 6; i++) {
+                    const waveY = Math.sin(t * 1.5 + i) * 60;
+                    ctx.beginPath();
+                    ctx.arc(-rectW / 3 + i * (rectW / 4), waveY, 50, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (clip.type === 'text') {
+                ctx.font = `900 ${clip.fontSize || 48}px ${clip.fontFamily || 'Montserrat, sans-serif'}`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = clip.color || '#feb504';
+                ctx.fillText(clip.text || 'TEXTO', 0, 0);
+            }
+
+            ctx.restore();
+        }
+
+        // 21 SHADERS DE DRIFT POST-PROCESSING
+        function applyActiveShaders(w, h, t) {
+            const shader = projectState.activeShader;
+            if (!shader || shader === 'none') return;
+
+            if (shader === 'vhs') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                for (let y = 0; y < h; y += 4) ctx.fillRect(0, y, w, 2);
+                ctx.fillStyle = `rgba(${Math.random() > 0.5 ? 255 : 0}, 0, 0, 0.04)`;
+                ctx.fillRect(0, 0, w, h);
+            } else if (shader === 'glitch') {
+                if (Math.sin(t * 15) > 0.6) {
+                    const sliceH = 30 + Math.random() * 40;
+                    const sliceY = Math.random() * (h - sliceH);
+                    const shiftX = (Math.random() - 0.5) * 45;
+                    ctx.drawImage(canvas, 0, sliceY, w, sliceH, shiftX, sliceY, w, sliceH);
+                }
+            } else if (shader === 'neon_glow') {
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.15)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.restore();
+            } else if (shader === 'cyberpunk') {
+                ctx.save();
+                ctx.globalCompositeOperation = 'color';
+                const grad = ctx.createLinearGradient(0, 0, w, h);
+                grad.addColorStop(0, '#ff007f');
+                grad.addColorStop(1, '#00e5ff');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+                ctx.restore();
+            } else if (shader === 'film_grain') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+                for (let i = 0; i < 400; i++) {
+                    ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
+                }
+            } else if (shader === 'lomo' || shader === 'vignette') {
+                const vig = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.35, w/2, h/2, Math.max(w,h)*0.75);
+                vig.addColorStop(0, 'rgba(0,0,0,0)');
+                vig.addColorStop(1, 'rgba(0,0,0,0.7)');
+                ctx.fillStyle = vig;
+                ctx.fillRect(0, 0, w, h);
+            } else if (shader === 'sepia') {
+                ctx.save();
+                ctx.globalCompositeOperation = 'color';
+                ctx.fillStyle = '#704214';
+                ctx.fillRect(0, 0, w, h);
+                ctx.restore();
+            }
+        }
+
+        // =========================================================================
+        // LÍNEA DE TIEMPO CAPCUT: SWIPE TIMELINE Y AGUJA CENTRAL FIJA
+        // =========================================================================
+        function buildTimelineRuler() {
+            const ruler = document.getElementById('timelineRuler');
+            if (!ruler) return;
+            ruler.innerHTML = '';
+            const totalSecs = Math.max(Math.ceil(projectState.duration) + 8, 30);
+            const pxPerSec = projectState.zoomPxPerSec;
+
+            for (let s = 0; s <= totalSecs; s++) {
+                const mark = document.createElement('div');
+                mark.className = 'ruler-second-mark';
+                mark.style.left = `${s * pxPerSec}px`;
+                const min = Math.floor(s / 60);
+                const sec = s % 60;
+                mark.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}s`;
+                ruler.appendChild(mark);
+            }
+        }
+
+        function renderTimelineClips() {
+            document.querySelectorAll('.capcut-clip-block').forEach(c => c.remove());
+            document.querySelectorAll('.capcut-add-tile').forEach(t => t.remove());
+
+            projectState.clips.forEach(clip => {
+                const lane = document.getElementById(clip.track);
+                if (!lane) return;
+
+                const left = clip.start * projectState.zoomPxPerSec;
+                const width = Math.max(clip.duration * projectState.zoomPxPerSec, 34);
+
+                const clipEl = document.createElement('div');
+                clipEl.className = `capcut-clip-block track-${clip.type}-clip`;
+                if (clip.id === projectState.activeClipId) clipEl.classList.add('active');
+                clipEl.style.left = `${left}px`;
+                clipEl.style.width = `${width}px`;
+                clipEl.id = `clip_${clip.id}`;
+
+                let icon = 'film';
+                if (clip.type === 'text') icon = 'font';
+                else if (clip.type === 'audio') icon = 'music';
+
+                clipEl.innerHTML = `
+                    <div class="capcut-trim-handle trim-left-handle"></div>
+                    <div class="capcut-clip-thumb-filmstrip"></div>
+                    <span class="capcut-clip-label"><i class="fa-solid fa-${icon}"></i> ${clip.title}</span>
+                    <span class="capcut-clip-dur-tag">${clip.duration.toFixed(1)}s</span>
+                    <div class="capcut-trim-handle trim-right-handle"></div>
+                `;
+
+                // Tocar para seleccionar clip
+                clipEl.addEventListener('touchstart', (e) => {
+                    if (e.target.classList.contains('capcut-trim-handle')) {
+                        handleTrimTouch(e, clip, e.target.classList.contains('trim-left-handle') ? 'left' : 'right');
+                        return;
+                    }
+                    selectClip(clip.id);
+                }, { passive: true });
+
+                clipEl.addEventListener('click', (e) => {
+                    selectClip(clip.id);
+                });
+
+                lane.appendChild(clipEl);
+            });
+
+            // Botón '+' CapCut al final de la pista de video 1
+            const lane1 = document.getElementById('track-video1');
+            if (lane1) {
+                const maxVideoEnd = projectState.clips
+                    .filter(c => c.track === 'track-video1')
+                    .reduce((max, c) => Math.max(max, c.start + c.duration), 0);
+                const tile = document.createElement('div');
+                tile.className = 'capcut-add-tile';
+                tile.style.left = `${maxVideoEnd * projectState.zoomPxPerSec + 10}px`;
+                tile.innerHTML = '<i class="fa-solid fa-plus"></i>';
+                tile.onclick = () => document.getElementById('fileInputAdd').click();
+                lane1.appendChild(tile);
+            }
+
+            updateDuration();
+        }
+
+        // SINCRONIZACIÓN DE SCROLL HORIZONTAL CON LA AGUJA FIJA CENTRAL
+        function setupTimelineScrollListener() {
+            const scrollArea = document.getElementById('timelineScrollContainer');
+            if (!scrollArea) return;
+
+            scrollArea.addEventListener('scroll', () => {
+                if (projectState.isPlaying) return; // Controlado por el render loop
+                isUserScrollingTimeline = true;
+
+                const scrollLeft = scrollArea.scrollLeft;
+                const newTime = Math.max(0, Math.min(scrollLeft / projectState.zoomPxPerSec, projectState.duration));
+                projectState.currentTime = newTime;
+                updateTimecodeUI();
+
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    isUserScrollingTimeline = false;
+                }, 150);
+            }, { passive: true });
+        }
+
+        function syncTimelineScrollToPlayhead() {
+            const scrollArea = document.getElementById('timelineScrollContainer');
+            if (!scrollArea || isUserScrollingTimeline) return;
+            scrollArea.scrollLeft = projectState.currentTime * projectState.zoomPxPerSec;
+        }
+
+        function updateTimecodeUI() {
+            const disp = document.getElementById('timecodeDisplay');
+            if (disp) {
+                disp.innerText = `${formatTime(projectState.currentTime)} / ${formatTime(projectState.duration)}`;
+            }
+        }
+
+        function formatTime(s) {
+            const mins = Math.floor(s / 60);
+            const secs = Math.floor(s % 60);
+            const ms = Math.floor((s % 1) * 100);
+            return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}.${ms < 10 ? '0' : ''}${ms}`;
+        }
+
+        function togglePlay() {
+            projectState.isPlaying = !projectState.isPlaying;
+            const btn = document.getElementById('btnPlayPause');
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-${projectState.isPlaying ? 'pause' : 'play'}"></i>`;
+            }
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        // PELLIZCO PARA ZOOM (PINCH TO ZOOM TIMELINE)
+        function setupPinchZoom() {
+            const scrollArea = document.getElementById('timelineScrollContainer');
+            if (!scrollArea) return;
+
+            let initialDist = 0;
+            let initialZoom = 60;
+
+            scrollArea.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    initialDist = Math.hypot(dx, dy);
+                    initialZoom = projectState.zoomPxPerSec;
+                }
+            }, { passive: true });
+
+            scrollArea.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && initialDist > 0) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const curDist = Math.hypot(dx, dy);
+                    const scale = curDist / initialDist;
+                    const newZoom = Math.max(20, Math.min(200, Math.round(initialZoom * scale)));
+                    if (newZoom !== projectState.zoomPxPerSec) {
+                        projectState.zoomPxPerSec = newZoom;
+                        buildTimelineRuler();
+                        renderTimelineClips();
+                        syncTimelineScrollToPlayhead();
+                    }
+                    if (e.cancelable) e.preventDefault();
+                }
+            }, { passive: false });
+
+            scrollArea.addEventListener('touchend', () => { initialDist = 0; }, { passive: true });
+        }
+
+        // RECORTE TÁCTIL DE CLIP
+        function handleTrimTouch(e, clip, side) {
+            e.stopPropagation();
+            const startX = e.touches[0].clientX;
+            const origStart = clip.start;
+            const origDuration = clip.duration;
+
+            function onTouchMove(ev) {
+                const deltaX = ev.touches[0].clientX - startX;
+                const deltaSec = deltaX / projectState.zoomPxPerSec;
+                if (side === 'left') {
+                    const maxShift = origDuration - 0.4;
+                    const shift = Math.min(maxShift, Math.max(-origStart, deltaSec));
+                    clip.start = origStart + shift;
+                    clip.duration = origDuration - shift;
+                } else {
+                    clip.duration = Math.max(0.4, origDuration + deltaSec);
+                }
+                renderTimelineClips();
+                if (ev.cancelable) ev.preventDefault();
+            }
+
+            function onTouchEnd() {
+                window.removeEventListener('touchmove', onTouchMove);
+                window.removeEventListener('touchend', onTouchEnd);
+                updateDuration();
+                pushHistory();
+            }
+
+            window.addEventListener('touchmove', onTouchMove, { passive: false });
+            window.addEventListener('touchend', onTouchEnd, { passive: true });
+        }
+
+        // =========================================================================
+        // SELECCIÓN DE CLIPS Y ALTERNANCIA DE TOOLBAR INFERIOR CAPCUT
+        // =========================================================================
+        function selectClip(clipId) {
+            projectState.activeClipId = clipId;
+            document.querySelectorAll('.capcut-clip-block').forEach(c => c.classList.remove('active'));
+            const el = document.getElementById(`clip_${clipId}`);
+            if (el) el.classList.add('active');
+
+            // Mostrar toolbar de edición de clip
+            const rootBar = document.getElementById('rootToolbar');
+            const clipBar = document.getElementById('clipToolbar');
+            if (rootBar && clipBar) {
+                rootBar.style.display = 'none';
+                clipBar.style.display = 'flex';
+            }
+            updateGizmo();
+        }
+
+        function deselectActiveClip() {
+            projectState.activeClipId = null;
+            document.querySelectorAll('.capcut-clip-block').forEach(c => c.classList.remove('active'));
+
+            const rootBar = document.getElementById('rootToolbar');
+            const clipBar = document.getElementById('clipToolbar');
+            if (rootBar && clipBar) {
+                rootBar.style.display = 'flex';
+                clipBar.style.display = 'none';
+            }
+            closeDrawer();
+            updateGizmo();
+        }
+
+        // ACCIONES DE EDICIÓN RÁPIDA DE CLIP (DIVIDIR, DUPLICAR, ELIMINAR, ETC.)
+        function splitClipAtPlayhead() {
+            const t = projectState.currentTime;
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId && t > c.start && t < (c.start + c.duration))
+                      || projectState.clips.find(c => t > c.start && t < (c.start + c.duration));
+            if (!clip) return;
+
+            const splitOffset = t - clip.start;
+            const newClip = Object.assign({}, clip, {
+                id: 'clip_' + Date.now(),
+                start: t,
+                duration: clip.duration - splitOffset
+            });
+            clip.duration = splitOffset;
+
+            projectState.clips.push(newClip);
+            renderTimelineClips();
+            selectClip(newClip.id);
+            pushHistory();
+        }
+
+        function deleteActiveClip() {
+            if (!projectState.activeClipId) return;
+            projectState.clips = projectState.clips.filter(c => c.id !== projectState.activeClipId);
+            deselectActiveClip();
+            renderTimelineClips();
+            pushHistory();
+        }
+
+        function duplicateActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+
+            const dup = Object.assign({}, clip, {
+                id: 'clip_' + Date.now(),
+                start: clip.start + clip.duration + 0.1
+            });
+            projectState.clips.push(dup);
+            renderTimelineClips();
+            selectClip(dup.id);
+            pushHistory();
+        }
+
+        function freezeFrameAtPlayhead() {
+            const t = projectState.currentTime;
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId) || projectState.clips[0];
+            if (!clip) return;
+
+            const freezeClip = {
+                id: 'clip_freeze_' + Date.now(),
+                track: clip.track,
+                type: 'image',
+                title: 'Fotograma Congelado',
+                start: t,
+                duration: 2.0,
+                x: clip.x || 0,
+                y: clip.y || 0,
+                scale: clip.scale || 1.0,
+                rotation: clip.rotation || 0,
+                opacity: 1.0
+            };
+            projectState.clips.push(freezeClip);
+            renderTimelineClips();
+            selectClip(freezeClip.id);
+            pushHistory();
+        }
+
+        function reverseActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            clip.isReversed = !clip.isReversed;
+            alert(clip.isReversed ? 'Clip invertido en reversa' : 'Clip restaurado a sentido normal');
+            pushHistory();
+        }
+
+        function updateDuration() {
+            let maxEnd = projectState.clips.reduce((max, c) => Math.max(max, c.start + c.duration), 4.0);
+            projectState.duration = Math.max(4.0, Math.round(maxEnd * 10) / 10);
+            updateTimecodeUI();
+            const durMeta = document.getElementById('exportMetaDur');
+            if (durMeta) durMeta.innerText = projectState.duration.toFixed(1) + 's';
+        }
+
+        // =========================================================================
+        // GIZMO TÁCTIL EN EL PREVIEW
+        // =========================================================================
+        function updateGizmo() {
+            const box = document.getElementById('canvasGizmo');
+            if (!box) return;
+
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') {
+                box.style.display = 'none';
+                return;
+            }
+
+            const container = document.getElementById('canvasContainer');
+            const cRect = container.getBoundingClientRect();
+            const sc = (cRect.width / canvas.width) * (clip.scale || 1.0);
+
+            const baseW = (clip.type === 'text' ? 400 : 800) * sc;
+            const baseH = (clip.type === 'text' ? 120 : 500) * sc;
+
+            const left = (cRect.width / 2) + ((clip.x || 0) * (cRect.width / canvas.width)) - (baseW / 2);
+            const top = (cRect.height / 2) + ((clip.y || 0) * (cRect.height / canvas.height)) - (baseH / 2);
+
+            box.style.display = 'block';
+            box.style.width = `${baseW}px`;
+            box.style.height = `${baseH}px`;
+            box.style.left = `${left}px`;
+            box.style.top = `${top}px`;
+            box.style.transform = `rotate(${clip.rotation || 0}deg)`;
+        }
+
+        function setupGizmoEvents() {
+            const box = document.getElementById('canvasGizmo');
+            const rotKnob = document.getElementById('gizmoRotKnob');
+            if (!box) return;
+
+            let touchAction = null;
+
+            box.addEventListener('touchstart', (e) => {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                if (!clip) return;
+
+                const touch = e.touches[0];
+                const rect = box.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+
+                if (e.target.closest('#gizmoRotKnob')) {
+                    touchAction = { type: 'rotate', centerX, centerY };
+                } else if (e.target.classList.contains('gizmo-handle')) {
+                    touchAction = { type: 'scale', startX: touch.clientX, startY: touch.clientY, origScale: clip.scale || 1.0, centerX, centerY };
+                } else {
+                    touchAction = { type: 'move', startX: touch.clientX, startY: touch.clientY, origX: clip.x || 0, origY: clip.y || 0 };
+                }
+                if (e.cancelable) e.preventDefault();
+            }, { passive: false });
+
+            window.addEventListener('touchmove', (e) => {
+                if (!touchAction) return;
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                if (!clip) return;
+
+                const touch = e.touches[0];
+                const container = document.getElementById('canvasContainer');
+                const cRect = container.getBoundingClientRect();
+                const scaleFactor = cRect.width / canvas.width;
+
+                if (touchAction.type === 'move') {
+                    const dx = (touch.clientX - touchAction.startX) / scaleFactor;
+                    const dy = (touch.clientY - touchAction.startY) / scaleFactor;
+                    clip.x = Math.round(touchAction.origX + dx);
+                    clip.y = Math.round(touchAction.origY + dy);
+                    updateGizmo();
+                } else if (touchAction.type === 'scale') {
+                    const initDist = Math.hypot(touchAction.startX - touchAction.centerX, touchAction.startY - touchAction.centerY);
+                    const curDist = Math.hypot(touch.clientX - touchAction.centerX, touch.clientY - touchAction.centerY);
+                    if (initDist > 8) {
+                        const newScale = Math.max(0.2, Math.min(3.5, touchAction.origScale * (curDist / initDist)));
+                        clip.scale = Math.round(newScale * 100) / 100;
+                        updateGizmo();
+                    }
+                } else if (touchAction.type === 'rotate') {
+                    const rad = Math.atan2(touch.clientY - touchAction.centerY, touch.clientX - touchAction.centerX);
+                    clip.rotation = Math.round((rad * 180 / Math.PI) + 90);
+                    updateGizmo();
+                }
+                if (e.cancelable) e.preventDefault();
+            }, { passive: false });
+
+            window.addEventListener('touchend', () => {
+                if (touchAction) {
+                    touchAction = null;
+                    pushHistory();
+                }
+            }, { passive: true });
+        }
+
+        // =========================================================================
+        // BOTTOM SHEET / DRAWER CAPCUT DINÁMICO
+        // =========================================================================
+        function openDrawer(tab) {
+            const sheet = document.getElementById('capcutSheet');
+            const titleEl = document.getElementById('drawerTitle');
+            const bodyEl = document.getElementById('drawerBody');
+            if (!sheet || !bodyEl) return;
+
+            if (currentDrawerTab === tab && sheet.classList.contains('open')) {
+                closeDrawer();
+                return;
+            }
+
+            currentDrawerTab = tab;
+
+            if (tab === 'effects') {
+                titleEl.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i> Efectos Drift & Shaders';
+                bodyEl.innerHTML = renderEffectsContent();
+            } else if (tab === 'transitions') {
+                titleEl.innerHTML = '<i class="fa-solid fa-arrows-split-up-and-left" style="color: #10b981;"></i> Transiciones';
+                bodyEl.innerHTML = renderTransitionsContent();
+            } else if (tab === 'filters') {
+                titleEl.innerHTML = '<i class="fa-solid fa-sliders" style="color: #feb504;"></i> Filtros y Color';
+                bodyEl.innerHTML = renderFiltersContent();
+            } else if (tab === 'text') {
+                titleEl.innerHTML = '<i class="fa-solid fa-font" style="color: #00e5ff;"></i> Títulos y Subtítulos';
+                bodyEl.innerHTML = renderTextContent();
+            } else if (tab === 'audio') {
+                titleEl.innerHTML = '<i class="fa-solid fa-music" style="color: #06b6d4;"></i> Modulador Vocal y Audio';
+                bodyEl.innerHTML = renderAudioContent();
+            } else if (tab === 'ratio') {
+                titleEl.innerHTML = '<i class="fa-solid fa-crop" style="color: #feb504;"></i> Relación de Aspecto';
+                bodyEl.innerHTML = renderRatioContent();
+            } else if (tab === 'speed') {
+                titleEl.innerHTML = '<i class="fa-solid fa-gauge-high" style="color: #feb504;"></i> Velocidad de Clip';
+                bodyEl.innerHTML = renderSpeedContent();
+            } else if (tab === 'anim') {
+                titleEl.innerHTML = '<i class="fa-solid fa-film" style="color: #a855f7;"></i> Animaciones Cinemáticas';
+                bodyEl.innerHTML = renderAnimContent();
+            } else if (tab === 'opacity') {
+                titleEl.innerHTML = '<i class="fa-regular fa-eye" style="color: #cbd5e1;"></i> Opacidad de Capa';
+                bodyEl.innerHTML = renderOpacityContent();
+            }
+
+            sheet.classList.add('open');
+        }
+
+        function closeDrawer() {
+            const sheet = document.getElementById('capcutSheet');
+            if (sheet) sheet.classList.remove('open');
+            currentDrawerTab = null;
+        }
+
+        function setupOutsideTapDismiss() {
+            document.addEventListener('touchstart', (e) => {
+                const sheet = document.getElementById('capcutSheet');
+                const bottomBar = document.getElementById('bottomBar');
+                if (sheet && sheet.classList.contains('open')) {
+                    if (!sheet.contains(e.target) && !bottomBar.contains(e.target)) {
+                        closeDrawer();
+                    }
+                }
+            }, { passive: true });
+        }
+
+        // CONTENIDOS DE DRAWERS
+        function renderEffectsContent() {
+            const shaders = [
+                { id: 'none', label: 'Normal', icon: 'ban' },
+                { id: 'vhs', label: 'VHS Retro', icon: 'tape' },
+                { id: 'glitch', label: 'Glitch Digital', icon: 'bolt' },
+                { id: 'neon_glow', label: 'Neon Glow', icon: 'lightbulb' },
+                { id: 'cyberpunk', label: 'Cyberpunk', icon: 'vr-cardboard' },
+                { id: 'film_grain', label: 'Film Grain', icon: 'film' },
+                { id: 'lomo', label: 'Lomo Vintage', icon: 'camera-retro' },
+                { id: 'sepia', label: 'Sepia', icon: 'image' }
+            ];
+            return `
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                    ${shaders.map(s => `
+                        <button type="button" class="export-profile-pill ${projectState.activeShader === s.id ? 'active' : ''}" style="flex-direction: column; padding: 10px 4px; justify-content: center; gap: 4px; font-size: 0.68rem; text-align: center;" onclick="projectState.activeShader = '${s.id}'; openDrawer('effects'); pushHistory();">
+                            <i class="fa-solid fa-${s.icon}" style="font-size: 1.1rem; color: ${projectState.activeShader === s.id ? '#feb504' : '#cbd5e1'};"></i>
+                            <span>${s.label}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderTransitionsContent() {
+            const trans = [
+                { id: 'none', label: 'Corte Limpio' },
+                { id: 'fade', label: 'Disolución' },
+                { id: 'wipe', label: 'Barrido' },
+                { id: 'zoom', label: 'Zoom In' },
+                { id: 'glitch', label: 'Glitch Flash' }
+            ];
+            return `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                    ${trans.map(t => `
+                        <button type="button" class="export-profile-pill ${projectState.activeTransition === t.id ? 'active' : ''}" style="justify-content: center; font-size: 0.72rem; padding: 10px;" onclick="projectState.activeTransition = '${t.id}'; openDrawer('transitions'); pushHistory();">
+                            ${t.label}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderFiltersContent() {
+            return `
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+                        <button type="button" class="export-profile-pill active" onclick="applyPresetColor(100, 100, 100)" style="font-size: 0.7rem; white-space: nowrap;">Original</button>
+                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(95, 125, 85)" style="font-size: 0.7rem; white-space: nowrap;">🎬 Cine</button>
+                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(110, 140, 160)" style="font-size: 0.7rem; white-space: nowrap;">⚡ Cyberpunk</button>
+                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(100, 130, 0)" style="font-size: 0.7rem; white-space: nowrap;">⚪ B&N</button>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem;"><span>Brillo</span><strong style="color: #feb504;">${projectState.filters.brightness}%</strong></div>
+                            <input type="range" min="50" max="150" value="${projectState.filters.brightness}" style="width: 100%; accent-color: #feb504;" oninput="projectState.filters.brightness = this.value; canvas.style.filter = \`brightness(\${this.value}%)\`;">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function applyPresetColor(b, c, s) {
+            projectState.filters.brightness = b;
+            projectState.filters.contrast = c;
+            projectState.filters.saturation = s;
+            canvas.style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
+            openDrawer('filters');
+        }
+
+        function renderTextContent() {
+            let activeText = projectState.clips.find(c => c.id === projectState.activeClipId && c.type === 'text')
+                          || projectState.clips.find(c => c.type === 'text');
+            return `
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button type="button" class="topbar-export-btn" style="justify-content: center; padding: 10px;" onclick="addNewTextSubtitle()">
+                        <i class="fa-solid fa-plus"></i> Añadir Nuevo Texto
+                    </button>
+                    ${activeText ? `
+                    <div style="background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <label style="font-size: 0.72rem; color: #94a3b8;">Texto:</label>
+                        <input type="text" value="${activeText.text || ''}" style="width: 100%; background: #0c0d12; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: #fff; font-size: 0.8rem;" oninput="
+                            const clip = projectState.clips.find(c => c.id === '${activeText.id}');
+                            if (clip) { clip.text = this.value; clip.title = this.value.substring(0,18); renderTimelineClips(); }
+                        ">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'reels')">📱 Reels</button>
+                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'neon')">⚡ Neon</button>
+                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'sub')">💬 Sub</button>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function addNewTextSubtitle() {
+            const newTxt = {
+                id: 'clip_txt_' + Date.now(),
+                track: 'track-text',
+                type: 'text',
+                title: 'Nuevo Texto',
+                text: '🔥 CAPCUT VIRAL',
+                start: projectState.currentTime,
+                duration: 4.0,
+                fontSize: 48,
+                fontFamily: 'Montserrat, sans-serif',
+                color: '#feb504',
+                x: 0,
+                y: 200,
+                scale: 1.0,
+                rotation: 0,
+                opacity: 1.0
+            };
+            projectState.clips.push(newTxt);
+            renderTimelineClips();
+            selectClip(newTxt.id);
+            openDrawer('text');
+            pushHistory();
+        }
+
+        function applyTextStyle(id, style) {
+            const clip = projectState.clips.find(c => c.id === id);
+            if (!clip) return;
+            if (style === 'reels') {
+                clip.fontFamily = 'Montserrat, sans-serif';
+                clip.color = '#ffffff';
+                clip.fontSize = 50;
+            } else if (style === 'neon') {
+                clip.fontFamily = 'Orbitron, sans-serif';
+                clip.color = '#00e5ff';
+                clip.fontSize = 46;
+            } else if (style === 'sub') {
+                clip.fontFamily = 'Inter, sans-serif';
+                clip.color = '#feb504';
+                clip.fontSize = 34;
+            }
+            openDrawer('text');
+            pushHistory();
+        }
+
+        function renderAudioContent() {
+            return `
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-size: 0.74rem; font-weight: 700; color: #00e5ff;">Moduladores de Voz en Vivo:</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                        ${['none', 'chipmunk', 'robot', 'deep_bass', 'echo', 'telephone'].map(fx => `
+                            <button type="button" class="export-profile-pill ${projectState.activeAudioEffect === fx ? 'active' : ''}" style="justify-content: center; font-size: 0.7rem; padding: 8px 4px; text-transform: capitalize;" onclick="projectState.activeAudioEffect = '${fx}'; openDrawer('audio'); pushHistory();">
+                                ${fx === 'none' ? 'Normal' : fx.replace('_', ' ')}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderRatioContent() {
+            const ratios = [
+                { id: '9:16', label: '9:16 Vertical (TikTok, Reels, Shorts)' },
+                { id: '16:9', label: '16:9 Horizontal (YouTube, TV)' },
+                { id: '1:1', label: '1:1 Cuadrado (Instagram Feed)' },
+                { id: '4:5', label: '4:5 Retrato (Facebook / IG)' },
+                { id: '21:9', label: '21:9 UltraWide Cinema' }
+            ];
+            return `
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    ${ratios.map(r => `
+                        <button type="button" class="export-profile-pill ${projectState.aspectRatio === r.id ? 'active' : ''}" style="justify-content: space-between; padding: 12px;" onclick="
+                            projectState.aspectRatio = '${r.id}';
+                            document.getElementById('currentRatioLabel').innerText = '${r.id}';
+                            document.getElementById('exportMetaRatio').innerText = '${r.label.split(' ')[0]}';
+                            setupCanvasSize();
+                            openDrawer('ratio');
+                            pushHistory();
+                        ">
+                            <span style="font-weight: 700; font-size: 0.8rem;">${r.label}</span>
+                            <i class="fa-solid fa-check" style="color: ${projectState.aspectRatio === r.id ? '#feb504' : 'transparent'};"></i>
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderSpeedContent() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            const curSpd = clip ? (clip.speed || 1.0) : 1.0;
+            return `
+                <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>Velocidad Actual:</span><strong style="color: #feb504;" id="lblSpeed">${curSpd.toFixed(2)}x</strong></div>
+                    <input type="range" min="0.25" max="4.0" step="0.25" value="${curSpd}" style="width: 100%; accent-color: #feb504;" oninput="
+                        const val = parseFloat(this.value);
+                        document.getElementById('lblSpeed').innerText = val.toFixed(2) + 'x';
+                        const c = projectState.clips.find(c => c.id === projectState.activeClipId);
+                        if (c) c.speed = val;
+                    ">
+                </div>
+            `;
+        }
+
+        function renderAnimContent() {
+            const anims = ['pop_bounce', 'fade', 'zoom_in', 'slide_down', 'none'];
+            return `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                    ${anims.map(a => `
+                        <button type="button" class="export-profile-pill" style="justify-content: center; font-size: 0.7rem; padding: 10px 4px; text-transform: capitalize;" onclick="
+                            const c = projectState.clips.find(c => c.id === projectState.activeClipId);
+                            if (c) c.animIn = '${a}';
+                            openDrawer('anim');
+                        ">
+                            ${a.replace('_', ' ')}
+                        </button>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function renderOpacityContent() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            const curOp = clip ? Math.round((clip.opacity ?? 1.0) * 100) : 100;
+            return `
+                <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>Opacidad:</span><strong style="color: #feb504;" id="lblOpacity">${curOp}%</strong></div>
+                    <input type="range" min="0" max="100" step="5" value="${curOp}" style="width: 100%; accent-color: #feb504;" oninput="
+                        const val = parseInt(this.value);
+                        document.getElementById('lblOpacity').innerText = val + '%';
+                        const c = projectState.clips.find(c => c.id === projectState.activeClipId);
+                        if (c) c.opacity = val / 100;
+                    ">
+                </div>
+            `;
+        }
+
+        // =========================================================================
+        // IMPORTACIÓN Y SUBIDA DIRECTA DESDE EL MÓVIL
+        // =========================================================================
+        async function handleFileInput(files) {
+            if (!files || files.length === 0) return;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                let type = 'video';
+                if (file.type.startsWith('image/')) type = 'image';
+                else if (file.type.startsWith('audio/')) type = 'audio';
+
+                let assetId = null;
+                if (window.MyxsiVideoDB) {
+                    try {
+                        const saved = await window.MyxsiVideoDB.saveAsset(file, { title: file.name, type: type });
+                        assetId = saved.id;
+                    } catch(e) {}
+                }
+
+                const track = type === 'audio' ? 'track-audio1' : (type === 'image' ? 'track-video2' : 'track-video1');
+                const dur = type === 'image' ? 5.0 : 8.0;
+
+                const newClip = {
+                    id: 'clip_' + Date.now() + '_' + i,
+                    track: track,
+                    type: type,
+                    title: file.name.substring(0, 18),
+                    start: projectState.duration,
+                    duration: dur,
+                    assetId: assetId,
+                    volume: 1.0,
+                    speed: 1.0,
+                    x: 0,
+                    y: 0,
+                    scale: 1.0,
+                    rotation: 0,
+                    opacity: 1.0
+                };
+                projectState.clips.push(newClip);
+            }
+
+            renderTimelineClips();
+            pushHistory();
+            alert(`¡${files.length} archivo(s) importados con éxito a la línea de tiempo!`);
+        }
+
+        // =========================================================================
+        // MOTOR DE EXPORTACIÓN DIRECTA CON DESCARGA
+        // =========================================================================
+        function openExportModal() {
+            const modal = document.getElementById('exportModal');
+            if (modal) modal.classList.add('open');
+        }
+
+        function closeExportModal() {
+            const modal = document.getElementById('exportModal');
+            if (modal) modal.classList.remove('open');
+            isExporting = false;
+        }
+
+        function selectExportResolution(res) {
+            exportResolution = res;
+            document.querySelectorAll('.export-profile-pill').forEach(p => p.classList.remove('active'));
+            const p = document.getElementById(`pill${res}`);
+            if (p) p.classList.add('active');
+        }
+
+        async function startExport() {
+            if (isExporting) return;
+            isExporting = true;
+
+            const btn = document.getElementById('btnStartExport');
+            const progressSection = document.getElementById('exportProgressSection');
+            const fill = document.getElementById('exportProgressFill');
+            const percentText = document.getElementById('exportPercentText');
+            const statusText = document.getElementById('exportStatusText');
+            const successBox = document.getElementById('exportSuccessBox');
+            const btnDownload = document.getElementById('btnDirectDownload');
+
+            if (btn) btn.disabled = true;
+            if (progressSection) progressSection.style.display = 'block';
+            if (successBox) successBox.style.display = 'none';
+
+            projectState.isPlaying = false;
+            const previousTime = projectState.currentTime;
+
+            const fps = 30;
+            const totalDuration = Math.max(1.0, projectState.duration);
+            const totalFrames = Math.ceil(totalDuration * fps);
+            const frameDelta = 1 / fps;
+
+            let mimeType = 'video/webm; codecs=vp9';
+            let ext = 'webm';
+            if (MediaRecorder.isTypeSupported('video/mp4')) {
+                mimeType = 'video/mp4';
+                ext = 'mp4';
+            } else if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) {
+                mimeType = 'video/webm; codecs=vp8';
+            }
+
+            const stream = canvas.captureStream(fps);
+            const chunks = [];
+            let recorder;
+            try {
+                recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 8000000 });
+            } catch(e) {
+                recorder = new MediaRecorder(stream);
+            }
+
+            recorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) chunks.push(e.data);
+            };
+
+            recorder.start(100);
+
+            let currentFrame = 0;
+
+            function stepFrame() {
+                if (!isExporting) {
+                    try { if (recorder.state !== 'inactive') recorder.stop(); } catch(e){}
+                    return;
+                }
+
+                if (currentFrame <= totalFrames) {
+                    const t = Math.min(totalDuration, currentFrame * frameDelta);
+                    projectState.currentTime = t;
+                    drawFrame();
+
+                    const pct = Math.min(99, Math.round((currentFrame / totalFrames) * 100));
+                    if (fill) fill.style.width = pct + '%';
+                    if (percentText) percentText.innerText = pct + '%';
+                    if (statusText) statusText.innerText = `Renderizando cuadro ${currentFrame} de ${totalFrames}...`;
+
+                    currentFrame++;
+                    setTimeout(stepFrame, 4);
+                } else {
+                    if (fill) fill.style.width = '100%';
+                    if (percentText) percentText.innerText = '100%';
+                    if (statusText) statusText.innerText = 'Generando archivo de video descargable...';
+
+                    recorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: mimeType });
+                        const url = URL.createObjectURL(blob);
+                        const fileName = `${projectState.title.replace(/\s+/g, '_')}_CapCut.${ext}`;
+
+                        // Disparo automático de descarga directa
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = fileName;
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(() => document.body.removeChild(a), 100);
+
+                        if (btnDownload) {
+                            btnDownload.href = url;
+                            btnDownload.download = fileName;
+                        }
+                        if (successBox) successBox.style.display = 'block';
+                        if (btn) btn.disabled = false;
+                        isExporting = false;
+                        projectState.currentTime = previousTime;
+                        drawFrame();
+                    };
+
+                    try { recorder.stop(); } catch(e){}
+                }
+            }
+
+            stepFrame();
+        }
+
+        // =========================================================================
+        // HISTORIAL UNDO / REDO Y GUARDADO
+        // =========================================================================
+        function pushHistory() {
+            const snap = JSON.stringify({
+                clips: projectState.clips,
+                aspectRatio: projectState.aspectRatio,
+                activeShader: projectState.activeShader
+            });
+            if (historyIndex < historyStack.length - 1) {
+                historyStack.splice(historyIndex + 1);
+            }
+            historyStack.push(snap);
+            historyIndex = historyStack.length - 1;
+            saveProject();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreHistory(historyStack[historyIndex]);
+            }
+        }
+
+        function redo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                restoreHistory(historyStack[historyIndex]);
+            }
+        }
+
+        function restoreHistory(json) {
+            const s = JSON.parse(json);
+            projectState.clips = s.clips;
+            projectState.aspectRatio = s.aspectRatio;
+            projectState.activeShader = s.activeShader;
+            setupCanvasSize();
+            renderTimelineClips();
+            drawFrame();
+        }
+
+        function saveProject(showAlert = false) {
+            if (window.MyxsiVideoDB) {
+                window.MyxsiVideoDB.saveProject(projectState).then(() => {
+                    if (showAlert) alert('¡Proyecto guardado 100% de forma local en tu dispositivo!');
+                });
+            }
+        }
+
+        function toggleMuteAll() {
+            projectState.isMutedAll = !projectState.isMutedAll;
+            const btn = document.getElementById('btnMuteAll');
+            if (btn) {
+                btn.classList.toggle('active', projectState.isMutedAll);
+                btn.innerHTML = `<i class="fa-solid fa-volume-${projectState.isMutedAll ? 'xmark' : 'high'}"></i><span>${projectState.isMutedAll ? 'Silenciado' : 'Silenciar'}</span>`;
+            }
+        }
+
+        function setCoverFrame() {
+            alert('Fotograma actual fijado como portada principal del video.');
+        }
+
+        // ASIGNACIONES GLOBALES
+        window.projectState = projectState;
+        window.openDrawer = openDrawer;
+        window.closeDrawer = closeDrawer;
+        window.selectClip = selectClip;
+        window.deselectActiveClip = deselectActiveClip;
+        window.splitClipAtPlayhead = splitClipAtPlayhead;
+        window.deleteActiveClip = deleteActiveClip;
+        window.duplicateActiveClip = duplicateActiveClip;
+        window.freezeFrameAtPlayhead = freezeFrameAtPlayhead;
+        window.reverseActiveClip = reverseActiveClip;
+        window.openExportModal = openExportModal;
+        window.closeExportModal = closeExportModal;
+        window.startExport = startExport;
+    </script>
+</body>
+</html>

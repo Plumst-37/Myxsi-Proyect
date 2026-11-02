@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Recuperar Cuenta — Myxsi</title>
+    <meta name="description" content="Recupera la contraseña de tu cuenta Myxsi de forma rápida y segura. Te guiaremos paso a paso para que restablezcas tu acceso.">
+    <meta name="keywords" content="recuperar contraseña myxsi, recuperar cuenta myxsi, clave temporal myxsi, restablecer clave myxsi">
+    <meta name="robots" content="index, follow">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/recuperacion.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="manifest.json">
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
+</head>
+<body>
+
+    <!-- Ambient Atmosphere -->
+    <div class="ambient">
+        <div class="space-grid"></div>
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="grain"></div>
+
+    <div class="alert" id="alertBox"></div>
+
+    <div class="recovery-wrapper">
+        <div class="logo-section">
+            <a href="index.html" class="logo-link">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: 100%;">
+                      <defs>
+                        <linearGradient id="gemGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                          <stop offset="0%" stop-color="#A78BFA"/>
+                          <stop offset="100%" stop-color="#6D28D9"/>
+                        </linearGradient>
+                        <filter id="gemGlow">
+                          <feGaussianBlur stdDeviation="2" result="blur"/>
+                          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                        </filter>
+                      </defs>
+                      <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGrad)" filter="url(#gemGlow)" opacity="0.9"/>
+                      <path d="M22 4L38 14L22 22L6 14L22 4Z" fill="rgba(255,255,255,0.2)"/>
+                      <path d="M22 22L38 14V30L22 22Z" fill="rgba(0,0,0,0.15)"/>
+                      <path d="M22 22L6 14V30L22 22Z" fill="rgba(255,255,255,0.08)"/>
+                      <circle cx="22" cy="22" r="4" fill="rgba(255,255,255,0.6)"/>
+                    </svg>
+                </div>
+                <span>Myxsi</span>
+            </a>
+        </div>
+
+        <!-- Dynamic Timeline Steps Tracker (Innovative UX) -->
+        <div class="recovery-timeline">
+            <div class="step active" id="step1">
+                <div class="step-num">1</div>
+                <div class="step-label">Correo</div>
+            </div>
+            <div class="timeline-line" id="line1"></div>
+            <div class="step" id="step2">
+                <div class="step-num">2</div>
+                <div class="step-label">Envío</div>
+            </div>
+            <div class="timeline-line" id="line2"></div>
+            <div class="step" id="step3">
+                <div class="step-num">3</div>
+                <div class="step-label">Éxito</div>
+            </div>
+        </div>
+
+        <div class="recovery-card">
+            <!-- Form State: Input Email -->
+            <div id="requestState">
+                <h2>¿Olvidaste tu <span class="text-violet">contraseña</span>?</h2>
+                <p class="recovery-subtitle">Ingresa tu correo registrado y te enviaremos una clave temporal de recuperación mediante Firebase Auth</p>
+
+                <form id="recoveryForm" onsubmit="handleForgotPassword(event)">
+                    <div class="form-group">
+                        <label for="email">Dirección de correo electrónico</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" placeholder="ejemplo@correo.com" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-recovery" id="recoveryButton">
+                        <span class="spinner" id="spinner"></span>
+                        <span id="recoveryButtonText"><i class="fas fa-paper-plane"></i> Solicitar Enlace de Acceso</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Success State: Email Sent (Transition) -->
+            <div id="successState" class="hidden">
+                <div class="success-icon-badge">
+                    <i class="fas fa-paper-plane"></i>
+                </div>
+                <h2>¡Enlace de <span class="text-violet">recuperación</span> enviado!</h2>
+                <p class="recovery-subtitle">Hemos despachado un correo electrónico para restablecer tu cuenta. Sigue estas instrucciones para regresar al aprendizaje premium:</p>
+                
+                <div class="instruction-box">
+                    <div class="instruction-item">
+                        <div class="bullet">1</div>
+                        <p>Busca en tu bandeja de entrada un correo de <strong>Myxsi Auth</strong>.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="bullet">2</div>
+                        <p>Haz clic en el enlace seguro provisto por Firebase para cambiar tu clave.</p>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="bullet">3</div>
+                        <p>Regresa a Myxsi e ingresa con tu nueva contraseña.</p>
+                    </div>
+                </div>
+
+                <a href="index.html" class="btn-recovery" style="text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:0.5rem;">
+                    <i class="fas fa-sign-in-alt"></i> Volver a Iniciar Sesión
+                </a>
+            </div>
+
+            <div class="card-footer">
+                ¿Recordaste tu contraseña? <a href="index.html">Iniciar sesión</a>
+            </div>
+        </div>
+
+        <div class="back-home">
+            <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al inicio</a>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Compatible Config) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
+            authDomain: "myxsi-e4ba3.firebaseapp.com",
+            projectId: "myxsi-e4ba3",
+            storageBucket: "myxsi-e4ba3.firebasestorage.app",
+            messagingSenderId: "321958728313",
+            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Redirigir instantáneamente si ya hay sesión activa
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.replace('chat.html');
+            }
+        });
+
+        window.auth = auth;
+        window.sendPasswordResetEmail = sendPasswordResetEmail;
+        console.log('🔥 Firebase Auth listo para recuperación');
+    </script>
+
+    <script>
+        // ============================================
+        // ALERT SYSTEM (PREMIUM UTILITIES)
+        // ============================================
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerHTML = message;
+            alertBox.className = 'alert ' + type;
+            alertBox.style.display = 'block';
+            
+            setTimeout(() => {
+                alertBox.classList.add('hide');
+                setTimeout(() => {
+                    alertBox.style.display = 'none';
+                    alertBox.classList.remove('hide');
+                }, 400);
+            }, 6000);
+        }
+
+        function setLoading(loading) {
+            const spinner = document.getElementById('spinner');
+            const button = document.getElementById('recoveryButton');
+            if (loading) {
+                spinner.style.display = 'block';
+                button.disabled = true;
+            } else {
+                spinner.style.display = 'none';
+                button.disabled = false;
+            }
+        }
+
+        // ============================================
+        // FORGOT PASSWORD MECHANISM
+        // ============================================
+        async function handleForgotPassword(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value.trim();
+
+            if (!email) {
+                showAlert('Por favor, ingresa tu dirección de correo electrónico', 'error');
+                return;
+            }
+
+            setLoading(true);
+
+            // Timeline UI Step 1 -> 2
+            document.getElementById('line1').classList.add('active');
+            
+            setTimeout(async () => {
+                try {
+                    await window.sendPasswordResetEmail(window.auth, email);
+                    
+                    // Transition Timeline visual steps
+                    document.getElementById('step1').classList.remove('active');
+                    document.getElementById('step1').classList.add('completed');
+                    
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('line2').classList.add('active');
+                    document.getElementById('step3').classList.add('active');
+
+                    showAlert('📧 Correo enviado con éxito. Revisa tu buzón.', 'success');
+
+                    // Elegant card swap animation
+                    document.getElementById('requestState').classList.add('hidden');
+                    setTimeout(() => {
+                        document.getElementById('requestState').style.display = 'none';
+                        const successState = document.getElementById('successState');
+                        successState.style.display = 'block';
+                        setTimeout(() => successState.classList.remove('hidden'), 50);
+                    }, 400);
+
+                } catch (error) {
+                    console.error('❌ Error en Reset:', error);
+                    setLoading(false);
+                    document.getElementById('line1').classList.remove('active');
+
+                    let errorMessage = 'Error al enviar el correo de recuperación';
+                    switch (error.code) {
+                        case 'auth/invalid-email':
+                            errorMessage = 'La dirección de correo electrónico no es válida.';
+                            break;
+                        case 'auth/user-not-found':
+                            errorMessage = 'No existe una cuenta registrada con este correo electrónico.';
+                            break;
+                        case 'auth/too-many-requests':
+                            errorMessage = 'Se han realizado demasiados intentos. Por favor, reintenta más tarde.';
+                            break;
+                        default:
+                            errorMessage = error.message;
+                    }
+                    showAlert(errorMessage, 'error');
+                }
+            }, 600); // Visual delay for high quality transitions
+        }
+
+        // ============================================
+        // EFECTO MAGNÉTICO INTERACTIVO PREMIUM EN LA TARJETA
+        // ============================================
+        const recoveryCard = document.querySelector('.recovery-card');
+        if (recoveryCard) {
+            recoveryCard.addEventListener('mousemove', e => {
+                const r = recoveryCard.getBoundingClientRect();
+                const x = e.clientX - r.left;
+                const y = e.clientY - r.top;
+                recoveryCard.style.transform = `perspective(1000px) rotateX(${((y - r.height/2)/r.height/2)*-4}deg) rotateY(${((x - r.width/2)/r.width/2)*4}deg) scale3d(1.01, 1.01, 1.01)`;
+                recoveryCard.style.setProperty('--mouse-x', `${x}px`);
+                recoveryCard.style.setProperty('--mouse-y', `${y}px`);
+            });
+            recoveryCard.addEventListener('mouseleave', () => {
+                recoveryCard.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        }
+    </script>
+
+    <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4bc0f4c7ccb04906a6a10e2d597b8b8d"}'></script><!-- Cloudflare Pages Analytics --></body>
+</html>
