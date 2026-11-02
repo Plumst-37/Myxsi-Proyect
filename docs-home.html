@@ -1434,21 +1434,43 @@
             localStorage.setItem('smart_doc_title', docTitle);
             localStorage.setItem('smart_doc_content', docContent);
 
-            const accessToken = localStorage.getItem('gdrive_access_token');
+            let accessToken = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : localStorage.getItem('gdrive_access_token');
             if (accessToken) {
                 try {
-                    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken)
+                        : null;
+                    const metadata = {
+                        name: docTitle,
+                        mimeType: 'application/vnd.google-apps.document'
+                    };
+                    if (folderId) metadata.parents = [folderId];
+
+                    let res = await fetch('https://www.googleapis.com/drive/v3/files', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            name: docTitle,
-                            mimeType: 'application/vnd.google-apps.document'
-                        })
+                        body: JSON.stringify(metadata)
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            accessToken = freshToken;
+                            res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${freshToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(metadata)
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         const driveFile = await res.json();
                         if (driveFile && driveFile.id) {
                             newFile.id = driveFile.id;
@@ -1491,14 +1513,25 @@
             allDocsList = localDocs;
             renderDocs();
 
-            const accessToken = localStorage.getItem('gdrive_access_token');
+            let accessToken = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : localStorage.getItem('gdrive_access_token');
             if (accessToken) {
                 try {
                     const q = "(mimeType='application/vnd.google-apps.document' or name contains '.doc' or name contains '.docx') and trashed = false";
-                    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,size,webViewLink,createdTime,modifiedTime)&pageSize=50`, {
+                    let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,size,webViewLink,createdTime,modifiedTime)&pageSize=50`, {
                         headers: { 'Authorization': `Bearer ${accessToken}` }
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            accessToken = freshToken;
+                            res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,mimeType,size,webViewLink,createdTime,modifiedTime)&pageSize=50`, {
+                                headers: { 'Authorization': `Bearer ${freshToken}` }
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         const data = await res.json();
                         const cloudDocs = (data.files || []).map(f => ({
                             id: f.id,

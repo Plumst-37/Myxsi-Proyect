@@ -4589,40 +4589,9 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                 const blob = await res.blob();
 
                 // 2. Buscar o crear carpeta 'Myxsi Workspace' en Drive
-                let folderId = null;
-                const query = encodeURIComponent("name = 'Myxsi Workspace' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
-                const searchRes = await fetch(`https://www.googleapis.com/drive/v3/files?q=${query}`, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-
-                if (searchRes.ok) {
-                    const searchData = await searchRes.json();
-                    if (searchData.files && searchData.files.length > 0) {
-                        folderId = searchData.files[0].id;
-                    }
-                }
-
-                if (!folderId) {
-                    const folderMeta = {
-                        name: 'Myxsi Workspace',
-                        mimeType: 'application/vnd.google-apps.folder'
-                    };
-                    const createFolderRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${accessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(folderMeta)
-                    });
-
-                    if (createFolderRes.ok) {
-                        const folderData = await createFolderRes.json();
-                        folderId = folderData.id;
-                    } else {
-                        throw new Error("No se pudo crear la carpeta en Google Drive.");
-                    }
-                }
+                let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                    ? await window.getOrCreateMyxsiDriveFolder('Myxsi Workspace', accessToken)
+                    : null;
 
                 // 3. Subir el archivo de imagen a Google Drive
                 const filename = `myxsi_arte_${Date.now()}.png`;
@@ -4975,6 +4944,9 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
         let cachedMyxsiFolderId = null;
 
         async function getOrCreateMyxsiDriveFolder(accessToken) {
+            if (typeof window.getOrCreateMyxsiDriveFolder === 'function' && window.getOrCreateMyxsiDriveFolder !== getOrCreateMyxsiDriveFolder) {
+                return window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken);
+            }
             if (cachedMyxsiFolderId) return cachedMyxsiFolderId;
             try {
                 const query = encodeURIComponent("name = 'Myxsi Documents' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
@@ -5010,7 +4982,9 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             }
             return null;
         }
-        window.getOrCreateMyxsiDriveFolder = getOrCreateMyxsiDriveFolder;
+        if (!window.getOrCreateMyxsiDriveFolder) {
+            window.getOrCreateMyxsiDriveFolder = getOrCreateMyxsiDriveFolder;
+        }
 
         function switchAppMode(mode) {
             const tabChat = document.getElementById('tabModeChat');

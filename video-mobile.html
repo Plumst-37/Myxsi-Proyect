@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Myxsi Video Studio — Editor Móvil & PC</title>
-    <meta name="description" content="Editor de video profesional adaptado para PC y teléfonos móviles con timeline multipista, filtros, efectos y exportación en alta fidelidad.">
+    <meta name="description" content="Editor de video profesional adaptado para PC y teléfonos móviles con timeline magnética en una fila, filtros, efectos y exportación en alta fidelidad.">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 
     <!-- Fuentes oficiales Myxsi -->
@@ -318,7 +318,7 @@
             letter-spacing: -0.2px;
         }
 
-        /* 3. LÍNEA DE TIEMPO MULTIPISTA */
+        /* 3. LÍNEA DE TIEMPO MAGNÉTICA (EN UNA SOLA FILA SECUENCIAL) */
         .vstudio-timeline-wrapper {
             height: 215px;
             background: #090a0f;
@@ -352,6 +352,40 @@
             height: 10px;
             background: #ffffff;
             clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+        }
+
+        /* INDICADOR AMBAR DE INSERCIÓN MAGNÉTICA */
+        .timeline-drop-indicator {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--vs-accent);
+            box-shadow: 0 0 12px var(--vs-accent);
+            z-index: 70;
+            pointer-events: none;
+            display: none;
+            border-radius: 2px;
+        }
+
+        .timeline-drop-indicator::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -4px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid var(--vs-accent);
+        }
+
+        .timeline-drop-indicator::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: -4px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 6px solid var(--vs-accent);
         }
 
         /* ACCIONES LATERALES FIJAS */
@@ -491,6 +525,13 @@
             z-index: 20;
         }
 
+        .vstudio-clip-block.dragging-clip {
+            opacity: 0.9;
+            box-shadow: 0 10px 28px rgba(254, 181, 4, 0.65);
+            cursor: grabbing;
+            z-index: 65 !important;
+        }
+
         .vstudio-clip-label {
             position: relative;
             z-index: 5;
@@ -593,7 +634,7 @@
 
         .track-audio-clip {
             background: #0d2e25 !important;
-            border-color: rgba(16, 185, 129, 0.45) !important;
+            border-color: rgba(168, 85, 247, 0.45) !important;
         }
         .track-audio-clip.active {
             border-color: #10b981 !important;
@@ -987,7 +1028,7 @@
         </div>
     </section>
 
-    <!-- 3. LÍNEA DE TIEMPO MULTIPISTA CON ARRASTRE Y RECORTE -->
+    <!-- 3. LÍNEA DE TIEMPO MAGNÉTICA SECUENCIAL -->
     <section class="vstudio-timeline-wrapper">
         <div class="vstudio-center-needle">
             <div class="needle-pip"></div>
@@ -1012,8 +1053,10 @@
 
             <!-- PISTAS MULTICANAL APILADAS -->
             <div class="timeline-tracks-area" id="tracksArea">
-                <!-- PISTA 1: VIDEO PRINCIPAL -->
-                <div class="track-row" id="track-video1"></div>
+                <!-- PISTA 1: FILA PRINCIPAL DE VIDEO (SECUENCIAL MAGNÉTICA) -->
+                <div class="track-row" id="track-video1">
+                    <div id="timelineDropIndicator" class="timeline-drop-indicator"></div>
+                </div>
 
                 <!-- PISTA 2: SUPERPOSICIÓN / PIP (IMÁGENES / VIDEOS FLOTANTES) -->
                 <div class="track-row track-row-sub" id="track-overlay"></div>
@@ -1069,14 +1112,22 @@
             </button>
         </div>
 
-        <!-- TOOLBAR DE CLIP SELECCIONADO (100% FUNCIONAL Y EDITABLE) -->
+        <!-- TOOLBAR DE CLIP SELECCIONADO -->
         <div id="clipToolbar" style="display: none; width: 100%; align-items: center; justify-content: flex-start;">
             <button type="button" class="vstudio-tool-btn tool-btn-back" onclick="deselectActiveClip()">
                 <i class="fa-solid fa-chevron-left"></i>
                 <span>Volver</span>
             </button>
+            <button type="button" class="vstudio-tool-btn" onclick="moveClipLeft()" title="Mover clip hacia la izquierda">
+                <i class="fa-solid fa-arrow-left" style="color: #feb504;"></i>
+                <span>◀ Izq</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="moveClipRight()" title="Mover clip hacia la derecha">
+                <i class="fa-solid fa-arrow-right" style="color: #feb504;"></i>
+                <span>Der ▶</span>
+            </button>
             <button type="button" class="vstudio-tool-btn" onclick="splitClipAtPlayhead()">
-                <i class="fa-solid fa-scissors" style="color: #feb504;"></i>
+                <i class="fa-solid fa-scissors"></i>
                 <span>Dividir</span>
             </button>
             <button type="button" class="vstudio-tool-btn" onclick="openDrawer('transform')">
@@ -1203,7 +1254,7 @@
                     id: 'clip_v1',
                     track: 'track-video1',
                     type: 'video',
-                    title: 'Ondas Cósmicas',
+                    title: 'Clip de Video Principal',
                     start: 0,
                     duration: 10.0,
                     volume: 1.0,
@@ -1257,9 +1308,9 @@
 
         // INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', async () => {
-            initUrlParams();
+            await initUrlParams();
             setupCanvasDimensions();
-            recalculateProjectDuration();
+            enforceMagneticMainTrack();
             buildTimelineRuler();
             renderTimelineClips();
             setupTimelineScrollListener();
@@ -1299,38 +1350,41 @@
                         if (saved.ratio) setAspectRatio(saved.ratio, false);
                         if (saved.clips && saved.clips.length) {
                             projectState.clips = saved.clips;
-                            // Desapilar clips colisionados en track-video1
-                            autoUnstackCollidingClips();
                         }
-                        recalculateProjectDuration();
+                        // Limpiar y forzar una sola fila sin sobreposiciones
+                        enforceMagneticMainTrack();
                         renderTimelineClips();
                         renderFrame(0);
                     }
                 } catch(e) {
-                    console.warn('Carga de IndexedDB fallida:', e);
+                    console.warn('Carga de IndexedDB:', e);
                 }
             }
         }
 
-        // DESAPILAR AUTOMÁTICAMENTE CLIPS QUE COLISIONEN
-        function autoUnstackCollidingClips() {
-            let nextStart = 0;
-            const mainVideoClips = projectState.clips.filter(c => c.track === 'track-video1');
-            mainVideoClips.sort((a, b) => a.start - b.start);
-            mainVideoClips.forEach((c, idx) => {
-                if (idx > 0 && c.start < nextStart) {
-                    if (c.type === 'image') {
-                        c.track = 'track-overlay';
-                        c.scale = 0.5;
-                    } else {
-                        c.start = nextStart;
-                    }
-                }
-                nextStart = Math.max(nextStart, c.start + c.duration);
+        // =========================================================================
+        // LÍNEA DE TIEMPO MAGNÉTICA: NUNCA SE SOBREPONEN, TODO EN UNA SOLA FILA
+        // =========================================================================
+        function enforceMagneticMainTrack() {
+            const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
+            const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+
+            // Ordenar por tiempo de inicio actual
+            mainClips.sort((a, b) => a.start - b.start);
+
+            // Alinear consecutivamente uno detrás de otro (cero sobreposiciones, cero huecos no deseados)
+            let curTime = 0;
+            mainClips.forEach(c => {
+                c.duration = Math.max(0.4, Math.round((c.duration || 1.0) * 10) / 10);
+                c.start = Math.round(curTime * 10) / 10;
+                curTime += c.duration;
             });
+
+            projectState.clips = [...mainClips, ...otherClips];
+            recalculateProjectDuration();
         }
 
-        // RECALCULAR LA DURACIÓN TOTAL DEL PROYECTO (CRECE DINÁMICAMENTE)
+        // RECALCULAR DURACIÓN TOTAL (CRECE SEGÚN LO EDITADO)
         function recalculateProjectDuration() {
             let maxEnd = 0;
             projectState.clips.forEach(c => {
@@ -1348,7 +1402,7 @@
         function setupCanvasDimensions() {
             const container = document.getElementById('canvasContainer');
             const ratio = projectState.aspectRatio;
-            let targetW = 1080, targetH = 1920; // 9:16
+            let targetW = 1080, targetH = 1920;
 
             if (ratio === '16:9') { targetW = 1920; targetH = 1080; }
             else if (ratio === '1:1') { targetW = 1080; targetH = 1080; }
@@ -1370,17 +1424,15 @@
         }
 
         // =========================================================================
-        // MOTOR DE RENDERIZADO FLUIDO (100% EDITABLE Y MOVIBLE)
+        // MOTOR DE RENDERIZADO FLUIDO
         // =========================================================================
         function renderFrame(time) {
             const w = canvas.width;
             const h = canvas.height;
 
-            // 1. Limpieza de pantalla
             ctx.fillStyle = '#05060b';
             ctx.fillRect(0, 0, w, h);
 
-            // 2. Filtrar y ordenar capas activas (video1 -> overlay -> text)
             const activeClips = projectState.clips.filter(c => time >= c.start && time <= (c.start + c.duration));
             activeClips.sort((a, b) => {
                 const order = { 'track-video1': 1, 'track-overlay': 2, 'track-text': 3, 'track-audio1': 0 };
@@ -1411,7 +1463,6 @@
                     renderTextLayer(clip, w, h, time);
                 }
 
-                // Cuadro delimitador visual si el clip está activo
                 if (clip.id === projectState.activeClipId && (clip.type === 'text' || clip.track === 'track-overlay')) {
                     drawActiveBoundingBox(clip, w, h);
                 }
@@ -1419,14 +1470,10 @@
                 ctx.restore();
             }
 
-            // 3. Filtros de Color
             applyColorFilter(w, h);
-
-            // 4. Efectos Shader (12+ Efectos)
             applyActiveShader(w, h, time);
         }
 
-        // Renderizado con escala y posición libre (100% movible)
         function renderTransformedMedia(mediaEl, w, h, posX, posY, scale) {
             const dw = w * scale;
             const dh = h * scale;
@@ -1451,7 +1498,6 @@
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, w, h);
 
-            // Ondas dinámicas
             ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
             ctx.beginPath();
             ctx.moveTo(0, h * 0.6);
@@ -1464,7 +1510,6 @@
             ctx.closePath();
             ctx.fill();
 
-            // Partículas flotantes
             ctx.fillStyle = 'rgba(254, 181, 4, 0.4)';
             for (let i = 0; i < 5; i++) {
                 const px = (w * 0.2 + i * (w * 0.15) + Math.sin(t + i) * 20);
@@ -1535,8 +1580,6 @@
             }
 
             ctx.strokeRect(bx, by, bw, bh);
-
-            // Esquinas interactivas
             ctx.setLineDash([]);
             ctx.fillStyle = '#feb504';
             const handleSize = 12;
@@ -1547,9 +1590,6 @@
             ctx.restore();
         }
 
-        // =========================================================================
-        // ARRASTRE DIRECTO EN EL CANVAS (MOVER ELEMENTOS EN PANTALLA)
-        // =========================================================================
         function setupCanvasInteractiveEvents() {
             let isDraggingCanvas = false;
             let startPointerX = 0, startPointerY = 0;
@@ -1591,7 +1631,7 @@
         }
 
         // =========================================================================
-        // EFECTOS VISUALES (12+ SHADERS EN TIEMPO REAL)
+        // EFECTOS VISUALES
         // =========================================================================
         function applyActiveShader(w, h, t) {
             const s = projectState.activeShader;
@@ -1789,7 +1829,7 @@
         }
 
         // =========================================================================
-        // REGLA Y PISTAS MULTICANAL (ARRASTRE LIBRE + RECORTE)
+        // REGLA Y PISTAS MULTICANAL (REORDENAMIENTO MAGNÉTICO SIN SOBREPOSICIONES)
         // =========================================================================
         function buildTimelineRuler() {
             const ruler = document.getElementById('timelineRuler');
@@ -1813,7 +1853,8 @@
             const tTrack = document.getElementById('track-text');
             const aTrack = document.getElementById('track-audio1');
 
-            vTrack.innerHTML = '';
+            // Mantener el indicador de drop
+            vTrack.innerHTML = '<div id="timelineDropIndicator" class="timeline-drop-indicator"></div>';
             oTrack.innerHTML = '';
             tTrack.innerHTML = '';
             aTrack.innerHTML = '';
@@ -1847,33 +1888,184 @@
                     <div class="vstudio-trim-handle trim-right-handle" onmousedown="startTrim(event, '${clip.id}', 'right')" ontouchstart="startTrim(event, '${clip.id}', 'right')"></div>
                 `;
 
-                // ARRASTRE PARA MOVER EL CLIP EN LA LÍNEA DE TIEMPO
-                setupClipDragEvents(clipEl, clip);
-
+                // REORDENAMIENTO Y ARRASTRE MAGNÉTICO
                 if (clip.track === 'track-video1') {
+                    setupMainClipDragEvents(clipEl, clip);
                     vTrack.appendChild(clipEl);
                     maxVideoEnd = Math.max(maxVideoEnd, clip.start + clip.duration);
-                } else if (clip.track === 'track-overlay') {
-                    oTrack.appendChild(clipEl);
-                } else if (clip.track === 'track-text') {
-                    tTrack.appendChild(clipEl);
-                } else if (clip.track === 'track-audio1') {
-                    aTrack.appendChild(clipEl);
+                } else {
+                    setupSecondaryClipDragEvents(clipEl, clip);
+                    if (clip.track === 'track-overlay') oTrack.appendChild(clipEl);
+                    else if (clip.track === 'track-text') tTrack.appendChild(clipEl);
+                    else if (clip.track === 'track-audio1') aTrack.appendChild(clipEl);
                 }
             });
 
-            // Botón '+' al final de la pista principal de video
+            // Botón '+' al final de la fila principal (nunca se monta)
             const addTile = document.createElement('div');
             addTile.className = 'vstudio-add-tile';
             addTile.style.left = `${maxVideoEnd * projectState.zoomPxPerSec + 10}px`;
             addTile.innerHTML = '<i class="fa-solid fa-plus"></i>';
-            addTile.title = 'Añadir clip de video / imagen al final';
+            addTile.title = 'Añadir clip de video / imagen al final de la fila';
             addTile.onclick = () => document.getElementById('fileInputAdd').click();
             vTrack.appendChild(addTile);
         }
 
-        // FUNCIONALIDAD PARA ARRASTRAR Y MOVER CLIPS EN EL TIMELINE
-        function setupClipDragEvents(clipEl, clip) {
+        // =========================================================================
+        // REORDENAMIENTO MAGNÉTICO DE LA FILA PRINCIPAL (TODO EN UNA FILA, SIN MONTARSE)
+        // =========================================================================
+        function moveClipLeft() {
+            const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+            const idx = mainClips.findIndex(c => c.id === projectState.activeClipId);
+            if (idx <= 0) return;
+
+            const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
+            const temp = mainClips[idx];
+            mainClips[idx] = mainClips[idx - 1];
+            mainClips[idx - 1] = temp;
+
+            projectState.clips = [...mainClips, ...otherClips];
+            enforceMagneticMainTrack();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(temp.id);
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+        }
+
+        function moveClipRight() {
+            const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+            const idx = mainClips.findIndex(c => c.id === projectState.activeClipId);
+            if (idx < 0 || idx >= mainClips.length - 1) return;
+
+            const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
+            const temp = mainClips[idx];
+            mainClips[idx] = mainClips[idx + 1];
+            mainClips[idx + 1] = temp;
+
+            projectState.clips = [...mainClips, ...otherClips];
+            enforceMagneticMainTrack();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(temp.id);
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+        }
+
+        function setupMainClipDragEvents(clipEl, clip) {
+            let startX = 0;
+            let isDragging = false;
+            let initialIndex = 0;
+            let targetIndex = 0;
+
+            clipEl.addEventListener('pointerdown', (e) => {
+                if (e.target.classList.contains('vstudio-trim-handle')) return;
+
+                selectClip(clip.id);
+                startX = e.clientX;
+                isDragging = false;
+
+                const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+                initialIndex = mainClips.findIndex(c => c.id === clip.id);
+                targetIndex = initialIndex;
+                const otherClips = mainClips.filter(c => c.id !== clip.id);
+
+                e.preventDefault();
+                e.stopPropagation();
+                try { clipEl.setPointerCapture(e.pointerId); } catch(err) {}
+
+                function onPointerMove(ev) {
+                    const deltaPx = ev.clientX - startX;
+                    if (!isDragging && Math.abs(deltaPx) > 4) {
+                        isDragging = true;
+                        clipEl.classList.add('dragging-clip');
+                    }
+
+                    if (isDragging) {
+                        clipEl.style.transform = `translateX(${deltaPx}px) scale(1.04)`;
+
+                        // Auto-scroll si el puntero se acerca a los bordes
+                        const rect = timelineScrollContainer.getBoundingClientRect();
+                        if (ev.clientX > rect.right - 50) {
+                            timelineScrollContainer.scrollLeft += 8;
+                        } else if (ev.clientX < rect.left + 50) {
+                            timelineScrollContainer.scrollLeft -= 8;
+                        }
+
+                        // Calcular posición del centro del clip arrastrado
+                        const clipW = clip.duration * projectState.zoomPxPerSec;
+                        const curCenter = (clip.start * projectState.zoomPxPerSec) + (clipW / 2) + deltaPx;
+
+                        // Determinar dónde se insertaría entre los otros clips
+                        let newTarget = 0;
+                        let acc = 0;
+                        for (let i = 0; i < otherClips.length; i++) {
+                            const oW = otherClips[i].duration * projectState.zoomPxPerSec;
+                            const oMid = acc + (oW / 2);
+                            if (curCenter > oMid) {
+                                newTarget = i + 1;
+                            }
+                            acc += oW;
+                        }
+                        targetIndex = newTarget;
+
+                        showDropIndicator(otherClips, targetIndex);
+                    }
+                }
+
+                function onPointerUp(ev) {
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    try { clipEl.releasePointerCapture(ev.pointerId); } catch(err) {}
+                    hideDropIndicator();
+
+                    if (isDragging) {
+                        clipEl.classList.remove('dragging-clip');
+                        clipEl.style.transform = '';
+
+                        // Reordenar estrictamente en una sola fila sin sobreposiciones
+                        const allOthers = projectState.clips.filter(c => c.track !== 'track-video1');
+                        const mainClipsOrdered = projectState.clips.filter(c => c.track === 'track-video1');
+                        const [moved] = mainClipsOrdered.splice(initialIndex, 1);
+                        mainClipsOrdered.splice(targetIndex, 0, moved);
+
+                        projectState.clips = [...mainClipsOrdered, ...allOthers];
+                        enforceMagneticMainTrack();
+                        pushHistory();
+                        renderTimelineClips();
+                        selectClip(moved.id);
+                        renderFrame(projectState.currentTime);
+                        saveProjectToDB();
+                    }
+                }
+
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+            });
+        }
+
+        function showDropIndicator(otherClips, targetIdx) {
+            const indicator = document.getElementById('timelineDropIndicator');
+            if (!indicator) return;
+
+            let targetX = 0;
+            for (let i = 0; i < targetIdx; i++) {
+                if (otherClips[i]) {
+                    targetX += otherClips[i].duration * projectState.zoomPxPerSec;
+                }
+            }
+
+            indicator.style.left = `${targetX}px`;
+            indicator.style.display = 'block';
+        }
+
+        function hideDropIndicator() {
+            const indicator = document.getElementById('timelineDropIndicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+
+        // ARRASTRE DE PISTAS SECUNDARIAS
+        function setupSecondaryClipDragEvents(clipEl, clip) {
             let startX = 0;
             let initialStart = 0;
             let hasMoved = false;
@@ -1886,18 +2078,17 @@
                 initialStart = clip.start;
                 hasMoved = false;
 
+                e.preventDefault();
+                e.stopPropagation();
+                try { clipEl.setPointerCapture(e.pointerId); } catch(err) {}
+
                 function onMove(ev) {
                     const deltaPx = ev.clientX - startX;
-                    if (Math.abs(deltaPx) > 3) {
+                    if (Math.abs(deltaPx) > 4) {
                         hasMoved = true;
                         const deltaSec = deltaPx / projectState.zoomPxPerSec;
                         let newStart = Math.max(0, initialStart + deltaSec);
                         newStart = Math.round(newStart * 10) / 10;
-
-                        // Imán con el cabezal de reproducción
-                        if (Math.abs(newStart - projectState.currentTime) < 0.15) {
-                            newStart = projectState.currentTime;
-                        }
 
                         clip.start = newStart;
                         clipEl.style.left = `${newStart * projectState.zoomPxPerSec}px`;
@@ -1907,9 +2098,10 @@
                     }
                 }
 
-                function onUp() {
+                function onUp(ev) {
                     window.removeEventListener('pointermove', onMove);
                     window.removeEventListener('pointerup', onUp);
+                    try { clipEl.releasePointerCapture(ev.pointerId); } catch(err) {}
                     if (hasMoved) {
                         pushHistory();
                         recalculateProjectDuration();
@@ -1923,7 +2115,9 @@
             });
         }
 
-        // RECORTE INTELIGENTE DE BORDES (TRIM)
+        // =========================================================================
+        // RECORTE INTELIGENTE (TRIM MAGNÉTICO)
+        // =========================================================================
         function startTrim(e, clipId, side) {
             e.stopPropagation();
             e.preventDefault();
@@ -1932,9 +2126,7 @@
 
             selectClip(clipId);
             const startX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-            const origStart = clip.start;
             const origDur = clip.duration;
-            const clipEl = document.getElementById(`block_${clipId}`);
 
             function onTrimMove(ev) {
                 const curX = ev.clientX || (ev.touches && ev.touches[0] ? ev.touches[0].clientX : 0);
@@ -1944,26 +2136,18 @@
                 if (side === 'right') {
                     const newDur = Math.max(0.4, origDur + deltaSec);
                     clip.duration = Math.round(newDur * 10) / 10;
-                    if (clipEl) {
-                        clipEl.style.width = `${clip.duration * projectState.zoomPxPerSec}px`;
-                        const tag = clipEl.querySelector('.vstudio-clip-dur-tag');
-                        if (tag) tag.innerText = `${clip.duration.toFixed(1)}s`;
-                    }
                 } else if (side === 'left') {
-                    const maxDelta = origDur - 0.4;
-                    const safeDelta = Math.min(maxDelta, deltaSec);
-                    const newStart = Math.max(0, origStart + safeDelta);
-                    const newDur = origDur - (newStart - origStart);
-                    clip.start = Math.round(newStart * 10) / 10;
-                    clip.duration = Math.max(0.4, Math.round(newDur * 10) / 10);
-                    if (clipEl) {
-                        clipEl.style.left = `${clip.start * projectState.zoomPxPerSec}px`;
-                        clipEl.style.width = `${clip.duration * projectState.zoomPxPerSec}px`;
-                        const tag = clipEl.querySelector('.vstudio-clip-dur-tag');
-                        if (tag) tag.innerText = `${clip.duration.toFixed(1)}s`;
-                    }
+                    const newDur = Math.max(0.4, origDur - deltaSec);
+                    clip.duration = Math.round(newDur * 10) / 10;
                 }
-                recalculateProjectDuration();
+
+                if (clip.track === 'track-video1') {
+                    enforceMagneticMainTrack();
+                } else {
+                    recalculateProjectDuration();
+                }
+
+                renderTimelineClips();
                 renderFrame(projectState.currentTime);
             }
 
@@ -1973,8 +2157,12 @@
                 window.removeEventListener('touchmove', onTrimMove);
                 window.removeEventListener('touchend', onTrimUp);
 
+                if (clip.track === 'track-video1') {
+                    enforceMagneticMainTrack();
+                } else {
+                    recalculateProjectDuration();
+                }
                 pushHistory();
-                recalculateProjectDuration();
                 renderTimelineClips();
                 saveProjectToDB();
             }
@@ -2059,8 +2247,8 @@
             }
 
             const originalDuration = clip.duration;
-            const firstPartDuration = splitTime - clip.start;
-            const secondPartDuration = originalDuration - firstPartDuration;
+            const firstPartDuration = Math.round((splitTime - clip.start) * 10) / 10;
+            const secondPartDuration = Math.round((originalDuration - firstPartDuration) * 10) / 10;
 
             clip.duration = firstPartDuration;
 
@@ -2068,12 +2256,22 @@
                 ...clip,
                 id: 'clip_' + Date.now(),
                 title: clip.title + ' (Parte 2)',
-                start: splitTime,
+                start: clip.start + firstPartDuration,
                 duration: secondPartDuration
             };
 
-            projectState.clips.push(newClip);
-            recalculateProjectDuration();
+            if (clip.track === 'track-video1') {
+                const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+                const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
+                const idx = mainClips.findIndex(c => c.id === clip.id);
+                mainClips.splice(idx + 1, 0, newClip);
+                projectState.clips = [...mainClips, ...otherClips];
+                enforceMagneticMainTrack();
+            } else {
+                projectState.clips.push(newClip);
+                recalculateProjectDuration();
+            }
+
             pushHistory();
             renderTimelineClips();
             selectClip(newClip.id);
@@ -2088,11 +2286,22 @@
                 ...clip,
                 id: 'clip_' + Date.now(),
                 title: clip.title + ' (Copia)',
-                start: clip.start + clip.duration
+                duration: clip.duration
             };
 
-            projectState.clips.push(newClip);
-            recalculateProjectDuration();
+            if (clip.track === 'track-video1') {
+                const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+                const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
+                const idx = mainClips.findIndex(c => c.id === clip.id);
+                mainClips.splice(idx + 1, 0, newClip);
+                projectState.clips = [...mainClips, ...otherClips];
+                enforceMagneticMainTrack();
+            } else {
+                newClip.start = clip.start + clip.duration;
+                projectState.clips.push(newClip);
+                recalculateProjectDuration();
+            }
+
             pushHistory();
             renderTimelineClips();
             selectClip(newClip.id);
@@ -2100,9 +2309,16 @@
 
         function deleteActiveClip() {
             if (!projectState.activeClipId) return;
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
             projectState.clips = projectState.clips.filter(c => c.id !== projectState.activeClipId);
             deselectActiveClip();
-            recalculateProjectDuration();
+
+            if (clip && clip.track === 'track-video1') {
+                enforceMagneticMainTrack();
+            } else {
+                recalculateProjectDuration();
+            }
+
             pushHistory();
             renderTimelineClips();
             renderFrame(projectState.currentTime);
@@ -2122,10 +2338,27 @@
             if (tool === 'transform') {
                 const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
                 const curScale = clip ? (clip.scale || 1.0) : 1.0;
-                title.innerHTML = '<i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i> Mover y Posicionar Elemento';
+                const isMainVideo = clip && clip.track === 'track-video1';
+
+                title.innerHTML = '<i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i> Mover y Posicionar Clip';
                 body.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Arrastra directamente sobre el video en la pantalla o usa estos atajos:</div>
+                        ${isMainVideo ? `
+                            <div style="background: rgba(254, 181, 4, 0.12); border: 1px solid rgba(254, 181, 4, 0.35); border-radius: 12px; padding: 12px;">
+                                <div style="font-size: 0.82rem; font-weight: 800; color: #feb504; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-arrows-left-right"></i> Mover video de lado en la fila:
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.12); color: #fff; box-shadow: none; padding: 10px;" onclick="moveClipLeft()">
+                                        <i class="fa-solid fa-arrow-left"></i> ◀ Mover a la Izquierda
+                                    </button>
+                                    <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.12); color: #fff; box-shadow: none; padding: 10px;" onclick="moveClipRight()">
+                                        Mover a la Derecha ▶ <i class="fa-solid fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Posicionamiento en pantalla (arrastra sobre el video o usa los atajos):</div>
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
                             <button type="button" class="drawer-item-card" onclick="setClipPosition(0, -0.3)"><span>↖ Arriba</span></button>
                             <button type="button" class="drawer-item-card" onclick="setClipPosition(0, 0)"><span>⏺ Centro</span></button>
@@ -2423,24 +2656,16 @@
         }
 
         // =========================================================================
-        // IMPORTACIÓN MULTIMEDIA (COLOCACIÓN SECUENCIAL SIN COLISIONES)
+        // IMPORTACIÓN MULTIMEDIA (SECUENCIAL MAGNÉTICA)
         // =========================================================================
         async function handleFileInput(files) {
             if (!files || !files.length) return;
-
-            // Determinar posición secuencial al final de track-video1 para que NO colisione
-            let nextStart = 0;
-            const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
-            mainClips.forEach(c => {
-                if (c.start + c.duration > nextStart) nextStart = c.start + c.duration;
-            });
 
             for (const file of files) {
                 const url = URL.createObjectURL(file);
                 const isVideo = file.type.startsWith('video');
                 const isAudio = file.type.startsWith('audio');
                 const isImg = file.type.startsWith('image');
-
                 const clipId = 'clip_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
 
                 if (isVideo) {
@@ -2449,27 +2674,19 @@
                     videoEl.crossOrigin = 'anonymous';
                     videoEl.muted = false;
                     videoEl.playsInline = true;
-
-                    await new Promise(res => {
-                        videoEl.onloadedmetadata = () => res();
-                        videoEl.onerror = () => res();
-                    });
-
+                    await new Promise(res => { videoEl.onloadedmetadata = () => res(); videoEl.onerror = () => res(); });
                     mediaCache.set(clipId, videoEl);
-                    const duration = videoEl.duration || 5.0;
 
                     projectState.clips.push({
                         id: clipId,
                         track: 'track-video1',
                         type: 'video',
                         title: file.name.substring(0, 18),
-                        start: nextStart,
-                        duration: duration,
+                        start: 999999, // enforceMagneticMainTrack lo colocará en orden al final
+                        duration: videoEl.duration || 5.0,
                         speed: 1.0,
                         opacity: 1.0
                     });
-
-                    nextStart += duration;
                 } else if (isImg) {
                     const imgEl = new Image();
                     imgEl.src = url;
@@ -2481,19 +2698,14 @@
                         track: 'track-video1',
                         type: 'image',
                         title: file.name.substring(0, 18),
-                        start: nextStart,
+                        start: 999999,
                         duration: 4.0,
                         opacity: 1.0
                     });
-
-                    nextStart += 4.0;
                 } else if (isAudio) {
                     const audioEl = new Audio();
                     audioEl.src = url;
-                    await new Promise(res => {
-                        audioEl.onloadedmetadata = () => res();
-                        audioEl.onerror = () => res();
-                    });
+                    await new Promise(res => { audioEl.onloadedmetadata = () => res(); audioEl.onerror = () => res(); });
                     mediaCache.set(clipId, audioEl);
 
                     projectState.clips.push({
@@ -2508,13 +2720,12 @@
                 }
             }
 
-            recalculateProjectDuration();
+            enforceMagneticMainTrack();
             pushHistory();
             renderTimelineClips();
             renderFrame(projectState.currentTime);
         }
 
-        // SUPERPOSICIÓN / PIP (VA DIRECTO A TRACK-OVERLAY SIN COLISIONAR)
         async function handleOverlayInput(files) {
             if (!files || !files.length) return;
 
@@ -2639,7 +2850,7 @@
             projectState.activeFilter = state.activeFilter;
 
             setupCanvasDimensions();
-            recalculateProjectDuration();
+            enforceMagneticMainTrack();
             renderTimelineClips();
             renderFrame(projectState.currentTime);
             updateUndoRedoUI();

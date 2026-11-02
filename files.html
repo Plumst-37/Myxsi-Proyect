@@ -1694,7 +1694,9 @@
 
             renderBreadcrumbs();
 
-            let token = accessToken || localStorage.getItem('gdrive_access_token');
+            let token = typeof window.ensureValidToken === 'function' 
+                ? await window.ensureValidToken(false) 
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
             let cloudFiles = [];
             let isCloudLoaded = false;
 
@@ -2038,11 +2040,13 @@
             if (!newName) return;
 
             window.closeRenameModal();
-            let token = accessToken || localStorage.getItem('gdrive_access_token');
+            let token = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
 
             if (activeContextMenuFile.isCloud && token) {
                 try {
-                    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
+                    let res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
                         method: 'PATCH',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -2050,7 +2054,21 @@
                         },
                         body: JSON.stringify({ name: newName })
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            token = freshToken;
+                            res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
+                                method: 'PATCH',
+                                headers: {
+                                    'Authorization': `Bearer ${freshToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ name: newName })
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         showToast("✅ Archivo renombrado en Google Drive", "success");
                         loadCurrentFolder(currentFolderId);
                         return;
@@ -2104,14 +2122,27 @@
             const fileName = activeContextMenuFile.cleanName || activeContextMenuFile.name || 'este archivo';
             if (!confirm(`¿Estás seguro de que deseas eliminar "${fileName}"?`)) return;
 
-            let token = accessToken || localStorage.getItem('gdrive_access_token');
+            let token = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
+
             if (activeContextMenuFile.isCloud && token) {
                 try {
-                    const res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
+                    let res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            token = freshToken;
+                            res = await fetch(`https://www.googleapis.com/drive/v3/files/${activeContextMenuFile.id}`, {
+                                method: 'DELETE',
+                                headers: { 'Authorization': `Bearer ${freshToken}` }
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         showToast(`🗑️ "${fileName}" eliminado de Google Drive`, "info");
                         loadCurrentFolder(currentFolderId);
                         return;
@@ -2387,7 +2418,9 @@
             if (!name) return;
 
             window.closeCreateFolderModal();
-            let token = accessToken || localStorage.getItem('gdrive_access_token');
+            let token = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
             let createdOnCloud = false;
             let driveFolderId = null;
 
@@ -2399,7 +2432,7 @@
                         mimeType: 'application/vnd.google-apps.folder',
                         parents: [parentId]
                     };
-                    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    let res = await fetch('https://www.googleapis.com/drive/v3/files', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -2407,7 +2440,21 @@
                         },
                         body: JSON.stringify(metadata)
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            token = freshToken;
+                            res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${freshToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(metadata)
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         const data = await res.json();
                         createdOnCloud = true;
                         driveFolderId = data.id;
@@ -2447,25 +2494,57 @@
             let uploadedToDrive = false;
             let driveFileId = null;
             let driveViewLink = null;
-            let token = accessToken || localStorage.getItem('gdrive_access_token');
+            let token = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
 
             showToast(`Subiendo "${file.name}"...`, "info");
 
             if (token && (currentFolderId === 'root' || !currentFolderId.startsWith('folder_'))) {
                 try {
                     const parentId = currentFolderId === 'root' ? 'root' : currentFolderId;
-                    const metadata = { name: file.name, mimeType: file.type || 'application/octet-stream', parents: [parentId] };
-                    const formData = new FormData();
-                    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-                    formData.append('file', file);
+                    const metadata = { name: file.name, parents: [parentId] };
+                    if (file.type) metadata.mimeType = file.type;
 
-                    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,createdTime,modifiedTime', {
+                    const boundary = 'foo_bar_boundary_myxsi_upload';
+                    const fileBuffer = await file.arrayBuffer();
+
+                    const metaHeader = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`;
+                    const fileHeader = `--${boundary}\r\nContent-Type: ${file.type || 'application/octet-stream'}\r\n\r\n`;
+                    const closeBoundary = `\r\n--${boundary}--`;
+
+                    const bodyBlob = new Blob([
+                        metaHeader,
+                        fileHeader,
+                        fileBuffer,
+                        closeBoundary
+                    ], { type: `multipart/related; boundary=${boundary}` });
+
+                    let res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,createdTime,modifiedTime', {
                         method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        body: formData
+                        headers: { 
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': `multipart/related; boundary=${boundary}`
+                        },
+                        body: bodyBlob
                     });
 
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            token = freshToken;
+                            res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,webViewLink,createdTime,modifiedTime', {
+                                method: 'POST',
+                                headers: { 
+                                    'Authorization': `Bearer ${freshToken}`,
+                                    'Content-Type': `multipart/related; boundary=${boundary}`
+                                },
+                                body: bodyBlob
+                            });
+                        }
+                    }
+
+                    if (res && res.ok) {
                         const data = await res.json();
                         uploadedToDrive = true;
                         driveFileId = data.id;

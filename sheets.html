@@ -1319,7 +1319,10 @@
 
         saveSheetData();
 
-        let token = localStorage.getItem('gdrive_access_token');
+        let token = typeof window.ensureValidToken === 'function'
+            ? await window.ensureValidToken(false)
+            : localStorage.getItem('gdrive_access_token');
+
         if (!token && typeof window.ensureValidToken === 'function') {
             const wantConnect = confirm("📂 Guardar en Google Drive:\n\nTu libro de cálculo está protegido localmente. ¿Deseas vincular tu cuenta de Google Drive para sincronizarlo en la nube como una Hoja de Google Sheets?");
             if (wantConnect) {
@@ -1329,7 +1332,11 @@
 
         if (!token) {
             exportToCSV();
-            alert("💾 Tu libro de cálculo se ha descargado como archivo CSV y guardado localmente.\n\nPuedes conectar tu Google Drive desde la barra superior cuando desees sincronizarlo en la nube.");
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast("💾 Libro de cálculo guardado localmente.", "info");
+            } else {
+                alert("💾 Tu libro de cálculo se ha descargado como archivo CSV y guardado localmente.\n\nPuedes conectar tu Google Drive desde la barra superior cuando desees sincronizarlo en la nube.");
+            }
             return;
         }
 
@@ -1339,11 +1346,17 @@
                 window.showMyxsiToast(isUpdate ? "Actualizando hoja en Google Drive..." : "Subiendo hoja a Google Drive...", "info");
             }
 
+            let folderId = null;
+            if (!isUpdate && typeof window.getOrCreateMyxsiDriveFolder === 'function') {
+                folderId = await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', token);
+            }
+
             const metadata = {
                 name: title
             };
             if (!isUpdate) {
                 metadata.mimeType = 'application/vnd.google-apps.spreadsheet';
+                if (folderId) metadata.parents = [folderId];
             }
 
             const boundary = 'foo_bar_boundary_myxsi_sheets';
@@ -1358,7 +1371,7 @@
                 ? `https://www.googleapis.com/upload/drive/v3/files/${window.activeGoogleSheetId}?uploadType=multipart`
                 : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
 
-            const res = await fetch(uploadUrl, {
+            let res = await fetch(uploadUrl, {
                 method: isUpdate ? 'PATCH' : 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1366,6 +1379,25 @@
                 },
                 body: multipart
             });
+
+            if (res.status === 401 || res.status === 403) {
+                console.warn("Token caducado en Sheets, renovando sesión...");
+                if (typeof window.showMyxsiToast === 'function') {
+                    window.showMyxsiToast("Renovando sesión de Google Drive...", "info");
+                }
+                const freshToken = await window.ensureValidToken(true);
+                if (freshToken) {
+                    token = freshToken;
+                    res = await fetch(uploadUrl, {
+                        method: isUpdate ? 'PATCH' : 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${freshToken}`,
+                            'Content-Type': `multipart/related; boundary=${boundary}`
+                        },
+                        body: multipart
+                    });
+                }
+            }
 
             if (res.ok) {
                 const driveFile = await res.json();
@@ -1417,16 +1449,22 @@
                 } catch(e){}
 
                 if (typeof window.updateDriveStatusUI === 'function') window.updateDriveStatusUI(true);
-                const toastMsg = isUpdate ? "¡Libro actualizado en Google Drive!" : "¡Libro guardado en Google Drive!";
+                const toastMsg = isUpdate 
+                    ? "¡Libro actualizado en Google Drive!" 
+                    : "¡Libro guardado en la carpeta 'Myxsi Sheets' de tu Google Drive!";
                 if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast(toastMsg, "success");
-                const openNow = confirm(`✅ ¡Libro ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Sheets?`);
+                const openNow = confirm(`✅ ¡Libro ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive (Carpeta 'Myxsi Sheets')!\n\n¿Deseas abrirlo ahora en Google Sheets?`);
                 if (openNow) window.open(realLink, '_blank');
             } else {
-                throw new Error(`Error ${res.status}`);
+                throw new Error(`Google Drive API error (${res.status}): ${res.statusText}`);
             }
         } catch(err) {
             console.error("Error al sincronizar con Drive:", err);
-            exportToCSV();
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast("⚠️ Error al sincronizar con Google Drive: " + (err.message || err), "error");
+            } else {
+                alert("⚠️ Error al sincronizar con Google Drive: " + (err.message || err));
+            }
         }
     };
 

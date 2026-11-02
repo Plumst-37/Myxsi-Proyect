@@ -1129,14 +1129,21 @@
             localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
             localStorage.setItem('sheets_studio_title_' + docId, sheetTitle);
 
-            const accessToken = localStorage.getItem('gdrive_access_token');
+            let accessToken = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : localStorage.getItem('gdrive_access_token');
             if (accessToken) {
                 try {
+                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', accessToken)
+                        : null;
                     const meta = {
                         name: sheetTitle,
                         mimeType: 'application/vnd.google-apps.spreadsheet'
                     };
-                    const res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    if (folderId) meta.parents = [folderId];
+
+                    let res = await fetch('https://www.googleapis.com/drive/v3/files', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${accessToken}`,
@@ -1144,7 +1151,21 @@
                         },
                         body: JSON.stringify(meta)
                     });
-                    if (res.ok) {
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            accessToken = freshToken;
+                            res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${freshToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(meta)
+                            });
+                        }
+                    }
+                    if (res && res.ok) {
                         const driveFile = await res.json();
                         if (driveFile && driveFile.id) {
                             newFile.id = driveFile.id;
@@ -1166,14 +1187,23 @@
 
         async function loadUserSheets() {
             let cloudSheets = [];
-            const accessToken = localStorage.getItem('gdrive_access_token');
+            let accessToken = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : localStorage.getItem('gdrive_access_token');
 
             if (accessToken) {
                 try {
                     const query = "(mimeType='application/vnd.google-apps.spreadsheet' or mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or name contains '.csv' or name contains '.xlsx') and trashed = false";
                     const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,size,webViewLink,createdTime,modifiedTime)&pageSize=50`;
-                    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
-                    if (res.ok) {
+                    let res = await fetch(url, { headers: { 'Authorization': `Bearer ${accessToken}` } });
+                    if (res.status === 401 || res.status === 403) {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            accessToken = freshToken;
+                            res = await fetch(url, { headers: { 'Authorization': `Bearer ${freshToken}` } });
+                        }
+                    }
+                    if (res && res.ok) {
                         const data = await res.json();
                         cloudSheets = (data.files || []).map(f => ({
                             id: f.id,

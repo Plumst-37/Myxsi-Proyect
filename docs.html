@@ -2150,15 +2150,37 @@
     // =========================================================
     // 2. SINCRONIZACIÓN Y GUARDADO CON GOOGLE DRIVE
     // =========================================================
+    window.downloadDocAsWord = function() {
+        if (!window.smartDocQuill) return;
+        const titleInput = document.getElementById('smartDocTitle');
+        const docTitle = (titleInput ? titleInput.value.trim() : '') || 'Documento Myxsi';
+        const text = window.smartDocQuill.root.innerHTML.trim();
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docTitle}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.7; padding: 40px; max-width: 820px; margin: 0 auto; background: #ffffff; } h1 { font-size: 2.1rem; color: #0f172a; margin-bottom: 12px; font-weight: 800; } h2 { font-size: 1.5rem; color: #4338ca; margin-top: 28px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.2rem; color: #6366f1; margin-top: 20px; margin-bottom: 8px; } p { margin: 0 0 14px 0; font-size: 1.05rem; } ul, ol { margin: 0 0 16px 24px; } li { margin-bottom: 6px; } blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px 18px; margin: 16px 0; font-style: italic; color: #475569; } table { width: 100%; border-collapse: collapse; margin: 20px 0; } th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; } th { background: #f1f5f9; font-weight: 700; color: #0f172a; } .doc-footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 0.8rem; color: #94a3b8; text-align: center; }</style></head><body>${text}<div class="doc-footer">Documento creado con Myxsi Docs Studio • ${new Date().toLocaleDateString()}</div></body></html>`;
+        const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${docTitle.replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '_')}.doc`;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
+        if (typeof window.showMyxsiToast === 'function') {
+            window.showMyxsiToast("📄 Copia descargada en formato Word (.doc)", "success");
+        }
+    };
+
     window.exportDocToGoogleDrive = async function() {
         if (!window.smartDocQuill) return;
 
         const titleInput = document.getElementById('smartDocTitle');
-        const docTitle = (titleInput ? titleInput.value.trim() : '') || 'Documento Inteligente Myxsi';
+        const docTitle = (titleInput ? titleInput.value.trim() : '') || 'Documento sin título';
         const text = window.smartDocQuill.root.innerHTML.trim();
 
         if (!text || text === '<p><br></p>') {
-            alert("⚠️ El documento está vacío. Escribe algo antes de exportar.");
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast("⚠️ El documento está vacío. Escribe algo antes de exportar.", "error");
+            } else {
+                alert("⚠️ El documento está vacío. Escribe algo antes de exportar.");
+            }
             return;
         }
 
@@ -2169,7 +2191,7 @@
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Guardando...';
         }
 
-        // Respaldo local prioritario en Myxsi Files para no perder nada nunca
+        // 1. Respaldo local prioritario en Myxsi Files
         const urlParams = new URLSearchParams(window.location.search);
         const currentDocId = urlParams.get('docId') || ('doc_' + Date.now());
         localStorage.setItem('smart_doc_content_' + currentDocId, text);
@@ -2179,13 +2201,24 @@
 
         try {
             const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-            let f = localFiles.find(item => item.id === currentDocId);
+            let f = localFiles.find(item => item.id === currentDocId || (window.activeGoogleDocId && item.id === window.activeGoogleDocId));
             const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
             if (!f) {
-                f = { id: currentDocId, name: docTitle, type: 'doc', updatedAt: Date.now(), userEmail: user?.email || 'local' };
+                f = { 
+                    id: currentDocId, 
+                    name: docTitle, 
+                    type: 'doc', 
+                    isDoc: true, 
+                    mimeType: 'application/vnd.google-apps.document',
+                    updatedAt: Date.now(), 
+                    isLocal: !window.activeGoogleDocId,
+                    isCloud: !!window.activeGoogleDocId,
+                    userEmail: user?.email || 'local' 
+                };
                 localFiles.unshift(f);
             } else {
                 f.name = docTitle;
+                f.isDoc = true;
                 f.updatedAt = Date.now();
                 if (user?.email) f.userEmail = user.email;
             }
@@ -2194,10 +2227,14 @@
 
         const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docTitle}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.7; padding: 40px; max-width: 820px; margin: 0 auto; background: #ffffff; } h1 { font-size: 2.1rem; color: #0f172a; margin-bottom: 12px; font-weight: 800; } h2 { font-size: 1.5rem; color: #4338ca; margin-top: 28px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.2rem; color: #6366f1; margin-top: 20px; margin-bottom: 8px; } p { margin: 0 0 14px 0; font-size: 1.05rem; } ul, ol { margin: 0 0 16px 24px; } li { margin-bottom: 6px; } blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px 18px; margin: 16px 0; font-style: italic; color: #475569; } table { width: 100%; border-collapse: collapse; margin: 20px 0; } th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; } th { background: #f1f5f9; font-weight: 700; color: #0f172a; } .doc-footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 0.8rem; color: #94a3b8; text-align: center; }</style></head><body>${text}<div class="doc-footer">Documento creado y sincronizado con Myxsi Docs Studio • ${new Date().toLocaleDateString()}</div></body></html>`;
 
-        let accessToken = localStorage.getItem('gdrive_access_token');
+        // 2. Obtener / Validar token activo de Google Drive
+        let accessToken = typeof window.ensureValidToken === 'function'
+            ? await window.ensureValidToken(false)
+            : localStorage.getItem('gdrive_access_token');
+
         if (!accessToken && typeof window.ensureValidToken === 'function') {
             try { 
-                const wantConnect = confirm("📂 Guardar en Google Drive:\n\nTu documento está protegido localmente. ¿Deseas vincular tu cuenta de Google Drive ahora para sincronizarlo directamente como un Google Doc en tu nube?");
+                const wantConnect = confirm("📂 Guardar en Google Drive:\n\nTu documento está protegido localmente. ¿Deseas vincular tu cuenta de Google Drive para sincronizarlo directamente en tu carpeta de Google Drive?");
                 if (wantConnect) {
                     accessToken = await window.ensureValidToken(true);
                 }
@@ -2205,34 +2242,31 @@
         }
 
         if (!accessToken) {
-            // Descarga de respaldo instantáneo en formato Word (.doc) para que nada se pierda
-            const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${docTitle.replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '_')}.doc`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
-
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
             }
-            alert("💾 Tu documento se ha guardado localmente en tu cuenta de Myxsi y se descargó una copia en Word (.doc) para que no pierdas nada.\n\nPuedes conectar tu Google Drive en cualquier momento desde el botón de la cabecera.");
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast("💾 Documento guardado localmente en tu cuenta de Myxsi.", "info");
+            } else {
+                alert("💾 Documento guardado localmente en tu cuenta de Myxsi.");
+            }
             return;
         }
 
-        // Subida directa a Google Drive
+        // 3. Subida directa a Google Drive con auto-recuperación de token y carpeta dedicada
         try {
             const isUpdate = !!window.activeGoogleDocId;
             let folderId = null;
-            if (typeof getOrCreateMyxsiDriveFolder === 'function') {
-                folderId = await getOrCreateMyxsiDriveFolder(accessToken);
+            if (!isUpdate && typeof window.getOrCreateMyxsiDriveFolder === 'function') {
+                folderId = await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken);
             }
 
             const metadata = { name: docTitle };
-            if (!isUpdate && folderId) metadata.parents = [folderId];
-            if (!isUpdate) metadata.mimeType = 'application/vnd.google-apps.document';
+            if (!isUpdate) {
+                metadata.mimeType = 'application/vnd.google-apps.document';
+                if (folderId) metadata.parents = [folderId];
+            }
 
             const boundary = 'foo_bar_boundary_myxsi_docs';
             const multipart =
@@ -2246,7 +2280,7 @@
                 ? `https://www.googleapis.com/upload/drive/v3/files/${window.activeGoogleDocId}?uploadType=multipart`
                 : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
 
-            const res = await fetch(uploadUrl, {
+            let res = await fetch(uploadUrl, {
                 method: isUpdate ? 'PATCH' : 'POST',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
@@ -2255,8 +2289,28 @@
                 body: multipart
             });
 
+            // Si el token caducó durante la petición, refrescar de inmediato y reintentar
+            if (res.status === 401 || res.status === 403) {
+                console.warn("Token expirado al subir a Drive, renovando sesión...");
+                if (typeof window.showMyxsiToast === 'function') {
+                    window.showMyxsiToast("Renovando sesión de Google Drive...", "info");
+                }
+                const freshToken = await window.ensureValidToken(true);
+                if (freshToken) {
+                    accessToken = freshToken;
+                    res = await fetch(uploadUrl, {
+                        method: isUpdate ? 'PATCH' : 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${freshToken}`,
+                            'Content-Type': `multipart/related; boundary=${boundary}`
+                        },
+                        body: multipart
+                    });
+                }
+            }
+
             if (!res.ok) {
-                throw new Error(`Google Drive API error: ${res.statusText}`);
+                throw new Error(`Google Drive API error (${res.status}): ${res.statusText}`);
             }
 
             const resData = await res.json();
@@ -2308,7 +2362,9 @@
             } catch(e){}
 
             if (typeof window.updateDriveStatusUI === 'function') window.updateDriveStatusUI(true);
-            const successMsg = isUpdate ? "¡Documento actualizado en Google Drive!" : "¡Documento guardado en Google Drive!";
+            const successMsg = isUpdate 
+                ? "¡Documento actualizado en Google Drive!" 
+                : "¡Documento guardado en la carpeta 'Myxsi Documents' de tu Google Drive!";
             if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast(successMsg, "success");
 
             if (btn) {
@@ -2317,24 +2373,20 @@
                 setTimeout(() => { if (btn) btn.innerHTML = originalBtnHtml; }, 3500);
             }
 
-            const openNow = confirm(`✅ ¡Documento ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Docs?`);
+            const openNow = confirm(`✅ ¡Documento ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive (Carpeta 'Myxsi Documents')!\n\n¿Deseas abrirlo ahora en Google Docs?`);
             if (openNow) {
                 window.open(realLink, '_blank');
             }
         } catch(err) {
             console.error("Error al subir a Google Drive:", err);
-            const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `${docTitle.replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '_')}.doc`;
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
-
-            alert("⚠️ La sincronización con Google Drive API no pudo completarse. El documento se guardó localmente en tu cuenta y se descargó en Word para proteger tus cambios.");
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalBtnHtml;
+            }
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast("⚠️ Error al sincronizar con Google Drive: " + (err.message || err), "error");
+            } else {
+                alert("⚠️ Error al sincronizar con Google Drive: " + (err.message || err));
             }
         }
     };
