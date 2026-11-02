@@ -6,7 +6,7 @@
     <title>Myxsi — "Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro"</title>
     <meta name="description" content="Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro. Tu espacio de productividad inteligente con IA para conversar, redactar, analizar y diseñar.">
     <meta name="robots" content="index, follow">
-    <meta name="google-site-verification" content="TU_CODIGO_DE_VERIFICACION_GOOGLE">
+    <meta name="google-site-verification" content="google26969b2edde5bfd4">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1079,6 +1079,15 @@
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     const idToken = await userCredential.user.getIdToken();
                     sessionStorage.setItem('firebase_id_token', idToken);
+                    
+                    const userData = {
+                        uid: userCredential.user.uid,
+                        email: userCredential.user.email,
+                        displayName: userCredential.user.displayName || userCredential.user.email.split('@')[0],
+                        photoURL: userCredential.user.photoURL || null,
+                        emailVerified: true
+                    };
+                    localStorage.setItem('myxsi_user', JSON.stringify(userData));
                     localStorage.setItem('myxsi_user_email', userCredential.user.email);
                     window.location.href = 'chat.html';
                 } catch (err) {
@@ -1110,6 +1119,15 @@
                     }
                     const idToken = await result.user.getIdToken();
                     sessionStorage.setItem('firebase_id_token', idToken);
+
+                    const userData = {
+                        uid: result.user.uid,
+                        email: result.user.email,
+                        displayName: result.user.displayName || result.user.email.split('@')[0],
+                        photoURL: result.user.photoURL || null,
+                        emailVerified: true
+                    };
+                    localStorage.setItem('myxsi_user', JSON.stringify(userData));
                     localStorage.setItem('myxsi_user_email', result.user.email);
                     window.location.href = 'chat.html';
                 } catch (err) {
@@ -1129,6 +1147,24 @@
                 }
             });
         }
+
+        // Sincronizar estado de sesión activa
+        onAuthStateChanged(auth, (user) => {
+            if (user && !sessionStorage.getItem('logging_out')) {
+                const userData = {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName || user.email.split('@')[0],
+                    photoURL: user.photoURL || null,
+                    emailVerified: true
+                };
+                localStorage.setItem('myxsi_user', JSON.stringify(userData));
+                localStorage.setItem('myxsi_user_email', user.email);
+            }
+            if (sessionStorage.getItem('logging_out')) {
+                sessionStorage.removeItem('logging_out');
+            }
+        });
 
         // Cierre con ESC
         document.addEventListener('keydown', (e) => {
