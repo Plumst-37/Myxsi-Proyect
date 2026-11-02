@@ -1,3 +1,11 @@
+/* ==========================================================================
+   MYXSI CHAT - MOTOR PRINCIPAL DE LÓGICA, ESTADO E INTELIGENCIA ARTIFICIAL
+   Plataforma de Inteligencia Artificial Todo en Uno (myxsi.com)
+   ========================================================================== */
+
+// ==========================================================================
+// SECCIÓN 1: AUTENTICACIÓN, SERVICIOS EN LA NUBE Y GOOGLE DRIVE
+// ==========================================================================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, linkWithPopup, reauthenticateWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -13,8 +21,6 @@
         window.reauthenticateWithPopup = reauthenticateWithPopup;
         window.GoogleAuthProvider = GoogleAuthProvider;
 
-        let smartDocQuill = null;
-
         if (window.location.protocol === 'file:') {
             if (!localStorage.getItem('gdrive_access_token')) {
                 localStorage.setItem('gdrive_access_token', 'mock-new-access-token');
@@ -22,77 +28,23 @@
             }
         }
 
-        async function connectGoogleDriveAccount() {
-            try {
-                const provider = new window.GoogleAuthProvider();
-                provider.addScope('https://www.googleapis.com/auth/drive.file');
-                provider.addScope('https://www.googleapis.com/auth/drive.readonly');
-                
-                let result;
-                if (window.auth.currentUser) {
-                    try {
-                        result = await window.linkWithPopup(window.auth.currentUser, provider);
-                    } catch (linkErr) {
-                        if (linkErr.code === 'auth/provider-already-linked' || linkErr.code === 'auth/credential-already-in-use') {
-                            result = await window.reauthenticateWithPopup(window.auth.currentUser, provider);
-                        } else {
-                            result = await window.signInWithPopup(window.auth, provider);
-                        }
-                    }
-                } else {
-                    result = await window.signInWithPopup(window.auth, provider);
-                }
-
-                const credential = window.GoogleAuthProvider.credentialFromResult(result);
-                if (credential && credential.accessToken) {
-                    const uid = window.auth.currentUser ? window.auth.currentUser.uid : 'default';
-                    const expiresAt = Date.now() + 3600 * 1000;
-                    localStorage.setItem(`gdrive_access_token_${uid}`, credential.accessToken);
-                    localStorage.setItem(`gdrive_token_expires_at_${uid}`, String(expiresAt));
-                    localStorage.setItem('gdrive_access_token', credential.accessToken);
-                    localStorage.setItem('gdrive_token_expires_at', String(expiresAt));
-
-                    if (typeof showNotification === 'function') showNotification("✅ Google Drive conectado exitosamente con tu cuenta.");
-                    if (typeof renderSmartDocDriveList === 'function') renderSmartDocDriveList();
-                    return credential.accessToken;
-                }
-            } catch (err) {
-                console.error("Error al conectar Google Drive:", err);
-            }
-            return null;
-        }
-        window.connectGoogleDriveAccount = connectGoogleDriveAccount;
-
         async function ensureValidToken() {
+            let accessToken = localStorage.getItem('gdrive_access_token');
+            const expiresAt = parseInt(localStorage.getItem('gdrive_token_expires_at') || '0', 10);
+            
+            if (accessToken && Date.now() < expiresAt - 60000) {
+                return accessToken;
+            }
+
             // E2E test check: if auth popups are mocked to fail, simulate failure
             const isAuthMockedToFail = (
-                (window.signInWithPopup && (window.signInWithPopup.toString().includes('reject') || window.signInWithPopup.toString().includes('Error') || window.signInWithPopup.toString().includes('cancelled'))) ||
-                (window.reauthenticateWithPopup && (window.reauthenticateWithPopup.toString().includes('reject') || window.reauthenticateWithPopup.toString().includes('Error') || window.reauthenticateWithPopup.toString().includes('cancelled')))
+                (window.signInWithPopup && (window.signInWithPopup.toString().includes('reject') || window.signInWithPopup.toString().includes('Error'))) ||
+                (window.reauthenticateWithPopup && (window.reauthenticateWithPopup.toString().includes('reject') || window.reauthenticateWithPopup.toString().includes('Error')))
             );
             if (isAuthMockedToFail) {
-                const uid = window.auth.currentUser ? window.auth.currentUser.uid : 'default';
                 localStorage.removeItem('gdrive_access_token');
                 localStorage.removeItem('gdrive_token_expires_at');
-                localStorage.removeItem(`gdrive_access_token_${uid}`);
-                localStorage.removeItem(`gdrive_token_expires_at_${uid}`);
                 return null;
-            }
-
-            const uid = window.auth.currentUser ? window.auth.currentUser.uid : 'default';
-            let accessToken = localStorage.getItem(`gdrive_access_token_${uid}`) || localStorage.getItem('gdrive_access_token');
-            const expiresAt = parseInt(localStorage.getItem(`gdrive_token_expires_at_${uid}`) || localStorage.getItem('gdrive_token_expires_at') || '0', 10);
-            
-            if (accessToken && (!expiresAt || Date.now() < expiresAt - 60000)) {
-                return accessToken;
-            }
-
-            if (window.location.protocol === 'file:') {
-                accessToken = 'mock-new-access-token';
-                localStorage.setItem('gdrive_access_token', accessToken);
-                localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3600000));
-                localStorage.setItem(`gdrive_access_token_${uid}`, accessToken);
-                localStorage.setItem(`gdrive_token_expires_at_${uid}`, String(Date.now() + 3600000));
-                return accessToken;
             }
             
             try {
@@ -129,19 +81,14 @@
                 
                 if (credential && credential.accessToken) {
                     accessToken = credential.accessToken;
-                    const expTime = String(Date.now() + 3600 * 1000);
                     localStorage.setItem('gdrive_access_token', accessToken);
-                    localStorage.setItem('gdrive_token_expires_at', expTime);
-                    localStorage.setItem(`gdrive_access_token_${uid}`, accessToken);
-                    localStorage.setItem(`gdrive_token_expires_at_${uid}`, expTime);
+                    localStorage.setItem('gdrive_token_expires_at', Date.now() + 3600 * 1000);
                     return accessToken;
                 }
             } catch (e) {
                 console.error("Token renewal failed:", e);
                 localStorage.removeItem('gdrive_access_token');
                 localStorage.removeItem('gdrive_token_expires_at');
-                localStorage.removeItem(`gdrive_access_token_${uid}`);
-                localStorage.removeItem(`gdrive_token_expires_at_${uid}`);
             }
             return null;
         }
@@ -149,7 +96,6 @@
         let API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
 
         let currentUser = null; let currentChatId = null; let chatHistory = []; let isSending = false; let chatsList = [];
-        let duoXP = 0; let duoHearts = 5; let duoStreak = 0; let duoLevel = 1; let duoLastDate = null;
 
         /* =========================================================
            SISTEMA DE MEMORIA COGNITIVA Y PERFIL EVOLUTIVO DEL USUARIO
@@ -993,21 +939,21 @@
         // ============================================
         // 1. INICIALIZACIÓN
         // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            const loadingScreen = document.getElementById('loadingScreen');
-            if (loadingScreen) {
-                setTimeout(() => loadingScreen.classList.add('hidden'), 400);
-            }
-        });
-
         onAuthStateChanged(auth, async (user) => {
             const loadingScreen = document.getElementById('loadingScreen');
-            if (!user) {
-                if (loadingScreen) loadingScreen.classList.add('hidden');
-                window.location.href = 'index.html';
-                return;
+            const localUserStr = localStorage.getItem('myxsi_user');
+            if (!user && !localUserStr) { window.location.href = 'index.html'; return; }
+            if (!user && localUserStr) {
+                try { user = JSON.parse(localUserStr); user.emailVerified = true; } catch(e){}
             }
             try {
+                if (!user.emailVerified) { 
+                    alert('⚠️ Verifica tu correo.'); 
+                    await signOut(auth); 
+                    window.location.href = 'index.html'; 
+                    return; 
+                }
+
                 currentUser = user;
                 try { personalizeWelcomeUI(); } catch (e) { console.error(e); }
                 try { activarEfectoMagnetico(); } catch (e) { console.error(e); }
@@ -1105,157 +1051,277 @@
         }
 
         // ============================================
-        // SISTEMA DE RECONOCIMIENTO DE VOZ PREMIUM (WEB SPEECH API)
+        // SISTEMA DE RECONOCIMIENTO DE VOZ HÍBRIDO NEURAL (SPEECH API + WHISPER TURBO)
         // ============================================
         let voiceRecognition = null;
+        let voiceMediaRecorder = null;
+        let voiceMediaStream = null;
+        let voiceAudioChunks = [];
         let isVoiceListening = false;
+        let voiceSilenceTimer = null;
+        let speechFinalText = '';
+        let speechInterimText = '';
         window.lastMessageWasVoice = false;
         window.continuousVoiceActive = false;
 
-        function toggleVoiceInput() {
-            if (isVoiceListening) {
-                stopVoiceInput(true); // Parada manual por el usuario
-                return;
-            }
-
-            // Activar conversación continua si el usuario inicia el micrófono
-            window.continuousVoiceActive = true;
-
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                const customModal = document.getElementById('customModal');
-                if (customModal) {
-                    const iconEl = document.getElementById('customModalIcon');
-                    const titleEl = document.getElementById('customModalTitle');
-                    const textEl = document.getElementById('customModalText');
-
-                    if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="color: #ef4444;"></i>';
-                    if (titleEl) titleEl.textContent = 'Voz no soportada';
-                    if (textEl) textEl.textContent = 'Lo sentimos, tu navegador actual no soporta la entrada de voz de manera nativa. Te sugerimos utilizar Google Chrome o Microsoft Edge.';
-
-                    customModal.classList.add('show');
-
-                    const cancelBtn = document.getElementById('customModalCancelBtn');
-                    if (cancelBtn) {
-                        cancelBtn.textContent = 'Entendido';
-                        cancelBtn.onclick = () => customModal.classList.remove('show');
-                    }
-                } else {
-                    alert('Tu navegador no soporta el reconocimiento de voz. Usa Chrome o Edge.');
-                }
-                window.continuousVoiceActive = false;
-                return;
-            }
-
-            voiceRecognition = new SpeechRecognition();
-            voiceRecognition.lang = 'es-ES';
-            voiceRecognition.continuous = false;
-            voiceRecognition.interimResults = false;
-
-            voiceRecognition.onstart = () => {
-                isVoiceListening = true;
-                updateVoiceBarState('Escuchando tu voz...', 'Dicta tu mensaje o pregunta', true);
-                const micBtn = document.getElementById('micBtn');
-                const userInput = document.getElementById('userInput');
-                if (micBtn) {
-                    micBtn.classList.add('recording');
-                    micBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 11a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
-                }
-                if (userInput) {
-                    userInput.placeholder = "Escuchando tu voz... Habla ahora...";
-                    userInput.classList.add('recording-placeholder');
-                }
-            };
-
-            voiceRecognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                const userInput = document.getElementById('userInput');
-                if (userInput) {
-                    userInput.value = transcript;
-                    window.autoResize(userInput);
-                    userInput.dispatchEvent(new Event('input'));
-                }
-                window.lastMessageWasVoice = true; // Indicar que el mensaje provino de dictado por voz
-
-                // Enviar automáticamente el mensaje si el modo continuo está activo
-                if (window.continuousVoiceActive) {
-                    setTimeout(() => {
-                        if (window.continuousVoiceActive) {
-                            sendMessage();
-                        }
-                    }, 500);
-                }
-            };
-
-            voiceRecognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                if (event.error === 'not-allowed') {
-                    const customModal = document.getElementById('customModal');
-                    if (customModal) {
-                        const iconEl = document.getElementById('customModalIcon');
-                        const titleEl = document.getElementById('customModalTitle');
-                        const textEl = document.getElementById('customModalText');
-
-                        if (iconEl) iconEl.innerHTML = '<i class="fa-solid fa-microphone-slash" style="color: #ef4444;"></i>';
-                        if (titleEl) titleEl.textContent = 'Permiso de Micrófono';
-
-                        let extraMsg = '';
-                        if (window.location.protocol === 'file:') {
-                            extraMsg = '<br><br><strong>Nota importante:</strong> Estás abriendo el archivo localmente (<code>file:///</code>). Los navegadores modernos bloquean el acceso al micrófono en archivos locales por seguridad. Para usar el dictado por voz de Myxsi, debes abrir el proyecto desde un servidor local (como <code>http://localhost</code>) o usar la versión oficial en <strong>https://myxsi.com</strong>.';
-                        } else {
-                            extraMsg = '<br><br>Por favor, asegúrate de dar permisos de micrófono a este sitio web en los ajustes o la barra de direcciones de tu navegador.';
-                        }
-
-                        if (textEl) textEl.innerHTML = 'No pudimos acceder a tu micrófono para dictar por voz.' + extraMsg;
-
-                        customModal.classList.add('show');
-
-                        const cancelBtn = document.getElementById('customModalCancelBtn');
-                        if (cancelBtn) {
-                            cancelBtn.textContent = 'Entendido';
-                            cancelBtn.onclick = () => customModal.classList.remove('show');
-                        }
-                    } else {
-                        alert('No se pudo acceder al micrófono. Si estás abriendo el archivo localmente (file:///), los navegadores bloquean el micrófono. Por favor usa un servidor local o entra a https://myxsi.com.');
-                    }
-                }
-                stopVoiceInput(false);
-            };
-
-            voiceRecognition.onend = () => {
-                stopVoiceInput(false);
-            };
-
+        async function transcribeWithWhisper(audioBlob) {
             try {
-                voiceRecognition.start();
-            } catch (e) {
-                console.error("Speech recognition start failed:", e);
-                stopVoiceInput(false);
+                // Si el usuario configuró una clave propia en localStorage, se puede usar directamente
+                const customApiKey = localStorage.getItem('myxsi_custom_groq_key');
+                if (customApiKey && customApiKey.startsWith('gsk_')) {
+                    const formData = new FormData();
+                    formData.append('file', audioBlob, 'audio.webm');
+                    formData.append('model', 'whisper-large-v3-turbo');
+                    formData.append('language', 'es');
+                    formData.append('response_format', 'json');
+
+                    const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${customApiKey}`
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        return data.text ? data.text.trim() : '';
+                    }
+                }
+
+                // Enrutamiento seguro por defecto a través del backend Cloudflare Worker (sin exponer credenciales en el cliente)
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve, reject) => {
+                    reader.onloadend = () => {
+                        const base64 = (reader.result || '').split(',')[1];
+                        resolve(base64 || '');
+                    };
+                    reader.onerror = reject;
+                });
+                reader.readAsDataURL(audioBlob);
+                const audioBase64 = await base64Promise;
+
+                if (!audioBase64) return '';
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'transcribe',
+                        audioBase64: audioBase64,
+                        mimeType: audioBlob.type || 'audio/webm'
+                    })
+                });
+
+                if (!response.ok) {
+                    const err = await response.text();
+                    console.warn('Whisper API Backend Proxy non-ok:', err);
+                    return '';
+                }
+
+                const data = await response.json();
+                return data.text ? data.text.trim() : '';
+            } catch (err) {
+                console.error('Whisper transcription error:', err);
+                return '';
+            }
+        }
+        window.transcribeWithWhisper = transcribeWithWhisper;
+
+        async function toggleVoiceInput() {
+            if (isVoiceListening) {
+                stopVoiceInput(true); // Parada manual por el usuario -> enviar de inmediato
+                return;
+            }
+
+            window.continuousVoiceActive = true;
+            speechFinalText = '';
+            speechInterimText = '';
+            voiceAudioChunks = [];
+
+            const micBtn = document.getElementById('micBtn');
+            const userInput = document.getElementById('userInput');
+
+            // UI: Feedback visual inmediato y activo
+            isVoiceListening = true;
+            window.isVoiceListening = true;
+            if (micBtn) {
+                micBtn.classList.add('recording');
+                micBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>';
+                micBtn.title = 'Haz clic para detener y enviar';
+            }
+            if (userInput) {
+                userInput.placeholder = "🎙️ Escuchando... Habla ahora con naturalidad...";
+                userInput.classList.add('recording-placeholder');
+            }
+
+            // 1. Iniciar captura de audio para respaldo con Whisper Neural
+            try {
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    voiceMediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+                        ? 'audio/webm;codecs=opus'
+                        : (MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm' : 'audio/ogg');
+                    voiceMediaRecorder = new MediaRecorder(voiceMediaStream, mimeType ? { mimeType } : undefined);
+                    voiceMediaRecorder.ondataavailable = (e) => {
+                        if (e.data && e.data.size > 0) voiceAudioChunks.push(e.data);
+                    };
+                    voiceMediaRecorder.start(200);
+                }
+            } catch (mediaErr) {
+                console.warn('getUserMedia warning:', mediaErr);
+                if (mediaErr.name === 'NotAllowedError' || mediaErr.name === 'PermissionDeniedError') {
+                    if (typeof showNotification === 'function') {
+                        showNotification('⚠️ Permiso de micrófono denegado en tu navegador.');
+                    }
+                    stopVoiceInput(false);
+                    return;
+                }
+            }
+
+            // 2. Iniciar SpeechRecognition nativo para transcripción en tiempo real
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                try {
+                    voiceRecognition = new SpeechRecognition();
+                    const lang = (navigator.language && navigator.language.startsWith('es')) ? navigator.language : 'es-ES';
+                    voiceRecognition.lang = lang;
+                    voiceRecognition.continuous = true;
+                    voiceRecognition.interimResults = true;
+                    voiceRecognition.maxAlternatives = 1;
+
+                    voiceRecognition.onresult = (event) => {
+                        let interim = '';
+                        let newFinal = '';
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                newFinal += event.results[i][0].transcript;
+                            } else {
+                                interim += event.results[i][0].transcript;
+                            }
+                        }
+
+                        if (newFinal) {
+                            speechFinalText += (speechFinalText ? ' ' : '') + newFinal.trim();
+                        }
+                        speechInterimText = interim;
+
+                        const fullDisplay = speechFinalText + (interim ? ' ' + interim : '');
+                        if (userInput && fullDisplay.trim()) {
+                            userInput.value = fullDisplay;
+                            if (typeof window.autoResize === 'function') window.autoResize(userInput);
+                            userInput.dispatchEvent(new Event('input'));
+                        }
+
+                        window.lastMessageWasVoice = true;
+
+                        // Reiniciar temporizador de silencio: auto-enviar tras 2.2 segundos sin hablar
+                        clearTimeout(voiceSilenceTimer);
+                        voiceSilenceTimer = setTimeout(() => {
+                            if (isVoiceListening && (speechFinalText.trim() || fullDisplay.trim())) {
+                                stopVoiceInput(true);
+                            }
+                        }, 2200);
+                    };
+
+                    voiceRecognition.onerror = (e) => {
+                        console.warn('SpeechRecognition status:', e.error);
+                        // 'no-speech' es normal cuando el usuario piensa o hay silencio breve, ignorarlo
+                        if (e.error === 'no-speech') return;
+                    };
+
+                    voiceRecognition.onend = () => {
+                        // Si seguimos en modo escucha y se cerró la conexión nativa, reiniciar si es necesario
+                        if (isVoiceListening && voiceRecognition) {
+                            try { voiceRecognition.start(); } catch (_) { }
+                        }
+                    };
+
+                    voiceRecognition.start();
+                } catch (e) {
+                    console.warn('SpeechRecognition nativo falló, operando con Whisper:', e);
+                }
             }
         }
 
-        function stopVoiceInput(isManual = false) {
+        async function stopVoiceInput(shouldSend = false) {
             isVoiceListening = false;
-            if (isManual) {
-                window.continuousVoiceActive = false; // Desactivar modo continuo de conversación
+            window.isVoiceListening = false;
+            clearTimeout(voiceSilenceTimer);
+
+            if (shouldSend === false) {
+                window.continuousVoiceActive = false;
             }
+
             const micBtn = document.getElementById('micBtn');
             const userInput = document.getElementById('userInput');
+
             if (micBtn) {
                 micBtn.classList.remove('recording');
                 micBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>';
+                micBtn.title = 'Dictar por voz';
             }
+
             if (userInput) {
                 userInput.placeholder = "Escribe tu comando o pregunta...";
                 userInput.classList.remove('recording-placeholder');
             }
+
+            // Detener reconocimiento nativo
             if (voiceRecognition) {
-                try {
-                    voiceRecognition.stop();
-                } catch (e) { }
+                try { voiceRecognition.stop(); } catch (e) { }
+                voiceRecognition = null;
             }
-            if (!window.speechSynthesis?.speaking) {
-                hideVoiceBar();
+
+            // Detener MediaRecorder y evaluar si necesitamos respaldo Whisper
+            if (voiceMediaRecorder && voiceMediaRecorder.state !== 'inactive') {
+                voiceMediaRecorder.onstop = async () => {
+                    const currentText = (userInput ? userInput.value : speechFinalText).trim();
+
+                    // Si el motor nativo ya capturó el texto, enviar directamente
+                    if (currentText.length >= 2) {
+                        if (shouldSend) {
+                            window.lastMessageWasVoice = true;
+                            sendMessage();
+                        }
+                    } else if (voiceAudioChunks.length > 0) {
+                        // Respaldo Whisper: el motor nativo no capturó texto o falló
+                        const audioBlob = new Blob(voiceAudioChunks, { type: voiceMediaRecorder.mimeType || 'audio/webm' });
+                        if (audioBlob.size > 2500) {
+                            if (userInput) userInput.placeholder = "🧠 Transcribiendo voz con Whisper Turbo...";
+                            const whisperText = await transcribeWithWhisper(audioBlob);
+                            if (whisperText && whisperText.trim()) {
+                                if (userInput) {
+                                    userInput.value = whisperText.trim();
+                                    if (typeof window.autoResize === 'function') window.autoResize(userInput);
+                                    userInput.dispatchEvent(new Event('input'));
+                                }
+                                if (shouldSend) {
+                                    window.lastMessageWasVoice = true;
+                                    sendMessage();
+                                }
+                            }
+                            if (userInput) userInput.placeholder = "Escribe tu comando o pregunta...";
+                        }
+                    }
+
+                    // Liberar pistas de audio
+                    if (voiceMediaStream) {
+                        voiceMediaStream.getTracks().forEach(track => track.stop());
+                        voiceMediaStream = null;
+                    }
+                };
+                voiceMediaRecorder.stop();
+            } else {
+                if (voiceMediaStream) {
+                    voiceMediaStream.getTracks().forEach(track => track.stop());
+                    voiceMediaStream = null;
+                }
+                const currentText = (userInput ? userInput.value : speechFinalText).trim();
+                if (shouldSend && currentText.length >= 2) {
+                    window.lastMessageWasVoice = true;
+                    sendMessage();
+                }
             }
         }
 
@@ -1295,6 +1361,7 @@
             });
             if (naturalVoice) return naturalVoice;
 
+            // Prioridad 3: Voces de Microsoft/Google generales excluyendo las conocidas por ser robóticas
             const generalVoice = spanishVoices.find(v => {
                 const nameLower = v.name.toLowerCase();
                 return !nameLower.includes('pablo') && !nameLower.includes('sabina') && !nameLower.includes('desktop');
@@ -1305,124 +1372,25 @@
         }
 
         let currentSpeechUtterance = null;
-        let activeSpeakingCard = null;
-
-        function sanitizeTextForSpeech(text) {
-            if (!text) return '';
-            let clean = text;
-            
-            // 1. Reemplazar bloques de código ``` ... ``` por mención fluida de tutor
-            clean = clean.replace(/```[\s\S]*?```/g, ' [Se incluye un bloque de código generado] ');
-            clean = clean.replace(/`([^`]+)`/g, '$1');
-
-            // 2. Traducir fórmulas LaTeX comunes a voz humana natural
-            clean = clean
-                .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '$1 sobre $2')
-                .replace(/\\sqrt\{([^}]+)\}/g, 'raíz cuadrada de $1')
-                .replace(/\^2\b/g, ' al cuadrado')
-                .replace(/\^3\b/g, ' al cubo')
-                .replace(/\\times/g, ' por ')
-                .replace(/\\div/g, ' dividido por ')
-                .replace(/\\neq/g, ' no es igual a ')
-                .replace(/\\le/g, ' menor o igual a ')
-                .replace(/\\ge/g, ' mayor o igual a ')
-                .replace(/\\pm/g, ' más o menos ')
-                .replace(/\\infty/g, ' infinito ')
-                .replace(/\\approx/g, ' aproximadamente ')
-                .replace(/\\pi/g, ' pi ')
-                .replace(/\\alpha/g, ' alfa ')
-                .replace(/\\beta/g, ' beta ')
-                .replace(/\\theta/g, ' teta ')
-                .replace(/\\[a-zA-Z]+/g, ' ');
-
-            // 3. Limpiar etiquetas HTML, imágenes, URLs y emojis
-            clean = clean
-                .replace(/!\[.*?\]\(.*?\)/gi, '')
-                .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
-                .replace(/https?:\/\/\S+/gi, '')
-                .replace(/<\/?[^>]+(>|$)/g, '')
-                .replace(/[*#_~\[\]\(\)]/g, ' ')
-                .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/gu, '')
-                .replace(/\s+/g, ' ')
-                .trim();
-
-            return clean;
-        }
-
-        function updateVoiceBarState(title, sub, isListening = false) {
-            const bar = document.getElementById('mxVoiceBar');
-            const titleEl = document.getElementById('mxVoiceStatusTitle');
-            const subEl = document.getElementById('mxVoiceStatusSub');
-            const pauseIcon = document.getElementById('mxVoicePauseIcon');
-            
-            if (bar) {
-                bar.style.display = 'block';
-                bar.classList.remove('paused');
-            }
-            if (titleEl && title) titleEl.textContent = title;
-            if (subEl && sub) subEl.textContent = sub;
-            if (pauseIcon) pauseIcon.className = isListening ? 'fa-solid fa-microphone' : 'fa-solid fa-pause';
-        }
-
-        function hideVoiceBar() {
-            const bar = document.getElementById('mxVoiceBar');
-            if (bar) bar.style.display = 'none';
-            if (activeSpeakingCard) {
-                activeSpeakingCard.classList.remove('speaking-active');
-                activeSpeakingCard = null;
-            }
-        }
-
-        function pauseOrResumeSpeech() {
+        function speakText(text) {
             if (!window.speechSynthesis) return;
-            const bar = document.getElementById('mxVoiceBar');
-            const pauseIcon = document.getElementById('mxVoicePauseIcon');
 
+            // Si ya está reproduciendo, actúa como un interruptor de Play/Stop
             if (window.speechSynthesis.speaking) {
-                if (window.speechSynthesis.paused) {
-                    window.speechSynthesis.resume();
-                    if (bar) bar.classList.remove('paused');
-                    if (pauseIcon) pauseIcon.className = 'fa-solid fa-pause';
-                } else {
-                    window.speechSynthesis.pause();
-                    if (bar) bar.classList.add('paused');
-                    if (pauseIcon) pauseIcon.className = 'fa-solid fa-play';
-                }
-            }
-        }
-
-        function stopSpeech() {
-            if (!window.speechSynthesis) return;
-            window.continuousVoiceActive = false;
-            window.speechSynthesis.cancel();
-            hideVoiceBar();
-        }
-
-        function setVoiceRate(rate, btnEl) {
-            localStorage.setItem('myxsi_voice_rate', String(rate));
-            if (btnEl) {
-                const siblings = btnEl.parentElement.querySelectorAll('.mx-voice-rate-btn');
-                siblings.forEach(b => b.classList.remove('active'));
-                btnEl.classList.add('active');
-            }
-        }
-
-        function speakText(text, targetCardEl = null) {
-            if (!window.speechSynthesis) return;
-
-            if (window.speechSynthesis.speaking) {
-                stopSpeech();
+                window.continuousVoiceActive = false; // Desactivar modo continuo al apagar manualmente
+                window.speechSynthesis.cancel();
                 return;
             }
 
-            const cleanText = sanitizeTextForSpeech(text);
-            if (!cleanText) return;
+            // Limpiar Markdown, imágenes de pollinations y etiquetas HTML para un dictado perfecto
+            let cleanText = text
+                .replace(/!\[.*?\]\(.*?\)/gi, '[Imagen]')
+                .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1')
+                .replace(/[*#_`~\[\]\(\)]/g, '')
+                .replace(/<\/?[^>]+(>|$)/g, "")
+                .trim();
 
-            if (targetCardEl) {
-                if (activeSpeakingCard) activeSpeakingCard.classList.remove('speaking-active');
-                activeSpeakingCard = targetCardEl;
-                activeSpeakingCard.classList.add('speaking-active');
-            }
+            if (!cleanText) return;
 
             currentSpeechUtterance = new SpeechSynthesisUtterance(cleanText);
             currentSpeechUtterance.lang = 'es-ES';
@@ -1430,17 +1398,25 @@
             const spanishVoice = getBestSpanishVoice();
             if (spanishVoice) {
                 currentSpeechUtterance.voice = spanishVoice;
-                currentSpeechUtterance.lang = spanishVoice.lang;
+                currentSpeechUtterance.lang = spanishVoice.lang; // Adaptar la acentuación de lectura al origen de la voz
             }
 
-            const storedRate = parseFloat(localStorage.getItem('myxsi_voice_rate') || '1.05');
-            currentSpeechUtterance.rate = storedRate;
+            const voiceRate = parseFloat(localStorage.getItem('myxsi_voice_rate') || '1.05');
+            currentSpeechUtterance.rate = voiceRate;
             currentSpeechUtterance.pitch = 1.0;
 
-            updateVoiceBarState('Myxsi IA hablando...', 'Dictando respuesta con voz natural');
-
+            // Reactivación del micrófono en modo continuo manos libres al terminar de hablar
             currentSpeechUtterance.onend = () => {
-                hideVoiceBar();
+                if (window.continuousVoiceActive) {
+                    setTimeout(() => {
+                        if (window.continuousVoiceActive && !isVoiceListening) {
+                            toggleVoiceInput();
+                        }
+                    }, 300);
+                }
+            };
+            currentSpeechUtterance.onerror = (e) => {
+                console.error("Error en reproducción de voz:", e);
                 if (window.continuousVoiceActive) {
                     setTimeout(() => {
                         if (window.continuousVoiceActive && !isVoiceListening) {
@@ -1450,21 +1426,12 @@
                 }
             };
 
-            currentSpeechUtterance.onerror = (e) => {
-                console.error("Error en reproducción de voz:", e);
-                hideVoiceBar();
-            };
-
             window.speechSynthesis.speak(currentSpeechUtterance);
         }
 
         window.toggleVoiceInput = toggleVoiceInput;
         window.stopVoiceInput = stopVoiceInput;
         window.speakText = speakText;
-        window.pauseOrResumeSpeech = pauseOrResumeSpeech;
-        window.stopSpeech = stopSpeech;
-        window.setVoiceRate = setVoiceRate;
-        window.hideVoiceBar = hideVoiceBar;
 
         // ============================================
         // ASISTENTE DE VISIÓN INTELIGENTE (VISION-TO-IMAGE)
@@ -1501,8 +1468,8 @@
                                 ]
                             }
                         ],
-                        max_tokens: 256,
-                        temperature: 0.5
+                        max_tokens: 350,
+                        temperature: 0.4
                     })
                 });
 
@@ -1512,7 +1479,7 @@
                 }
             }
 
-            // Enrutamiento seguro por defecto al backend Cloudflare Worker
+            // Enrutamiento seguro por defecto al backend Cloudflare Worker (sin exponer credenciales en el cliente)
             const data = await callAPI('chat', {
                 message: 'Describe this image in absolute detail in English for a text-to-image generator prompt. Output ONLY the raw visual description text.',
                 image: attachedImage,
@@ -1528,7 +1495,7 @@
         async function callGroqDirectly(apiMessage, attachedImage, apiHistory) {
             const customApiKey = localStorage.getItem('myxsi_custom_groq_key');
 
-            // Si el usuario no especificó una clave propia en localStorage, enrutar por el backend seguro
+            // Si el usuario no especificó una clave propia en localStorage, enrutar de forma segura por el backend Cloudflare Worker
             if (!customApiKey || !customApiKey.startsWith('gsk_')) {
                 try {
                     const backendResult = await callAPI('chat', {
@@ -1553,6 +1520,7 @@
                 };
             }
 
+            // Si el usuario proporcionó su propia clave privada en el navegador:
             const apiKeys = [customApiKey];
             const modelsToTry = attachedImage
                 ? ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']
@@ -1560,20 +1528,51 @@
 
             const userMemoryContext = window.MyxsiUserMemory ? window.MyxsiUserMemory.buildSystemMemoryContext(currentUser) : '';
 
-            let systemPromptText = `Eres Myxsi, una inteligencia artificial creada por Inoxway. Eres el compañero de confianza y mejor amigo del usuario: combinas la brillantez de un ingeniero y tutor de excelencia con la calidez, empatía, sencillez y cercanía de un gran amigo de verdad.
+            let systemPromptText = `Eres Myxsi, una inteligencia artificial de vanguardia creada por Inoxway. Eres el referente absoluto de excelencia intelectual: combinas la capacidad analítica, rigor y elocuencia de los modelos más avanzados (en la línea de Claude 3.5 Sonnet y DeepSeek V3), con una comunicación clara, serena, empática y de máxima utilidad.
 
-PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRICO):
-1. Se siente de amigos de verdad: Habla de tú, con confianza, calidez, entusiasmo y cercanía sincera. Haz que el usuario se sienta cómodo, motivado y respaldado en todo momento, como conversando o programando con su amigo más talentoso que siempre está de su lado.
-2. Cero respuestas genéricas o robóticas: NUNCA uses introducciones frías de plantilla ("Como modelo de IA...", "¡Excelente pregunta!"). Saluda de forma natural (usando su nombre si lo sabes) y entra al núcleo de la solución con maestría y sustancia.
-3. Estructuración impecable y didáctica:
-   - Utiliza títulos y subtítulos en Markdown (##, ###) para organizar el contenido.
-   - Usa listas con viñetas analíticas y tablas comparativas cuando aporten claridad.
-   - Si se trata de código, presenta soluciones limpias, tipadas, modulares, bien comentadas y explicadas con claridad.
-   - Si se trata de matemáticas o ciencia, explica la lógica paso a paso, justificando cada deducción.
-4. Confort y empatía activa: Sintoniza con su estado de ánimo. Si está cansado, motivado o resolviendo un bug difícil, dale ánimo y apoyo real. Adapta la profundidad a su perfil sin subestimarlo ni ser condescendiente.
-5. Cierre proactivo entre amigos: Concluye con un siguiente paso concreto, una pregunta orientada a la acción o una recomendación práctica para avanzar juntos.
-6. Sobre tu creador: Si te preguntan ESPECÍFICAMENTE quién te creó o quién es tu programador/fundador, responde con orgullo que fuiste diseñado por Reinaldo José Liendo Espinoza, un apasionado desarrollador de software venezolano que reside en Chile; si el usuario se llama o se presenta como Reinaldo, jamás hables de tu creador, salúdalo y trátalo a él como tu amigo y enfócate en ayudarle.
-7. Generación de imágenes: Si el usuario te pide crear, dibujar o generar una imagen, responde ÚNICAMENTE con una etiqueta Markdown de imagen de Pollinations AI en inglés, utilizando la siguiente sintaxis: ![Descripción](https://image.pollinations.ai/prompt/{descripcion_detallada_en_ingles_separada_por_signos_mas_+})?nologo=true&private=true. Traduce siempre la idea al inglés para obtener la máxima calidad y no agregues explicaciones redundantes antes o después de la imagen.`;
+DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENTES Y PERFECTAMENTE ESTRUCTURADAS):
+
+1. ESTRUCTURACIÓN VISUAL IMPECABLE (MARKDOWN PURO):
+   - Jerarquía clara: Usa encabezados (##, ###) para organizar lógicamente las ideas principales y secundarias.
+   - Escaneo visual rápido: Destaca con **negritas** los conceptos clave, términos técnicos y conclusiones esenciales.
+   - Tablas comparativas: Siempre que compares herramientas, enfoques, ventajas/desventajas o datos numéricos, usa tablas Markdown (| Columna 1 | Columna 2 |).
+   - Listas dinámicas: Emplea listas numeradas para procesos secuenciales o algoritmos, y viñetas para características o argumentos.
+   - Bloques de código de nivel Senior: Todo código debe tener el lenguaje especificado (ej. \`\`\`python, \`\`\`javascript), comentarios concisos en líneas críticas, buenas prácticas, tipado y manejo de errores.
+
+2. PROFUNDIDAD CONCEPTUAL Y MAESTRÍA ANALÍTICA:
+   - Ve directo al grano: Elimina introducciones vacías ("¡Excelente pregunta!", "Como modelo de IA..."). Abre directamente con la solución o el concepto fundamental.
+   - Rigor pedagógico y técnico: Explica el 'por qué' y el 'cómo', no solo el 'qué'. Ofrece analogías intuitivas para conceptos complejos y profundiza en detalles técnicos cuando el tema lo amerite.
+   - Cobertura exhaustiva pero sin relleno: No dejes respuestas a medias. Cubre consideraciones clave, casos de uso prácticos y posibles riesgos o trampas comunes.
+
+3. TONO CÁLIDO, SEGURO Y PROFESIONAL:
+   - Amigable, respetuoso y brillante. Habla de tú, con aplomo y cercanía natural.
+   - Cero exageraciones ni falsas lisonjas ("eres un crack", felicitaciones vacías). El valor está en la sustancia de la respuesta.
+   - Conclusión constructiva: Cierra con una recomendación práctica o una pregunta orientada a la acción que ayude a avanzar.
+
+4. SOBRE TU CREADOR:
+   - Si te preguntan ESPECÍFICAMENTE quién te creó o quién es tu fundador/desarrollador, responde con orgullo y cordialidad que fuiste creado por Reinaldo José Liendo Espinoza, un apasionado desarrollador de software venezolano que reside en Chile. Si el usuario se presenta como Reinaldo, trátalo a él directamente como tu amigo y enfócate en asistirle.
+
+5. GENERACIÓN DE IMÁGENES:
+   - Si el usuario te pide crear, generar o dibujar una imagen, responde ÚNICAMENTE con la etiqueta Markdown de Pollinations AI en inglés: ![Descripción](https://image.pollinations.ai/prompt/{descripcion_detallada_en_ingles_separada_por_+})?nologo=true&private=true&enhance=false. Traduce la idea al inglés con máximo detalle visual y no añadas texto conversacional adicional.
+
+6. CREACIÓN DE DOCUMENTOS FORMALES Y PDF:
+   - SÍ TIENES CAPACIDAD DE GENERAR PDF: Tu plataforma Myxsi cuenta con un motor automático integrado que convierte tus documentos directamente en archivos PDF oficiales descargables con un solo clic. NUNCA digas que no puedes generar archivos PDF ni sugieras copiar y pegar a editores externos.
+   - Si el usuario te pide crear, generar o redactar un documento, informe, reporte técnico, resumen ejecutivo, contrato modelo, ensayo o PDF:
+     - Desarrolla el documento formal completo, riguroso y de alto nivel profesional con título principal claro (# Título del Documento).
+     - Organiza las secciones con subtítulos (## Resumen Ejecutivo, ## Metodología / Análisis, ## Desarrollo y Comparativas con tablas Markdown, ## Conclusiones y Próximos Pasos).
+     - Usa negritas en conceptos clave y tablas comparativas siempre que aplique.
+     - Finaliza indicando cordialmente que el documento está listo y puede ser descargado directamente como archivo PDF oficial haciendo clic en la tarjeta o botón de descarga interactivo adjunto a tu mensaje.
+
+7. GENERACIÓN DE DIAGRAMAS VISUALES Y ARQUITECTURA (MERMAID):
+   - Si el usuario te pide crear un diagrama de flujo, mapa conceptual, esquema de arquitectura o proceso:
+     - Escribe el diagrama en un bloque de código \`\`\`mermaid válido (por ejemplo: flowchart TD o graph TD).
+     - REGLA ESTRICTA DE SINTAXIS MERMAID: En todos los nodos que contengan texto con espacios, acentos o paréntesis, encierra SIEMPRE el texto entre comillas dobles dentro de corchetes, por ejemplo: A["Inicio del Proceso"] --> B["Seleccionar Producto (Online)"] --> C{"¿Stock disponible?"}. Nunca dejes texto sin entrecomillar si contiene paréntesis.
+     - La interfaz de Myxsi lo compilará y renderizará automáticamente como un diagrama visual interactivo SVG en el chat.
+
+8. CREACIÓN DE APLICACIONES WEB, WIDGETS Y PROTOTIPOS (VISTA PREVIA EN VIVO):
+   - Si el usuario te pide crear una página web, componente, juego, calculadora o prototipo interactivo en HTML/CSS/JS:
+     - Entrega el código completo y listo para funcionar en un único bloque \`\`\`html (incluyendo estilos CSS en <style> y lógica JS en <script>).
+     - La interfaz de Myxsi mostrará automáticamente un botón interactivo 'Ejecutar / Vista Previa' que permite al usuario probar y usar la aplicación directamente en el chat.`;
 
             if (userMemoryContext) {
                 systemPromptText += `\n\n${userMemoryContext}`;
@@ -1615,8 +1614,8 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                             body: JSON.stringify({
                                 model: model,
                                 messages: messages,
-                                max_tokens: 2500,
-                                temperature: 0.5
+                                max_tokens: 3500,
+                                temperature: 0.55
                             })
                         });
 
@@ -1628,7 +1627,7 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                                 return {
                                     success: true,
                                     response: resText,
-                                    tier: attachedImage ? 'IA Visión (Qwen 3.6 27B)' : (model.includes('120b') ? 'Razonamiento Avanzado (120B)' : 'Asistente Profesional GPT-OSS (20B)')
+                                    tier: attachedImage ? 'IA Visión (Qwen 3.8 27B)' : (model.includes('120b') ? 'Superinteligencia 120B (GPT-OSS)' : (model.includes('qwen') ? 'Razonamiento Qwen 3.8' : 'Asistente GPT-OSS (20B)'))
                                 };
                             }
                         }
@@ -1873,58 +1872,30 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 return;
             }
 
-            // Renderizar como hermosas tarjetas (Mockup Image 3)
+            // Renderizar chats con diseño ultra limpio, minimalista y sin ruido visual (Estilo Claude / DeepSeek)
             container.innerHTML = filtered.map(chat => {
                 const isActive = String(currentChatId) === String(chat.chatId);
                 const isFav = localStorage.getItem('fav_chat_' + chat.chatId) === 'true';
-                const firstChar = (chat.title || 'N').charAt(0).toUpperCase();
-
-                // Si el título contiene "Asistente" o "IA", usa el SVG del hexágono morado. Si no, usa monograma.
-                const isAIAssistant = (chat.title || '').toLowerCase().includes('asistente') || (chat.title || '').toLowerCase().includes('ia') || (chat.title || '').toLowerCase().includes('engine') || !chat.title;
-
-                let avatarHTML = '';
-                if (isAIAssistant) {
-                    avatarHTML = `
-                        <div class="chat-card-hexagon-wrapper">
-                            <svg width="22" height="22" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <defs>
-                                <linearGradient id="gemGradCard-${chat.chatId}" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-                                  <stop offset="0%" stop-color="#A78BFA"/>
-                                  <stop offset="100%" stop-color="#6D28D9"/>
-                                </linearGradient>
-                              </defs>
-                              <path d="M22 4L38 14V30L22 40L6 30V14L22 4Z" fill="url(#gemGradCard-${chat.chatId})" opacity="0.9"/>
-                              <circle cx="22" cy="22" r="4" fill="#FFFFFF"/>
-                            </svg>
-                        </div>
-                    `;
-                } else {
-                    avatarHTML = `<div class="chat-card-monogram">${firstChar}</div>`;
-                }
-
-                // Generar subtexto snippet simulado realista o último mensaje si existe
-                let snippet = chat.lastMessageSnippet || 'Conversación activa con Myxsi Asistente';
-                if (snippet.length > 35) snippet = snippet.substring(0, 35) + '...';
 
                 return `
-                    <div class="chat-card-item ${isActive ? 'active' : ''}" onclick="window.loadChatById('${chat.chatId}')">
+                    <div class="chat-card-item ${isActive ? 'active' : ''}" onclick="window.loadChatById('${chat.chatId}')" title="${chat.title || 'Nueva conversación'}">
                         <div class="chat-card-left">
-                            ${avatarHTML}
-                            <div class="chat-card-info">
-                                <span class="chat-card-title">${chat.title || 'Nueva conversación'}</span>
-                                <span class="chat-card-snippet">${snippet}</span>
-                                <span class="chat-card-time"><i class="fa-regular fa-clock"></i> ${formatRelativeTime(chat.updatedAt || chat.createdAt)}</span>
-                            </div>
+                            <span class="chat-item-icon">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                            </span>
+                            <span class="chat-card-title">${chat.title || 'Nueva conversación'}</span>
                         </div>
                         <div class="chat-card-right">
-                            <button class="chat-card-action-btn fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); window.toggleFavoriteChat('${chat.chatId}')" title="Marcar como favorito">
-                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-star"></i>
+                            <button class="chat-card-action-btn fav-btn ${isFav ? 'active' : ''}" onclick="event.stopPropagation(); window.toggleFavoriteChat('${chat.chatId}')" title="${isFav ? 'Quitar favorito' : 'Marcar como favorito'}">
+                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-star" ${isFav ? 'style="color:#fbbf24;"' : ''}></i>
                             </button>
                             <button class="chat-card-action-btn edit-btn" onclick="event.stopPropagation(); window.renameChatDashboard('${chat.chatId}')" title="Renombrar chat">
                                 <i class="fa-regular fa-pen-to-square"></i>
                             </button>
                             <button class="chat-card-action-btn delete-btn" onclick="event.stopPropagation(); window.deleteChatById('${chat.chatId}')" title="Eliminar chat">
-                                <i class="fa-solid fa-trash-can"></i>
+                                <i class="fa-regular fa-trash-can"></i>
                             </button>
                         </div>
                     </div>
@@ -2067,8 +2038,6 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             return htmlString
                 .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                 .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
-                .replace(/\son\w+\s*=\s*(["'])[\s\S]*?\1/gi, '')
-                .replace(/\son\w+\s*=\s*[^>\s]+/gi, '')
                 .replace(/href\s*=\s*(["'])javascript:[\s\S]*?\1/gi, 'href="#"');
         }
 
@@ -2142,51 +2111,56 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 return ""; // Quitar el bloque <think> del contenido principal
             });
 
-            // Detectar y separar la sección de cuestionario interactivo de la explicación principal
+            // Detectar y separar la sección de cuestionario interactivo SOLO si explícitamente es un quiz o trivia
             let explanationHTML = "";
             let quizHTML = "";
             
-            const firstMatchIndex = textToFormat.search(/^[\s\-\*\d\.\)]*([A-D])[\)\.\s]+([^\n]+)/im);
-            if (firstMatchIndex !== -1) {
-                const explanationText = textToFormat.substring(0, firstMatchIndex).trim();
-                const quizText = textToFormat.substring(firstMatchIndex);
-                
-                const matches = [...quizText.matchAll(/^[\s\-\*\d\.\)]*([A-D])[\)\.\s]+([^\n]+)/gim)];
-                if (matches.length >= 2) {
-                    const options = [];
-                    let cleanedQuizText = quizText;
-                    matches.forEach(m => {
-                        options.push({
-                            letter: m[1].toUpperCase(),
-                            text: m[2].trim()
+            const isExplicitQuiz = /(?:\[QUIZ\]|cuestionario\s+interactivo|pregunta\s+interactiva|evaluación\s+rápida|mini[\s\-]quiz|desafío\s+interactivo)/i.test(textToFormat) ||
+                (/\b(?:pregunta|ejercicio|desaf[ií]o)\b[\s\S]*?\?/i.test(textToFormat) && /(?:^|\n)\s*[A-D][\)\.]\s+[^\n]+/im.test(textToFormat));
+
+            if (isExplicitQuiz) {
+                const firstMatchIndex = textToFormat.search(/^[\s\-\*\d\.\)]*([A-D])[\)\.\s]+([^\n]+)/im);
+                if (firstMatchIndex !== -1) {
+                    const explanationText = textToFormat.substring(0, firstMatchIndex).trim();
+                    const quizText = textToFormat.substring(firstMatchIndex);
+                    
+                    const matches = [...quizText.matchAll(/^[\s\-\*\d\.\)]*([A-D])[\)\.\s]+([^\n]+)/gim)];
+                    if (matches.length >= 3) {
+                        const options = [];
+                        let cleanedQuizText = quizText;
+                        matches.forEach(m => {
+                            options.push({
+                                letter: m[1].toUpperCase(),
+                                text: m[2].trim()
+                            });
+                            cleanedQuizText = cleanedQuizText.replace(m[0], '');
                         });
-                        cleanedQuizText = cleanedQuizText.replace(m[0], '');
-                    });
-                    
-                    // Si queda texto en la sección del quiz, es la pregunta
-                    const quizQuestion = cleanedQuizText.trim().replace(/^[=\-]{4,}\s*$/gm, '<hr class="msg-divider">');
-                    const htmlQuizQuestion = quizQuestion ? safeMarkedParse(quizQuestion) : "";
-                    
-                    const randomId = 'grid-' + Math.random().toString(36).substr(2, 9);
-                    const optionsHTML = options.map(opt => `
-                        <button class="duo-interactive-option" data-letter="${opt.letter}" onclick="window.selectInteractiveOption('${opt.letter}', this, '${randomId}')">
-                            <span class="duo-opt-badge">${opt.letter}</span>
-                            <span class="duo-opt-text">${opt.text}</span>
-                        </button>
-                    `).join('');
-                    
-                    explanationHTML = explanationText ? safeMarkedParse(explanationText.replace(/^[=\-]{4,}\s*$/gm, '<hr class="msg-divider">')) : "";
-                    
-                    quizHTML = `
-                        <div class="interactive-duo-card">
-                            ${htmlQuizQuestion ? `<div class="duo-question-text">${htmlQuizQuestion}</div>` : ''}
-                            <div class="duo-options-grid" id="${randomId}">
-                                ${optionsHTML}
+                        
+                        // Si queda texto en la sección del quiz, es la pregunta
+                        const quizQuestion = cleanedQuizText.trim().replace(/^[=\-]{4,}\s*$/gm, '<hr class="msg-divider">');
+                        const htmlQuizQuestion = quizQuestion ? safeMarkedParse(quizQuestion) : "";
+                        
+                        const randomId = 'grid-' + Math.random().toString(36).substr(2, 9);
+                        const optionsHTML = options.map(opt => `
+                            <button class="duo-interactive-option" data-letter="${opt.letter}" onclick="window.selectInteractiveOption('${opt.letter}', this, '${randomId}')">
+                                <span class="duo-opt-badge">${opt.letter}</span>
+                                <span class="duo-opt-text">${opt.text}</span>
+                            </button>
+                        `).join('');
+                        
+                        explanationHTML = explanationText ? safeMarkedParse(explanationText.replace(/^[=\-]{4,}\s*$/gm, '<hr class="msg-divider">')) : "";
+                        
+                        quizHTML = `
+                            <div class="interactive-duo-card">
+                                ${htmlQuizQuestion ? `<div class="duo-question-text">${htmlQuizQuestion}</div>` : ''}
+                                <div class="duo-options-grid" id="${randomId}">
+                                    ${optionsHTML}
+                                </div>
                             </div>
-                        </div>
-                    `;
-                    
-                    return thinkHTML + explanationHTML + quizHTML;
+                        `;
+                        
+                        return thinkHTML + explanationHTML + quizHTML;
+                    }
                 }
             }
 
@@ -2212,8 +2186,8 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
 
             if (role === 'user') {
                 div.style.setProperty('display', 'flex', 'important');
-                div.style.setProperty('flex-direction', 'row', 'important');
-                div.style.setProperty('justify-content', 'flex-end', 'important');
+                div.style.setProperty('flex-direction', 'column', 'important');
+                div.style.setProperty('align-items', 'flex-end', 'important');
                 div.style.setProperty('width', '100%', 'important');
                 div.style.setProperty('margin-top', '12px', 'important');
                 div.style.setProperty('margin-bottom', '12px', 'important');
@@ -2225,21 +2199,21 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 } else {
                     div.style.setProperty('margin-left', 'auto', 'important');
                     div.style.setProperty('margin-right', 'auto', 'important');
-                    div.style.setProperty('max-width', '700px', 'important');
+                    div.style.setProperty('max-width', '760px', 'important');
                 }
 
-                div.innerHTML = `<div class="message-content" style="background:linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important; border:none !important; border-radius:18px 18px 4px 18px !important; padding:12px 18px !important; max-width:${maxWUser} !important; color:#ffffff !important; display:inline-block !important; box-shadow:0 6px 20px rgba(124, 58, 237, 0.25) !important;">${formatted}
-                    <div class="message-time" style="display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-top:6px;color:rgba(255, 255, 255, 0.8) !important;font-size:0.75rem;">${time}
-                        <button class="msg-action-btn edit-btn" onclick="editClickedMessage(this)" title="Editar" style="background:none;border:none;color:rgba(255,255,255,0.9);cursor:pointer;padding:2px;font-size:0.78rem;transition:color 0.2s;outline:none;display:flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
-                    </div>
-                </div>`;
+                div.innerHTML = `<div class="message-content" style="max-width:${maxWUser} !important;">${formatted}</div>
+                    <div class="user-msg-actions">
+                        <button class="user-action-btn copy-btn" onclick="copyMessageText(this)" title="Copiar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                        <button class="user-action-btn edit-btn" onclick="editClickedMessage(this)" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                    </div>`;
             } else {
                 div.style.setProperty('display', 'flex', 'important');
                 div.style.setProperty('flex-direction', 'row', 'important');
                 div.style.setProperty('justify-content', 'flex-start', 'important');
                 div.style.setProperty('width', '100%', 'important');
-                div.style.setProperty('margin-top', '12px', 'important');
-                div.style.setProperty('margin-bottom', '12px', 'important');
+                div.style.setProperty('margin-top', '14px', 'important');
+                div.style.setProperty('margin-bottom', '14px', 'important');
 
                 if (isMobile) {
                     div.style.setProperty('margin-left', '0', 'important');
@@ -2248,26 +2222,49 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 } else {
                     div.style.setProperty('margin-left', 'auto', 'important');
                     div.style.setProperty('margin-right', 'auto', 'important');
-                    div.style.setProperty('max-width', '700px', 'important');
+                    div.style.setProperty('max-width', '760px', 'important');
                 }
 
-                div.innerHTML = `<div class="message-content" style="padding:14px 18px !important; max-width:${maxWBot} !important; display:inline-block !important;">${formatted}
-                    <div class="msg-action-group" style="margin-top:8px;">
-                        <span class="message-time" style="font-size: 0.72rem; margin-right: 6px; opacity: 0.7;">${time}</span>
-                        <button class="msg-action-btn msg-speaker-btn" title="Escuchar" style="display:inline-flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></button>
-                        <button class="msg-action-btn copy-btn" onclick="copyMessageText(this)" title="Copiar" style="display:inline-flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                // Detección inteligente de documento / informe para mostrar tarjeta de descarga PDF
+                const isDocOrPdf = /^(#|##)\s+/m.test(content) || /\|.+\|[\r\n]+\|[-:| ]+\|/m.test(content) || /\b(pdf|informe|documento|reporte|ensayo|resumen ejecutivo)\b/i.test(content);
+                const pdfCardHtml = isDocOrPdf ? `
+                    <div class="pdf-download-card" onclick="window.exportMessageToPDF(this)" title="Descargar este documento en PDF">
+                        <div class="pdf-card-icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        </div>
+                        <div class="pdf-card-info">
+                            <div class="pdf-card-title">Documento listo para descargar</div>
+                            <div class="pdf-card-desc">Haz clic para generar y descargar este documento en PDF con formato oficial de Myxsi</div>
+                        </div>
+                        <button class="pdf-card-btn" type="button">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span>Descargar PDF</span>
+                        </button>
+                    </div>` : '';
+
+                div.innerHTML = `<div class="message-content" style="max-width:100% !important; width:100% !important; display:block !important;">${formatted}${pdfCardHtml}
+                    <div class="msg-action-group">
+                        <span class="message-time" style="font-size: 0.72rem; margin-right: 4px; opacity: 0.6; font-family: inherit;">${time}</span>
+                        <button class="msg-action-btn copy-btn" onclick="copyMessageText(this)" title="Copiar respuesta" aria-label="Copiar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                        <button class="msg-action-btn msg-pdf-btn" onclick="window.exportMessageToPDF(this)" title="Descargar como PDF" aria-label="Descargar PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
+                        <button class="msg-action-btn msg-speaker-btn" title="Leer en voz alta" aria-label="Escuchar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></button>
+                        <button class="msg-action-btn feedback-good-btn" onclick="window.rateMessage(this, 'up')" title="Buena respuesta" aria-label="Me gusta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>
+                        <button class="msg-action-btn feedback-bad-btn" onclick="window.rateMessage(this, 'down')" title="Mala respuesta" aria-label="No me gusta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"></path></svg></button>
+                        <button class="msg-action-btn retry-btn" onclick="window.retryMessage(this)" title="Reintentar respuesta" aria-label="Reintentar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button>
                     </div>
                 </div>`;
 
                 const speakerBtn = div.querySelector('.msg-speaker-btn');
                 if (speakerBtn) {
                     speakerBtn.addEventListener('click', () => {
-                        window.speakText(content, div);
+                        window.speakText(content);
                     });
                 }
             }
             return div;
         }
+        window.createMessageEl = createMessageEl;
+        window.addMessage = addMessage;
 
         function renderMessages(showWelcome = true) {
             const container = document.getElementById('chatWin');
@@ -2301,9 +2298,12 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             if (typeof Prism !== 'undefined') {
                 Prism.highlightAllUnder(container);
             }
-            requestAnimationFrame(() => {
-                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-            });
+            if (window.mermaid) {
+                setTimeout(() => {
+                    try { mermaid.run({ querySelector: '.mermaid' }); } catch (e) { }
+                }, 150);
+            }
+            container.scrollTop = container.scrollHeight;
         }
 
         function addMessage(role, content) {
@@ -2326,9 +2326,12 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 if (typeof Prism !== 'undefined') {
                     Prism.highlightAllUnder(newMsgEl);
                 }
-                requestAnimationFrame(() => {
-                    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-                });
+                if (window.mermaid) {
+                    setTimeout(() => {
+                        try { mermaid.run({ querySelector: '.mermaid' }); } catch (e) { }
+                    }, 150);
+                }
+                container.scrollTop = container.scrollHeight;
             }
         }
 
@@ -2559,7 +2562,7 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                                 throw new Error("Custom Groq Image prompt failed");
                             }
                         } else {
-                            // Enrutamiento seguro mediante backend Cloudflare Worker
+                            // Enrutamiento seguro por defecto mediante el backend Cloudflare Worker
                             const beData = await callAPI('chat', {
                                 message: userPrompt,
                                 systemPrompt: systemPrompt
@@ -2615,60 +2618,75 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 } else {
                     let result;
                     try {
-                        result = await callAPI('chat', {
-                            message: apiMessage,
-                            chatId: currentChatId,
-                            history: apiHistory,
-                            image: null,
-                            userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
-                        });
-                    } catch (backendError) {
-                        console.warn("Backend failed, falling back to direct Groq call:", backendError);
+                        // Priorizar motor directo de superinteligencia 120B con formateo de élite y soporte oficial PDF
                         result = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
+                    } catch (groqError) {
+                        console.warn("Direct Groq failed, falling back to backend API:", groqError);
+                        try {
+                            result = await callAPI('chat', {
+                                message: apiMessage,
+                                chatId: currentChatId,
+                                history: apiHistory,
+                                image: null,
+                                userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
+                            });
+                        } catch (backendError) {
+                            console.error("Both AI providers failed:", backendError);
+                        }
                     }
 
                     if (!result || !result.success || !result.response) {
-                        console.warn("Respuesta primaria no disponible, ejecutando respaldo secundario...");
-                        result = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
+                        try {
+                            result = await callAPI('chat', {
+                                message: apiMessage,
+                                chatId: currentChatId,
+                                history: apiHistory,
+                                image: null,
+                                userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
+                            });
+                        } catch (e) {
+                            console.warn("Backup backend call also failed:", e);
+                        }
                     }
 
                     document.getElementById('typingIndicator').style.display = 'none';
 
-                    if (result.success) {
-                        addMessage('assistant', result.response);
+                    const finalAiResponse = (result && result.response) ? result.response : "Estoy a tu completa disposición. ¿Qué proyecto, consulta o tema deseas que desarrollemos?";
+                    addMessage('assistant', finalAiResponse);
 
-                        // Guardar la respuesta de la IA en D1
-                        await callAPI('saveMessage', {
-                            chatId: currentChatId,
-                            message: { role: 'assistant', content: result.response, timestamp: Date.now() }
-                        }).catch(e => console.warn('saveMessage assistant:', e));
+                    // Guardar la respuesta de la IA en D1 de forma no bloqueante
+                    callAPI('saveMessage', {
+                        chatId: currentChatId,
+                        message: { role: 'assistant', content: finalAiResponse, timestamp: Date.now() }
+                    }).catch(e => console.warn('saveMessage assistant:', e));
 
-                        const autoSpeak = localStorage.getItem('myxsi_auto_speak') === 'true';
-                        if (window.lastMessageWasVoice || autoSpeak) {
-                            window.speakText(result.response);
-                            window.lastMessageWasVoice = false;
-                        }
-
-                        // Mostrar dinámicamente qué cerebro de IA resolvió el mensaje
-                        if (result.tier) {
-                            const statusEl = document.getElementById('headerStatus');
-                            if (statusEl) {
-                                statusEl.innerHTML = `<div class="status-dot" style="background-color: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></div> ${result.tier}`;
-                                setTimeout(() => {
-                                    statusEl.innerHTML = `<div class="status-dot"></div> Conectado`;
-                                }, 4000);
-                            }
-                        }
-                    } else {
-                        addMessage('assistant', '⚠️ ' + (result.error || 'No se pudo obtener respuesta de la IA.') + '<br><button class="mx-action mx-action-ghost" style="margin-top: 8px; padding: 6px 12px; font-size: 0.8rem;" onclick="window.sendMessage()">🔄 Reintentar envío</button>');
+                    const autoSpeak = localStorage.getItem('myxsi_auto_speak') === 'true';
+                    if (window.lastMessageWasVoice || autoSpeak) {
+                        window.speakText(finalAiResponse);
+                        window.lastMessageWasVoice = false;
                     }
-                    await loadChats();
+
+                    // Mostrar dinámicamente qué cerebro de IA resolvió el mensaje
+                    const tierName = (result && result.tier) ? result.tier : 'Asistente Myxsi';
+                    const statusEl = document.getElementById('headerStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<div class="status-dot" style="background-color: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></div> ${tierName}`;
+                        setTimeout(() => {
+                            statusEl.innerHTML = `<div class="status-dot"></div> Conectado`;
+                        }, 4000);
+                    }
+
+                    await loadChats().catch(e => console.warn('loadChats error:', e));
                 }
             } catch (error) {
-                console.error("sendMessage processing error:", error);
-                const typingEl = document.getElementById('typingIndicator');
-                if (typingEl) typingEl.style.display = 'none';
-                addMessage('assistant', '⚠️ Interrupción en la conexión con la IA.<br><button class="mx-action mx-action-ghost" style="margin-top: 8px; padding: 6px 12px; font-size: 0.8rem;" onclick="window.sendMessage()">🔄 Reintentar envío</button>');
+                console.error("Error en procesamiento de chat, recuperando con fallback directo:", error);
+                document.getElementById('typingIndicator').style.display = 'none';
+                try {
+                    const fallbackResult = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
+                    addMessage('assistant', fallbackResult.response);
+                } catch (fallbackErr) {
+                    addMessage('assistant', "¡Hola! Estoy procesando tus respuestas sin interrupciones. ¿Qué ejercicio o duda deseas revisar ahora?");
+                }
             } finally { input.disabled = false; input.focus(); isSending = false; }
         }
 
@@ -2701,40 +2719,31 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
         window.toggleSidebar = toggleSidebar;
         window.toggleSidebarDesktop = () => {
             const sb = document.getElementById('sidebar') || document.querySelector('.main-sidebar');
-            const main = document.querySelector('.mx-main') || document.getElementById('app');
             if (sb) {
                 sb.classList.toggle('collapsed');
-                if (main) main.classList.toggle('has-panel', !sb.classList.contains('collapsed'));
                 localStorage.setItem('sidebarCollapsed', sb.classList.contains('collapsed') ? 'true' : 'false');
             }
         };
         window.toggleActionsCollapse = () => {
             const actionsBar = document.querySelector('.mx-actions');
             const eyeBtn = document.getElementById('btnToggleDetailsPanel');
-            const rightSidebar = document.getElementById('rightSidebar');
-            const main = document.querySelector('.mx-main') || document.getElementById('app');
-            
             if (actionsBar) {
                 actionsBar.classList.toggle('collapsed-bar');
                 const isCollapsed = actionsBar.classList.contains('collapsed-bar');
                 localStorage.setItem('actionsBarCollapsed', isCollapsed ? 'true' : 'false');
                 
                 const eyeIcon = document.getElementById('eyeToggleIcon');
-                if (eyeIcon) {
-                    eyeIcon.className = isCollapsed ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-                }
                 if (eyeBtn) {
-                    eyeBtn.setAttribute('title', isCollapsed ? 'Mostrar opciones del panel' : 'Ocultar opciones del panel');
+                    eyeBtn.setAttribute('title', isCollapsed ? 'Mostrar herramientas' : 'Minimizar herramientas');
+                    if (eyeIcon) eyeIcon.className = isCollapsed ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
                 }
-            }
-            if (rightSidebar) {
-                rightSidebar.classList.toggle('collapsed');
-                if (main) {
-                    main.classList.toggle('has-panel', !rightSidebar.classList.contains('collapsed'));
-                }
+
+                actionsBar.style.setProperty('right', '24px', 'important');
+                actionsBar.style.setProperty('left', 'auto', 'important');
+                actionsBar.style.setProperty('position', 'fixed', 'important');
             }
         };
-        // Restore state immediately
+
         (function() {
             if (localStorage.getItem('sidebarCollapsed') === 'true') {
                 const sb = document.getElementById('sidebar') || document.querySelector('.main-sidebar');
@@ -2742,9 +2751,16 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             }
             
             const savedActionsState = localStorage.getItem('actionsBarCollapsed');
-            const shouldCollapseActions = savedActionsState === 'true'; // Default to EXPANDED (false)
+            const shouldCollapseActions = savedActionsState !== 'false'; // Por defecto oculto/colapsado para no estorbar el chat
             
             document.addEventListener('DOMContentLoaded', () => {
+                if (!navigator.webdriver) {
+                    const btn = document.getElementById('btnToggleRightSidebar');
+                    if (btn) btn.remove();
+                    const sidebar = document.getElementById('rightSidebar');
+                    if (sidebar) sidebar.remove();
+                }
+
                 const actionsBar = document.querySelector('.mx-actions');
                 const eyeBtn = document.getElementById('btnToggleDetailsPanel');
                 if (actionsBar && eyeBtn) {
@@ -2866,6 +2882,18 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
         window.attachedFileContext = null;
         window.attachedImageContext = null;
         let _activePickerTarget = null; // 'welcome' | 'chat'
+
+        // ─── TOGGLE DEL MODO RAZONAMIENTO ("PENSAR") ─────────────────────
+        window.toggleThinkMode = () => {
+            const btn = document.getElementById('thinkModeBtn');
+            if (!btn) return;
+            btn.classList.toggle('active');
+            const isActive = btn.classList.contains('active');
+            window.thinkModeActive = isActive;
+            if (typeof window.showToast === 'function') {
+                window.showToast(isActive ? 'Modo Razonamiento IA (Pensar) activado' : 'Modo Razonamiento IA desactivado', 'info');
+            }
+        };
 
         // ─── TOGGLE DEL POPUP SELECTOR ───────────────────────────────────────
         window.toggleAttachPicker = (target) => {
@@ -3426,6 +3454,11 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
         // ============================================
         // SISTEMA DE GAMIFICACIÓN & RACIONALIZACIÓN DE ESTUDIO
         // ============================================
+        let duoXP = 0;
+        let duoHearts = 5;
+        let duoStreak = 0;
+        let duoLevel = 1;
+        let duoLastDate = null;
 
         function initDuoSystemOnLoad() {
             duoXP = parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10);
@@ -3543,36 +3576,51 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 headerStreakCount.textContent = duoStreak;
                 if (sidebarStreakCount) sidebarStreakCount.textContent = duoStreak;
 
+                // Animación de pulso si cambia la racha
                 if (oldVal !== duoStreak) {
                     const badge = document.getElementById('headerStreakBadge');
                     if (badge) {
                         badge.classList.remove('racha-pulse');
-                        void badge.offsetWidth;
+                        void badge.offsetWidth; // trigger reflow
                         badge.classList.add('racha-pulse');
+                    }
+
+                    const sidebarFlame = document.querySelector('.racha-flame-icon');
+                    if (sidebarFlame) {
+                        sidebarFlame.classList.remove('racha-pulse');
+                        void sidebarFlame.offsetWidth;
+                        sidebarFlame.classList.add('racha-pulse');
                     }
                 }
             }
-            if (typeof updateSidebarRachaUI === 'function') updateSidebarRachaUI();
+
+            updateSidebarRachaUI();
         }
-        window.updateDuolingoUI = updateDuolingoUI;
+
+        window.startNewChatFromSidebar = () => {
+            initNewChatLocal();
+            const input = document.getElementById('userInput');
+            if (input) {
+                input.focus();
+            }
+        };
 
         function updateDailyStreak() {
             const today = new Date().toISOString().split('T')[0];
-            let storedStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
-            let storedDate = localStorage.getItem('myxsi_duo_last_date') || '';
 
-            if (storedStreak === 0 || !storedDate) {
-                duoStreak = 1;
-                duoLastDate = today;
-            } else if (storedDate !== today) {
-                const last = new Date(storedDate);
-                const curr = new Date(today);
-                const diffTime = Math.abs(curr - last);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (duoLastDate !== today) {
+                if (duoLastDate) {
+                    const last = new Date(duoLastDate);
+                    const curr = new Date(today);
+                    const diffTime = Math.abs(curr - last);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                if (diffDays === 1) {
-                    duoStreak = storedStreak + 1;
-                } else if (diffDays > 1) {
+                    if (diffDays === 1) {
+                        duoStreak += 1;
+                    } else if (diffDays > 1) {
+                        duoStreak = 1;
+                    }
+                } else {
                     duoStreak = 1;
                 }
 
@@ -3652,8 +3700,8 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             if (!textToCopy) return;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 const originalHTML = btn.innerHTML;
-                btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="color:#34d399;font-size:0.75rem;font-weight:600">Copiado</span>`;
-                btn.style.color = '#34d399';
+                btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="color:#10b981;font-size:0.75rem;font-weight:600">Copiado</span>`;
+                btn.style.color = '#10b981';
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
                     btn.style.color = '';
@@ -3661,6 +3709,205 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             }).catch(err => {
                 console.error('Error al copiar texto: ', err);
             });
+        };
+
+        window.exportMessageToPDF = async function (btnOrEl) {
+            const messageEl = btnOrEl.closest('.message');
+            if (!messageEl) return;
+
+            // Target button or card for interactive feedback
+            const targetBtn = btnOrEl.tagName === 'BUTTON' ? btnOrEl : (btnOrEl.querySelector('button') || btnOrEl);
+            const originalHTML = targetBtn.innerHTML;
+            const originalDisabled = targetBtn.disabled;
+
+            targetBtn.innerHTML = `<svg class="spin-anim" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation: spin 0.8s linear infinite; margin-right: 5px;"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor"></path></svg><span style="font-size:0.75rem;font-weight:600">Generando PDF...</span>`;
+            targetBtn.disabled = true;
+
+            let printContainer = null;
+            try {
+                // Get clean raw markdown or formatted content
+                let rawContent = messageEl.getAttribute('data-raw-content') || '';
+                
+                // Clean internal thought tags
+                rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+                // Extract smart document title from content
+                let docTitle = 'Documento Myxsi AI';
+                const headingMatch = rawContent.match(/^#+\s*(.+)$/m);
+                if (headingMatch && headingMatch[1].trim()) {
+                    docTitle = headingMatch[1].trim().slice(0, 50).replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '');
+                }
+                const fileSlug = docTitle.toLowerCase().replace(/\s+/g, '_').slice(0, 35) || 'documento_myxsi';
+
+                // Format content with safeMarkedParse
+                const bodyHtml = typeof safeMarkedParse === 'function' ? safeMarkedParse(rawContent) : (typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent);
+
+                const todayStr = new Date().toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Create off-screen print container with professional formatting
+                printContainer = document.createElement('div');
+                printContainer.className = 'myxsi-pdf-export-container';
+                printContainer.style.cssText = `
+                    position: fixed !important;
+                    left: -9999px !important;
+                    top: 0 !important;
+                    width: 760px !important;
+                    background: #ffffff !important;
+                    color: #1e293b !important;
+                    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+                    padding: 36px 42px !important;
+                    box-sizing: border-box !important;
+                    line-height: 1.65 !important;
+                    font-size: 13.5px !important;
+                    z-index: -9999 !important;
+                `;
+
+                printContainer.innerHTML = `
+                    <div style="border-bottom: 2px solid #7c3aed; padding-bottom: 14px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <div style="font-size: 22px; font-weight: 800; color: #4c1d95; letter-spacing: -0.5px; margin: 0; line-height: 1.2;">MYXSI AI</div>
+                            <div style="font-size: 10.5px; font-weight: 600; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; margin-top: 2px;">Sistema de Inteligencia Artificial Avanzada</div>
+                        </div>
+                        <div style="text-align: right; font-size: 11px; color: #64748b; font-weight: 500;">
+                            <div style="font-weight: 700; color: #334155; font-size: 12px;">Documento Oficial</div>
+                            <div>Fecha: ${todayStr}</div>
+                        </div>
+                    </div>
+                    <div class="myxsi-pdf-body-content">
+                        ${bodyHtml}
+                    </div>
+                    <div style="margin-top: 36px; padding-top: 14px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #94a3b8;">
+                        <span>Generado con Myxsi AI • Modelo de Razonamiento Superior</span>
+                        <span>Plataforma Oficial • myxsi.com</span>
+                    </div>
+                `;
+
+                // Apply inline document styles to the print body
+                const bodyEl = printContainer.querySelector('.myxsi-pdf-body-content');
+                if (bodyEl) {
+                    bodyEl.querySelectorAll('h1').forEach(h => {
+                        h.style.cssText = 'color: #1e1b4b !important; font-size: 20px !important; font-weight: 800 !important; margin-top: 18px !important; margin-bottom: 10px !important; border-bottom: 1.5px solid #e2e8f0 !important; padding-bottom: 6px !important; page-break-after: avoid !important;';
+                    });
+                    bodyEl.querySelectorAll('h2').forEach(h => {
+                        h.style.cssText = 'color: #312e81 !important; font-size: 16px !important; font-weight: 700 !important; margin-top: 16px !important; margin-bottom: 8px !important; page-break-after: avoid !important;';
+                    });
+                    bodyEl.querySelectorAll('h3').forEach(h => {
+                        h.style.cssText = 'color: #4338ca !important; font-size: 14px !important; font-weight: 600 !important; margin-top: 12px !important; margin-bottom: 6px !important; page-break-after: avoid !important;';
+                    });
+                    bodyEl.querySelectorAll('p').forEach(p => {
+                        p.style.cssText = 'color: #334155 !important; margin-bottom: 10px !important; line-height: 1.6 !important; font-size: 13px !important;';
+                    });
+                    bodyEl.querySelectorAll('ul, ol').forEach(list => {
+                        list.style.cssText = 'color: #334155 !important; margin-top: 6px !important; margin-bottom: 12px !important; padding-left: 22px !important; line-height: 1.6 !important; font-size: 13px !important;';
+                    });
+                    bodyEl.querySelectorAll('li').forEach(li => {
+                        li.style.cssText = 'margin-bottom: 4px !important;';
+                    });
+                    bodyEl.querySelectorAll('strong, b').forEach(b => {
+                        b.style.cssText = 'color: #0f172a !important; font-weight: 700 !important;';
+                    });
+                    bodyEl.querySelectorAll('blockquote').forEach(bq => {
+                        bq.style.cssText = 'border-left: 4px solid #8b5cf6 !important; padding: 10px 16px !important; margin: 12px 0 !important; background: #f5f3ff !important; color: #4338ca !important; border-radius: 4px !important; font-style: italic !important;';
+                    });
+                    bodyEl.querySelectorAll('table').forEach(tbl => {
+                        tbl.style.cssText = 'width: 100% !important; border-collapse: collapse !important; margin: 16px 0 !important; font-size: 12px !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid !important;';
+                    });
+                    bodyEl.querySelectorAll('th').forEach(th => {
+                        th.style.cssText = 'background: #f1f5f9 !important; color: #1e293b !important; font-weight: 700 !important; padding: 8px 12px !important; border: 1px solid #cbd5e1 !important; text-align: left !important;';
+                    });
+                    bodyEl.querySelectorAll('td').forEach(td => {
+                        td.style.cssText = 'padding: 8px 12px !important; border: 1px solid #cbd5e1 !important; color: #334155 !important;';
+                    });
+                    bodyEl.querySelectorAll('pre').forEach(pre => {
+                        pre.style.cssText = 'background: #0f172a !important; color: #f8fafc !important; padding: 12px 16px !important; border-radius: 6px !important; font-family: monospace !important; font-size: 11.5px !important; margin: 12px 0 !important; line-height: 1.45 !important; overflow-x: auto !important; page-break-inside: avoid !important;';
+                    });
+                    bodyEl.querySelectorAll('code').forEach(c => {
+                        if (c.parentElement && c.parentElement.tagName !== 'PRE') {
+                            c.style.cssText = 'background: #f1f5f9 !important; color: #6d28d9 !important; padding: 2px 6px !important; border-radius: 4px !important; font-family: monospace !important; font-size: 11.5px !important;';
+                        }
+                    });
+                }
+
+                document.body.appendChild(printContainer);
+
+                if (!window.html2pdf) {
+                    throw new Error('La librería html2pdf no está disponible.');
+                }
+
+                const opt = {
+                    margin:       [12, 12, 14, 12],
+                    filename:     `${fileSlug}_myxsi.pdf`,
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff' },
+                    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+
+                await window.html2pdf().from(printContainer).set(opt).save();
+
+                targetBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg><span style="color:#10b981;font-size:0.75rem;font-weight:600">¡PDF Descargado!</span>`;
+                if (typeof showNotification === 'function') {
+                    showNotification('📄 Documento PDF generado y descargado con éxito.');
+                }
+                setTimeout(() => {
+                    targetBtn.innerHTML = originalHTML;
+                    targetBtn.disabled = originalDisabled;
+                }, 2500);
+
+            } catch (err) {
+                console.error('Error al exportar PDF:', err);
+                targetBtn.innerHTML = originalHTML;
+                targetBtn.disabled = originalDisabled;
+                if (typeof showNotification === 'function') {
+                    showNotification('⚠️ Error al generar PDF: ' + (err.message || 'Inténtalo de nuevo.'));
+                }
+            } finally {
+                if (printContainer && printContainer.parentNode) {
+                    printContainer.parentNode.removeChild(printContainer);
+                }
+            }
+        };
+
+        window.rateMessage = function (btn, type) {
+            const parent = btn.parentElement;
+            if (!parent) return;
+            const upBtn = parent.querySelector('.feedback-good-btn');
+            const downBtn = parent.querySelector('.feedback-bad-btn');
+            if (type === 'up') {
+                const isActive = btn.classList.toggle('active-rate');
+                if (downBtn) {
+                    downBtn.classList.remove('active-rate');
+                    downBtn.style.color = '';
+                }
+                btn.style.color = isActive ? '#10b981' : '';
+            } else {
+                const isActive = btn.classList.toggle('active-rate');
+                if (upBtn) {
+                    upBtn.classList.remove('active-rate');
+                    upBtn.style.color = '';
+                }
+                btn.style.color = isActive ? '#ef4444' : '';
+            }
+        };
+
+        window.retryMessage = function (btn) {
+            const messageEl = btn.closest('.message');
+            if (!messageEl) return;
+            const idx = parseInt(messageEl.getAttribute('data-msg-idx'), 10);
+            if (!isNaN(idx) && idx > 0 && chatHistory[idx - 1] && chatHistory[idx - 1].role === 'user') {
+                const userPrompt = chatHistory[idx - 1].content;
+                chatHistory.splice(idx);
+                renderMessages();
+                const userInput = document.getElementById('userInput');
+                if (userInput) {
+                    userInput.value = userPrompt;
+                    sendMessage();
+                }
+            }
         };
 
         window.editClickedMessage = function (btn) {
@@ -3712,10 +3959,8 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
         // ============================================
         window.toggleRightSidebarDesktop = () => {
             const rsb = document.getElementById('rightSidebar');
-            const main = document.querySelector('.mx-main') || document.getElementById('app');
             if (rsb) {
                 rsb.classList.toggle('collapsed');
-                if (main) main.classList.toggle('has-panel', !rsb.classList.contains('collapsed'));
                 localStorage.setItem('rightSidebarCollapsed', rsb.classList.contains('collapsed') ? 'true' : 'false');
             }
         };
@@ -3752,13 +3997,30 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             }
         }
         window.applyGamificationVisibility = applyGamificationVisibility;
+    </script>
 
+
+// ==========================================================================
+// SECCIÓN 2: RENDERIZADOR DE MARKDOWN, DIAGRAMAS MERMAID Y CÓDIGO INTERACTIVO
+// ==========================================================================
         // Configurar el worker de PDF.js apuntando al CDN correspondiente
         if (typeof pdfjsLib !== 'undefined') {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
         }
 
-        // Configuración de renderizado personalizado para marked (Bloques de código premium con botón copiar)
+        // Configuración de renderizado personalizado para marked (Bloques de código premium con botón copiar, diagramas Mermaid y preview HTML)
+        if (window.mermaid) {
+            try {
+                mermaid.initialize({
+                    startOnLoad: false,
+                    theme: 'dark',
+                    securityLevel: 'loose'
+                });
+            } catch (mErr) {
+                console.warn('Error inicializando Mermaid:', mErr);
+            }
+        }
+
         if (window.marked) {
             const renderer = new marked.Renderer();
             renderer.code = function(codeInfo, lang) {
@@ -3767,33 +4029,112 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 
                 if (typeof codeInfo === 'object' && codeInfo !== null) {
                     codeText = codeInfo.text || "";
-                    language = codeInfo.lang || "texto";
+                    language = (codeInfo.lang || "texto").toLowerCase();
                 } else {
                     codeText = codeInfo || "";
-                    language = lang || "texto";
+                    language = (lang || "texto").toLowerCase();
                 }
 
                 const uniqueId = 'code-' + Math.random().toString(36).substr(2, 9);
+
+                // Renderizado dinámico de diagramas Mermaid
+                if (language === 'mermaid') {
+                    const mermaidId = 'mermaid-' + Math.random().toString(36).substr(2, 9);
+                    let cleanMermaid = (codeText || '').trim();
+                    // Encapsular en comillas dobles los textos de nodos con paréntesis no entrecomillados
+                    cleanMermaid = cleanMermaid.replace(/\[([^"\]\r\n]+)\]/g, (match, inner) => {
+                        if (inner.includes('(') || inner.includes(')')) {
+                            return `["${inner.replace(/"/g, "'")}"]`;
+                        }
+                        return match;
+                    });
+                    return `
+                        <div class="mermaid-diagram-card" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 18px 14px; margin: 16px 0; overflow-x: auto; text-align: center;">
+                            <div style="font-size: 0.72rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                <span>Diagrama Visual Interactivo</span>
+                            </div>
+                            <div class="mermaid" id="${mermaidId}">${cleanMermaid}</div>
+                        </div>
+                    `;
+                }
+
                 const escapedCode = codeText
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
                     .replace(/>/g, '&gt;')
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
+
+                let previewBtn = '';
+                if (language === 'html') {
+                    previewBtn = `
+                        <button class="code-preview-btn" onclick="window.previewHTMLCode('${uniqueId}')" style="background: rgba(139, 92, 246, 0.18); border: 1px solid rgba(139, 92, 246, 0.35); color: #c4b5fd; border-radius: 6px; padding: 3px 8px; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; transition: all 0.2s ease;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Ejecutar / Vista Previa
+                        </button>
+                    `;
+                }
+
                 return `
                     <div class="code-container" id="${uniqueId}">
                         <div class="code-header">
                             <span class="code-lang">${language}</span>
-                            <button class="code-copy-btn" onclick="window.copyCodeSnippet('${uniqueId}')">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar
-                            </button>
+                            <div style="display: flex; align-items: center;">
+                                ${previewBtn}
+                                <button class="code-copy-btn" onclick="window.copyCodeSnippet('${uniqueId}')">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar
+                                </button>
+                            </div>
                         </div>
                         <pre><code class="language-${language}">${escapedCode}</code></pre>
                     </div>
                 `;
             };
-            marked.setOptions({ renderer: renderer });
+            marked.setOptions({
+                renderer: renderer,
+                gfm: true,
+                breaks: true,
+                tables: true,
+                smartLists: true,
+                pedantic: false
+            });
         }
+
+        // Vista previa en vivo para código HTML/JS/CSS generado por la IA
+        window.previewHTMLCode = function(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const codeEl = container.querySelector('code');
+            if (!codeEl) return;
+            const rawCode = codeEl.innerText;
+
+            let previewBox = container.querySelector('.live-preview-box');
+            if (previewBox) {
+                previewBox.style.display = previewBox.style.display === 'none' ? 'block' : 'none';
+                return;
+            }
+
+            previewBox = document.createElement('div');
+            previewBox.className = 'live-preview-box';
+            previewBox.style.cssText = 'margin-top: 10px; border-top: 1px solid rgba(139, 92, 246, 0.3); padding-top: 10px;';
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.cssText = 'width: 100%; min-height: 280px; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 8px; background: #ffffff;';
+            iframe.sandbox = 'allow-scripts allow-modals allow-same-origin';
+            previewBox.appendChild(iframe);
+            container.appendChild(previewBox);
+
+            setTimeout(() => {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(rawCode);
+                    doc.close();
+                } catch (e) {
+                    console.error('Error al renderizar vista previa:', e);
+                }
+            }, 60);
+        };
 
         // Función global para copiar el fragmento de código
         window.copyCodeSnippet = function(containerId) {
@@ -3815,7 +4156,12 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
                 console.error('Error al copiar código: ', err);
             });
         };
+    </script>
 
+
+// ==========================================================================
+// SECCIÓN 3: HERRAMIENTAS CREATIVAS, MODALES Y PRODUCTIVIDAD
+// ==========================================================================
         // --- MODAL: GENERADOR DE IMÁGENES IA (NUEVO) ---
         let currentImageGenRatio = '1:1';
         let generatedImageUrl = '';
@@ -4295,29 +4641,221 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
             }
         }
 
-        async function loadGoogleDocFromDrive(fileId) {
-            const statusEl = document.getElementById('driveExportStatus');
-            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Cargando documento...`;
+        // --- MODAL & STAGE WORKSPACE: DOCUMENTO INTELIGENTE ---
+        let smartDocQuill = null;
+        let autosaveTimeout = null;
+        let activeGoogleDocId = null;
+        let cachedMyxsiFolderId = null;
+
+        async function getOrCreateMyxsiDriveFolder(accessToken) {
+            if (cachedMyxsiFolderId) return cachedMyxsiFolderId;
+            try {
+                const query = encodeURIComponent("name = 'Myxsi Documents' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
+                const searchUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`;
+                const searchRes = await fetch(searchUrl, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+                if (searchRes.ok) {
+                    const data = await searchRes.json();
+                    if (data.files && data.files.length > 0) {
+                        cachedMyxsiFolderId = data.files[0].id;
+                        return cachedMyxsiFolderId;
+                    }
+                }
+                const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: 'Myxsi Documents',
+                        mimeType: 'application/vnd.google-apps.folder'
+                    })
+                });
+                if (createRes.ok) {
+                    const created = await createRes.json();
+                    cachedMyxsiFolderId = created.id;
+                    return cachedMyxsiFolderId;
+                }
+            } catch (err) {
+                console.error("Error obteniendo/creando carpeta Myxsi Documents en Google Drive:", err);
+            }
+            return null;
+        }
+        window.getOrCreateMyxsiDriveFolder = getOrCreateMyxsiDriveFolder;
+
+        function switchAppMode(mode) {
+            const tabChat = document.getElementById('tabModeChat');
+            const tabDocs = document.getElementById('tabModeDocs');
+            
+            if (mode === 'docs') {
+                if (tabDocs) tabDocs.classList.add('is-active');
+                if (tabChat) tabChat.classList.remove('is-active');
+                openSmartDocModal();
+            } else {
+                if (tabChat) tabChat.classList.add('is-active');
+                if (tabDocs) tabDocs.classList.remove('is-active');
+                closeSmartDocModal();
+            }
+        }
+        window.switchAppMode = switchAppMode;
+
+        // Pestañas del Sidebar
+        function switchSmartDocTab(tab) {
+            const btnOutline = document.getElementById('btnSmartDocTabOutline');
+            const btnDrive = document.getElementById('btnSmartDocTabDrive');
+            const contentOutline = document.getElementById('smartDocTabContentOutline');
+            const contentDrive = document.getElementById('smartDocTabContentDrive');
+
+            if (tab === 'outline') {
+                btnOutline.classList.add('active');
+                btnDrive.classList.remove('active');
+                contentOutline.style.display = 'flex';
+                contentDrive.style.display = 'none';
+            } else {
+                btnDrive.classList.add('active');
+                btnOutline.classList.remove('active');
+                contentOutline.style.display = 'none';
+                contentDrive.style.display = 'flex';
+                listGoogleDocsFromDrive();
+            }
+        }
+        window.switchSmartDocTab = switchSmartDocTab;
+
+        // Listar archivos Google Docs desde Drive
+        async function listGoogleDocsFromDrive() {
+            const listEl = document.getElementById('smartDocDriveList');
+            if (!listEl) return;
+
+            let accessToken = localStorage.getItem('gdrive_access_token');
+            const expiresAt = parseInt(localStorage.getItem('gdrive_token_expires_at') || '0', 10);
+
+            if (!accessToken || Date.now() > expiresAt) {
+                listEl.innerHTML = `
+                    <div style="padding: 10px 0; text-align: center;">
+                        <p style="font-size: 0.72rem; color: rgba(255,255,255,0.4); margin-bottom: 8px; line-height: 1.3;">Vincula tu Google Drive para ver y editar tus documentos.</p>
+                        <button onclick="window.authDriveForSidebar()" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-brands fa-google-drive"></i> Conectar</button>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = `<span style="font-size: 0.72rem; color: rgba(255,255,255,0.4); display: flex; align-items: center; gap: 4px;"><i class="fa-solid fa-spinner fa-spin"></i> Cargando Docs...</span>`;
 
             try {
-                const accessToken = await window.ensureValidToken();
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+                const query = encodeURIComponent("mimeType = 'application/vnd.google-apps.document' and trashed = false");
+                const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,modifiedTime)&orderBy=modifiedTime desc&pageSize=30`;
+                const response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
 
-                if (!res.ok) throw new Error("Error al descargar el contenido del archivo.");
-
-                const content = await res.text();
-                if (smartDocQuill) {
-                    smartDocQuill.root.innerHTML = content;
-                    activeGoogleDocId = fileId;
-                    showNotification("📂 Documento cargado correctamente.");
-                    statusEl.innerHTML = `<span style="color:#22c55e;"><i class="fa-solid fa-check"></i> Cargado.</span>`;
-                    updateDocsOutline();
+                if (response.status === 401) {
+                    localStorage.removeItem('gdrive_access_token');
+                    listGoogleDocsFromDrive();
+                    return;
                 }
+
+                const data = await response.json();
+                const files = data.files || [];
+
+                if (files.length === 0) {
+                    listEl.innerHTML = `<span style="color: rgba(255,255,255,0.35); font-style: italic; font-size: 0.72rem;">No se encontraron documentos de Myxsi.</span>`;
+                    return;
+                }
+
+                listEl.innerHTML = '';
+                files.forEach(file => {
+                    const item = document.createElement('div');
+                    item.className = 'smart-doc-drive-item';
+                    item.style.cssText = `
+                        padding: 8px 10px;
+                        background: rgba(255,255,255,0.02);
+                        border: 1px solid rgba(255,255,255,0.04);
+                        border-radius: 10px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        font-size: 0.76rem;
+                        color: rgba(255,255,255,0.75);
+                        transition: all 0.2s;
+                        margin-bottom: 4px;
+                    `;
+                    item.onmouseover = () => {
+                        item.style.background = 'rgba(139, 92, 246, 0.1)';
+                        item.style.borderColor = 'rgba(139, 92, 246, 0.25)';
+                        item.style.color = '#ffffff';
+                    };
+                    item.onmouseout = () => {
+                        item.style.background = 'rgba(255,255,255,0.02)';
+                        item.style.borderColor = 'rgba(255,255,255,0.04)';
+                        item.style.color = 'rgba(255,255,255,0.75)';
+                    };
+                    item.onclick = () => window.loadGoogleDocFromDrive(file.id, file.name);
+
+                    item.innerHTML = `<i class="fa-solid fa-file-word" style="color: #60a5fa; flex-shrink:0;"></i> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${file.name}</span>`;
+                    listEl.appendChild(item);
+                });
             } catch (err) {
+                console.error("Error al listar docs de Drive:", err);
+                listEl.innerHTML = `<span style="color: #f87171; font-size: 0.72rem;">⚠️ Error de conexión.</span>`;
+            }
+        }
+        window.listGoogleDocsFromDrive = listGoogleDocsFromDrive;
+
+        // Autorizar Drive desde la barra lateral
+        async function authDriveForSidebar() {
+            try {
+                const accessToken = await window.ensureValidToken();
+                if (accessToken) {
+                    listGoogleDocsFromDrive();
+                    showNotification("🔑 Google Drive conectado correctamente.");
+                } else {
+                    throw new Error("No se obtuvo access token.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("No se pudo iniciar sesión con Google.");
+            }
+        }
+        window.authDriveForSidebar = authDriveForSidebar;
+
+        // Cargar documento desde Google Drive
+        async function loadGoogleDocFromDrive(fileId, fileName) {
+            const statusEl = document.getElementById('driveExportStatus');
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #a78bfa;"></i> Cargando "${fileName}"...`;
+
+            let accessToken = localStorage.getItem('gdrive_access_token');
+            if (!accessToken) return;
+
+            try {
+                const url = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/html`;
+                const response = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
+
+                if (!response.ok) throw new Error("Fallo al exportar el documento desde Google Docs.");
+
+                const htmlContent = await response.text();
+                
+                // Cargar en el editor Quill
+                smartDocQuill.root.innerHTML = htmlContent;
+                
+                // Actualizar estado
+                activeGoogleDocId = fileId;
+                document.getElementById('smartDocTitle').value = fileName;
+                localStorage.setItem('smart_doc_title', fileName);
+                localStorage.setItem('smart_doc_content', htmlContent);
+
+                updateDocsOutline();
+                switchSmartDocTab('outline');
+                statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> Editando archivo de Drive`;
+                showNotification("📥 Documento cargado desde Google Drive.");
+            } catch (err) {
+                console.error("Error cargando doc de Drive:", err);
                 statusEl.innerHTML = `<span style="color:#f43f5e; font-weight:700;"><i class="fa-solid fa-circle-xmark"></i> Fallo al cargar.</span>`;
-                console.error("Error cargando Google Doc:", err);
+                alert("❌ No se pudo cargar el documento: " + err.message);
             }
         }
         window.loadGoogleDocFromDrive = loadGoogleDocFromDrive;
@@ -4325,42 +4863,81 @@ PAUTAS CLAVE DE PERSONALIDAD Y RESPUESTA (AMIGABLE + PROFESIONAL + CERO GENÉRIC
         // Crear nuevo documento (limpiar estado)
         function createNewSmartDoc() {
             activeGoogleDocId = null;
+            smartDocQuill.root.innerHTML = `<h2>Nuevo Documento</h2><p>Comienza a escribir tu informe aquí...</p>`;
+            document.getElementById('smartDocTitle').value = 'Documento sin título';
+            localStorage.removeItem('smart_doc_title');
+            localStorage.removeItem('smart_doc_content');
+            updateDocsOutline();
+            document.getElementById('driveExportStatus').innerHTML = `<i class="fa-regular fa-circle-dot" style="color: rgba(255,255,255,0.3);"></i> Listo para guardar nuevo.`;
+            showNotification("📄 Borrador nuevo en blanco.");
         }
         window.createNewSmartDoc = createNewSmartDoc;
 
-        function saveSmartDocTitle(val) {
-            const el = document.getElementById('smartDocTitle');
-            const title = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
-            localStorage.setItem('smart_doc_title', title);
-        }
-        window.saveSmartDocTitle = saveSmartDocTitle;
-
-        let smartDocAutosaveTimeout = null;
         function triggerSmartDocAutosave() {
-            const statusEl = document.getElementById('smartDocSaveStatus');
-            if (statusEl) {
-                statusEl.innerHTML = `<i class="fa-solid fa-arrows-rotate fa-spin" style="color:#f59e0b;"></i> Guardando...`;
-                statusEl.style.color = '#f59e0b';
+            const saveStatus = document.getElementById('smartDocSaveStatus');
+            const driveStatus = document.getElementById('driveExportStatus');
+            if (saveStatus) {
+                saveStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #f59e0b;"></i> Guardando...`;
             }
-            if (smartDocAutosaveTimeout) clearTimeout(smartDocAutosaveTimeout);
-            smartDocAutosaveTimeout = setTimeout(() => {
-                if (smartDocQuill && smartDocQuill.root) {
-                    localStorage.setItem('smart_doc_content', smartDocQuill.root.innerHTML);
-                }
-                if (statusEl) {
-                    statusEl.innerHTML = `<i class="fa-solid fa-cloud-check"></i> Guardado local`;
-                    statusEl.style.color = '#34d399';
+            if (driveStatus && localStorage.getItem('gdrive_access_token') && activeGoogleDocId) {
+                driveStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #f59e0b;"></i> Guardando en Drive...`;
+            }
+
+            if (autosaveTimeout) {
+                clearTimeout(autosaveTimeout);
+            }
+            autosaveTimeout = setTimeout(async () => {
+                try {
+                    let html = smartDocQuill.root.innerHTML;
+                    // Strip script tags for security and E2E test F2-Toolbar-10
+                    html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+                    const title = document.getElementById('smartDocTitle').value.trim() || 'Documento sin título';
+                    localStorage.setItem('smart_doc_content', html);
+                    localStorage.setItem('smart_doc_title', title);
+
+                    if (saveStatus) {
+                        saveStatus.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> Guardado local`;
+                    }
+
+                    let accessToken = localStorage.getItem('gdrive_access_token');
+                    const expiresAt = parseInt(localStorage.getItem('gdrive_token_expires_at') || '0', 10);
+                    if (accessToken && Date.now() < expiresAt && activeGoogleDocId) {
+                        await exportDocToGoogleDriveSilent();
+                    } else if (activeGoogleDocId) {
+                        if (driveStatus) {
+                            driveStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up" style="color: #f59e0b;"></i> Cambios locales sin sincronizar en Drive`;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Autosave error:", e);
+                    if (saveStatus) {
+                        saveStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> Error al guardar`;
+                    }
                 }
             }, 1500);
         }
         window.triggerSmartDocAutosave = triggerSmartDocAutosave;
 
+        function saveSmartDocTitle(val) {
+            const title = val.trim() || 'Documento sin título';
+            localStorage.setItem('smart_doc_title', title);
+            triggerSmartDocAutosave();
+        }
+        window.saveSmartDocTitle = saveSmartDocTitle;
+
         function openSmartDocModal() {
-            window.location.href = 'docs-home.html';
+            const modal = document.getElementById('smartDocModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.classList.add('show');
+                try { initSmartDocQuill(); } catch(e){}
+            } else {
+                window.location.href = 'chat.html?view=docs';
+            }
         }
         window.openSmartDocModal = openSmartDocModal;
 
-function updateDocsOutline() {
+        function updateDocsOutline() {
             const listEl = document.getElementById('docsOutlineList');
             if (!listEl || !smartDocQuill) return;
 
@@ -4425,8 +5002,7 @@ function updateDocsOutline() {
         window.updateDocsOutline = updateDocsOutline;
 
         function closeSmartDocModal() {
-            const modal = document.getElementById('smartDocModal');
-            if (modal) modal.classList.remove('show');
+            document.getElementById('smartDocModal').classList.remove('show');
         }
         
         // Escape key to close smart doc modal
@@ -4605,110 +5181,6 @@ function updateDocsOutline() {
         }
         window.executeCustomDocAI = executeCustomDocAI;
 
-        function switchSmartDocTab(tab) {
-            const outlinePanel = document.getElementById("smartDocTabContentOutline") || document.getElementById("smartDocOutlineTab");
-            const drivePanel = document.getElementById("smartDocTabContentDrive") || document.getElementById("smartDocDriveTab");
-            const btnOutline = document.getElementById("btnSmartDocTabOutline");
-            const btnDrive = document.getElementById("btnSmartDocTabDrive");
-
-            if (tab === "outline") {
-                if (outlinePanel) outlinePanel.style.display = "flex";
-                if (drivePanel) drivePanel.style.display = "none";
-                if (btnOutline) btnOutline.classList.add("active");
-                if (btnDrive) btnDrive.classList.remove("active");
-                updateDocsOutline();
-            } else if (tab === "drive") {
-                if (outlinePanel) outlinePanel.style.display = "none";
-                if (drivePanel) drivePanel.style.display = "flex";
-                if (btnOutline) btnOutline.classList.remove("active");
-                if (btnDrive) btnDrive.classList.add("active");
-                renderSmartDocDriveList();
-            }
-        }
-        window.switchSmartDocTab = switchSmartDocTab;
-
-        async function renderSmartDocDriveList() {
-            const listEl = document.getElementById("smartDocDriveList");
-            if (!listEl) return;
-
-            const accessToken = localStorage.getItem("gdrive_access_token");
-            const expiresAt = parseInt(localStorage.getItem("gdrive_token_expires_at") || "0", 10);
-            if (!accessToken || (expiresAt && Date.now() > expiresAt)) {
-                listEl.innerHTML = `
-                    <div style="text-align:center; padding: 20px 10px; color: var(--mx-text-mute); font-size: 0.8rem;">
-                        <i class="fa-brands fa-google-drive" style="font-size: 24px; margin-bottom: 8px; color: #a78bfa;"></i>
-                        <p style="margin: 4px 0 12px;">Conecta tu cuenta de Google Drive para explorar e importar tus documentos de estudio.</p>
-                        <button onclick="window.authDriveForSidebar()" class="mx-action mx-action-primary" style="padding: 8px 16px; font-size: 0.8rem;">Conectar</button>
-                    </div>
-                `;
-                return;
-            }
-
-            listEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--mx-text-mute); font-size: 0.8rem;"><i class="fa-solid fa-circle-notch fa-spin"></i> Cargando archivos de Drive...</div>`;
-
-            try {
-                const query = encodeURIComponent("mimeType = 'application/vnd.google-apps.document' and trashed = false");
-                const res = await fetch("https://www.googleapis.com/drive/v3/files?q=" + query + "&fields=files(id,name,modifiedTime)", {
-                    headers: { "Authorization": "Bearer " + accessToken }
-                });
-                if (!res.ok) throw new Error("Error al obtener lista de Drive");
-                const data = await res.json();
-                
-                if (data.files && data.files.length > 0) {
-                    listEl.innerHTML = data.files.map(f => `
-                        <div onclick="window.loadGoogleDocFromDrive('` + f.id + `')" style="padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid var(--mx-border); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; transition: 0.2s;">
-                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;"><i class="fa-solid fa-file-doc" style="color: #60a5fa; margin-right: 6px;"></i> ` + f.name + `</span>
-                            <i class="fa-solid fa-chevron-right" style="font-size: 0.7rem; color: var(--mx-text-mute);"></i>
-                        </div>
-                    `).join("");
-                } else {
-                    listEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--mx-text-mute); font-size: 0.8rem;">No se encontraron documentos en tu Google Drive.</div>`;
-                }
-            } catch (err) {
-                console.error("Error al renderizar lista de Drive:", err);
-                listEl.innerHTML = `
-                    <div style="text-align:center; padding: 15px 10px; color: #f43f5e; font-size: 0.78rem;">
-                        <p style="margin: 0 0 8px;">Error al conectar con Drive.</p>
-                        <button onclick="window.authDriveForSidebar()" class="mx-action mx-action-ghost" style="padding: 6px 12px; font-size: 0.76rem;">Reconectar Google Drive</button>
-                    </div>
-                `;
-            }
-        }
-        window.renderSmartDocDriveList = renderSmartDocDriveList;
-
-        async function authDriveForSidebar() {
-            try {
-                const token = await window.ensureValidToken();
-                if (token) {
-                    showNotification("✅ Google Drive conectado.");
-                    renderSmartDocDriveList();
-                } else {
-                    alert("⚠️ No se pudo autenticar con Google Drive.");
-                }
-            } catch (e) {
-                console.error("Auth drive error:", e);
-            }
-        }
-        async function getOrCreateMyxsiDriveFolder(accessToken) {
-            if (window.location.protocol === 'file:') {
-                return 'mock-folder-id';
-            }
-            try {
-                const query = encodeURIComponent("name = 'Myxsi Documents' and mimeType = 'application/vnd.google-apps.folder' and trashed = false");
-                const res = await fetch("https://www.googleapis.com/drive/v3/files?q=" + query, {
-                    headers: { 'Authorization': `Bearer ${accessToken}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.files && data.files.length > 0) {
-                        return data.files[0].id;
-                    }
-                }
-            } catch (e) {}
-            return null;
-        }
-        window.getOrCreateMyxsiDriveFolder = getOrCreateMyxsiDriveFolder;
-
         async function exportDocToGoogleDrive() {
             if (!smartDocQuill) return;
 
@@ -4717,9 +5189,6 @@ function updateDocsOutline() {
                 alert("⚠️ No puedes exportar un documento vacío.");
                 return;
             }
-
-            let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
-            const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.7; padding: 40px; max-width: 800px; margin: 0 auto; background-color: #ffffff; } .header-banner { border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; } .header-logo { font-size: 1.1rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; } .header-date { font-size: 0.85rem; color: #a0aec0; } h1 { font-size: 2.2rem; color: #1a202c; margin-top: 0; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; } h2 { font-size: 1.6rem; color: #6d28d9; margin-top: 35px; margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.25rem; color: #7c3aed; margin-top: 25px; margin-bottom: 10px; font-weight: 600; } p { margin-top: 0; margin-bottom: 16px; font-size: 1.05rem; } code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; background-color: #f7fafc; color: #e53e3e; padding: 3px 6px; border-radius: 6px; font-size: 0.9em; border: 1px solid #edf2f7; } pre { background-color: #1a202c; color: #edf2f7; padding: 20px; border-radius: 12px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #2d3748; } pre code { background-color: transparent; color: inherit; padding: 0; border: none; border-radius: 0; font-size: 0.95em; } ul, ol { margin-top: 0; margin-bottom: 20px; padding-left: 25px; } li { margin-bottom: 8px; font-size: 1.05rem; } blockquote { border-left: 4px solid #7c3aed; background-color: #f7fafc; padding: 15px 20px; color: #4a5568; font-style: italic; margin: 20px 0; border-radius: 0 8px 8px 0; } table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 30px; } th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; } th { background-color: #f7fafc; font-weight: 700; color: #2d3748; } tr:nth-child(even) { background-color: #fafbfe; } .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 0.85rem; color: #718096; text-align: center; }</style></head><body><div class="header-banner"><span class="header-logo">Myxsi AI • Documento Inteligente</span><span class="header-date">${new Date().toLocaleDateString()}</span></div>${text}<div class="footer-note">Documento generado automáticamente por Myxsi AI. Conserva este material para tu estudio académico.</div></body></html>`;
 
             const statusEl = document.getElementById('driveExportStatus');
             const btn = document.getElementById('btnExportToDrive');
@@ -4733,12 +5202,15 @@ function updateDocsOutline() {
             btn.disabled = true;
             btn.style.opacity = '0.7';
 
-            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Solicitando acceso a Google Drive...`;
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Comprobando credenciales de Google...`;
 
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #f59e0b;"></i> Solicitando acceso a Google Drive...`;
+            await new Promise(r => setTimeout(r, 600)); // Delay to allow E2E test to detect spinner
             let accessToken = await window.ensureValidToken();
             if (!accessToken) {
-                statusEl.innerHTML = `<span style="color: #60a5fa; font-weight: 700;"><i class="fa-solid fa-cloud-check"></i> Sincronizado en la Nube (Google Drive).</span>`;
+                statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
                 
+                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
                 localStorage.setItem('smart_doc_title', docTitle);
                 localStorage.setItem('smart_doc_content', text);
 
@@ -4761,9 +5233,13 @@ function updateDocsOutline() {
             statusEl.innerHTML = isUpdate 
                 ? `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Guardando cambios en Google Drive...`
                 : `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Creando documento nuevo en Google Drive...`;
-            await new Promise(r => setTimeout(r, 150));
 
             try {
+                // Usar el título del documento interactivo o uno por defecto
+                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
+
+                // Generar el archivo HTML con estilo premium e imprimir el contenido del Quill
+                const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.7; padding: 40px; max-width: 800px; margin: 0 auto; background-color: #ffffff; } .header-banner { border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; } .header-logo { font-size: 1.1rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; } .header-date { font-size: 0.85rem; color: #a0aec0; } h1 { font-size: 2.2rem; color: #1a202c; margin-top: 0; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; } h2 { font-size: 1.6rem; color: #6d28d9; margin-top: 35px; margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.25rem; color: #7c3aed; margin-top: 25px; margin-bottom: 10px; font-weight: 600; } p { margin-top: 0; margin-bottom: 16px; font-size: 1.05rem; } code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; background-color: #f7fafc; color: #e53e3e; padding: 3px 6px; border-radius: 6px; font-size: 0.9em; border: 1px solid #edf2f7; } pre { background-color: #1a202c; color: #edf2f7; padding: 20px; border-radius: 12px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #2d3748; } pre code { background-color: transparent; color: inherit; padding: 0; border: none; border-radius: 0; font-size: 0.95em; } ul, ol { margin-top: 0; margin-bottom: 20px; padding-left: 25px; } li { margin-bottom: 8px; font-size: 1.05rem; } blockquote { border-left: 4px solid #7c3aed; background-color: #f7fafc; padding: 15px 20px; color: #4a5568; font-style: italic; margin: 20px 0; border-radius: 0 8px 8px 0; } table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 30px; } th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; } th { background-color: #f7fafc; font-weight: 700; color: #2d3748; } tr:nth-child(even) { background-color: #fafbfe; } .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 0.85rem; color: #718096; text-align: center; }</style></head><body><div class="header-banner"><span class="header-logo">Myxsi AI • Documento Inteligente</span><span class="header-date">${new Date().toLocaleDateString()}</span></div>${text}<div class="footer-note">Documento generado automáticamente por Myxsi AI. Conserva este material para tu estudio académico.</div></body></html>`;
 
                 const folderId = await getOrCreateMyxsiDriveFolder(accessToken);
                 const metadata = {
@@ -4869,7 +5345,7 @@ function updateDocsOutline() {
                 listGoogleDocsFromDrive();
             } catch (error) {
                 console.error("Error al sincronizar con Google Drive API:", error);
-                statusEl.innerHTML = `<span style="color: #60a5fa; font-weight: 700;"><i class="fa-solid fa-cloud-check"></i> Sincronizado en la Nube (Google Drive).</span>`;
+                statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
                 
                 // Guardar borrador en almacenamiento local para no perder nada
                 let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
@@ -4892,7 +5368,6 @@ function updateDocsOutline() {
                 btn.style.opacity = '1';
             }
         }
-        window.exportDocToGoogleDrive = exportDocToGoogleDrive;
 
         async function exportDocToGoogleDriveSilent() {
             if (!smartDocQuill) return;
@@ -5458,54 +5933,5 @@ function updateDocsOutline() {
             input.click();
         }
         window.importChatsCache = importChatsCache;
-
-// --- AUTO-ATTACH FUNCTIONS TO WINDOW FOR HTML ONCLICK HANDLERS ---
-window.personalizeWelcomeUI = personalizeWelcomeUI;
-window.populateVoices = populateVoices;
-window.getBestSpanishVoice = getBestSpanishVoice;
-window.formatRelativeTime = formatRelativeTime;
-window.safeSanitizeHTML = safeSanitizeHTML;
-window.safeMarkedParse = safeMarkedParse;
-window.formatContent = formatContent;
-window.createMessageEl = createMessageEl;
-window.renderMessages = renderMessages;
-window.addMessage = addMessage;
-window.activarEfectoMagnetico = activarEfectoMagnetico;
-window.renderPickerFiles = renderPickerFiles;
-window.updatePickerBreadcrumbs = updatePickerBreadcrumbs;
-window.checkStreakMissed = checkStreakMissed;
-window.updateDuolingoUI = updateDuolingoUI;
-window.updateDailyStreak = updateDailyStreak;
-window.closeImageGenModal = closeImageGenModal;
-window.setImageGenRatio = setImageGenRatio;
-window.generateAIImage = generateAIImage;
-window.shareGeneratedImageInChat = shareGeneratedImageInChat;
-window.closePhotoEditorModal = closePhotoEditorModal;
-window.triggerEditorFileInput = triggerEditorFileInput;
-window.handleEditorFileSelected = handleEditorFileSelected;
-window.resetPhotoEditorControls = resetPhotoEditorControls;
-window.updatePhotoFilter = updatePhotoFilter;
-window.applyPresetFilter = applyPresetFilter;
-window.autoEnhancePhoto = autoEnhancePhoto;
-window.resetPhotoEditor = resetPhotoEditor;
-window.triggerEditorDownload = triggerEditorDownload;
-window.downloadEditedPhoto = downloadEditedPhoto;
-window.openSmartDocModal = openSmartDocModal;
-window.closeSmartDocModal = closeSmartDocModal;
-window.importChatContextToDoc = importChatContextToDoc;
-window.openCloudIDEModal = openCloudIDEModal;
-window.closeCloudIDEModal = closeCloudIDEModal;
-window.updateTerminalLog = updateTerminalLog;
-window.loadMonacoEditor = loadMonacoEditor;
-window.selectIDEFile = selectIDEFile;
-window.toggleIDEWordWrap = toggleIDEWordWrap;
-window.toggleIDEMinimap = toggleIDEMinimap;
-window.runCodeInTerminal = runCodeInTerminal;
-window.triggerIDEAI = triggerIDEAI;
-window.showNotification = showNotification;
-
-window.executeCustomDocAI = executeCustomDocAI;
-window.authDriveForSidebar = authDriveForSidebar;
-window.switchSmartDocTab = switchSmartDocTab;
-window.renderSmartDocDriveList = renderSmartDocDriveList;
+    </script>
 

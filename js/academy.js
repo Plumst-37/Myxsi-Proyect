@@ -2152,7 +2152,7 @@
             
             const pdfLink = document.getElementById('examPdfLink');
             if (pdfLink) {
-                pdfLink.href = `Temarios/${EXAMS_DATABASE[examId].pdfName}`;
+                pdfLink.href = `assets/temarios/${EXAMS_DATABASE[examId].pdfName}`;
             }
             
             hideAllStudyScreens();

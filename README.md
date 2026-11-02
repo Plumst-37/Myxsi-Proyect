@@ -41,6 +41,42 @@ A diferencia de los servicios privativos tradicionales, Myxsi está diseñado pa
 
 ---
 
+## 📁 Estructura del Código y Organización Modular
+
+El repositorio ha sido organizado con una arquitectura limpia, legible y desacoplada, separando la capa visual (CSS), la lógica funcional (JavaScript) y la estructura semántica (HTML):
+
+```text
+Myxsi-Proyect/
+├── assets/                  # Identidad de marca, logos vectoriales, iconos y fondos cósmicos
+│   └── temarios/            # Temarios y programas de estudio oficiales en formato PDF
+├── css/                     # Hojas de estilo modulares organizadas y desacopladas
+│   ├── chat.css             # Estilos de la interfaz de chat, temas y micro-animaciones
+│   ├── index.css            # Estilos del portal principal y landing page oficial
+│   ├── login.css            # Formularios y tarjetas de autenticación
+│   ├── recuperacion.css     # Interfaz de restablecimiento seguro de contraseñas
+│   └── registro.css         # Flujo de registro y alta de nuevos usuarios
+├── js/                      # Lógica de cliente y proxy backend de alto rendimiento
+│   ├── chat.js              # Controlador principal del chat: streaming, voz Whisper, PDF
+│   ├── cloudflare.js        # Backend seguro para Cloudflare Workers con proxy de IA y D1 SQL
+│   ├── academy.js           # Motor de estudio, simuladores de exámenes y seguimiento académico
+│   └── video-db.js          # Persistencia y almacenamiento de proyectos multimedia
+├── .well-known/             # Directivas de seguridad web estándar (RFC 9116)
+│   └── security.txt         # Política de divulgación de vulnerabilidades y contacto
+├── _headers                 # Cabeceras de seguridad HTTP de nivel A+ (HSTS, CSP, X-Frame-Options)
+├── _redirects               # Reglas de enrutamiento y redirección del servidor
+├── index.html               # Portal principal de Myxsi (myxsi.com)
+├── chat.html                # Interfaz del Asistente IA todo en uno
+├── docs.html                # Suite de edición de documentos de texto inteligentes
+├── sheets.html              # Suite de hojas de cálculo asistidas por IA
+├── canva.html               # Suite de diseño gráfico y generación de banners
+├── video.html               # Suite de creación y estructuración de video
+├── files.html               # Gestor soberano de archivos y sincronización
+├── vision.html              # Interfaz de accesibilidad Myxsi Vision
+└── academy.html             # Centro educativo y tutoría personalizada
+```
+
+---
+
 ## 🛡️ Arquitectura de Seguridad y Blindaje (Security Hardening)
 
 Esta versión de Myxsi cuenta con una auditoría integral de seguridad y blindaje de nivel empresarial:
