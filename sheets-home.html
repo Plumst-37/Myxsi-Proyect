@@ -1226,25 +1226,40 @@
                 localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
                     .filter(f => f.type === 'sheet' || f.isSheet || f.mimeType === 'application/vnd.google-apps.spreadsheet' || (f.name && (f.name.endsWith('.xlsx') || f.name.endsWith('.csv'))));
                 
-                const mainSheetTitle = localStorage.getItem('sheets_studio_title') || 'Libro de cálculo sin título';
-                const mainSheetData = localStorage.getItem('sheets_studio_data');
-
-                if ((mainSheetData || mainSheetTitle) && !localFiles.some(f => f.id === 'main_sheets_doc')) {
-                    localFiles.unshift({
-                        id: 'main_sheets_doc',
-                        name: mainSheetTitle,
-                        mimeType: 'application/vnd.google-apps.spreadsheet',
-                        type: 'sheet',
-                        isSheet: true,
-                        updatedAt: Date.now(),
-                        isLocal: true,
-                        isMain: true
-                    });
-                }
+                // Limpiar duplicados sintéticos para evitar tarjetas locales huérfanas
+                localFiles = localFiles.filter(f => f.id !== 'main_sheets_doc' && f.id !== 'sheet_current');
             } catch(e){}
 
+            // Si hay hojas locales huérfanas y hay conexión con Drive, subirlas automáticamente
+            if (accessToken && localFiles.length > 0) {
+                for (let l of localFiles) {
+                    if (l.isLocal && !cloudSheets.some(c => c.id === l.id || c.name === l.name)) {
+                        try {
+                            let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                                ? await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', accessToken)
+                                : null;
+                            const meta = { name: l.name || 'Hoja de Cálculo Myxsi', mimeType: 'application/vnd.google-apps.spreadsheet' };
+                            if (folderId) meta.parents = [folderId];
+                            const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify(meta)
+                            });
+                            if (cr.ok) {
+                                const cData = await cr.json();
+                                l.id = cData.id;
+                                l.isCloud = true;
+                                l.isLocal = false;
+                                l.webViewLink = `https://docs.google.com/spreadsheets/d/${cData.id}/edit`;
+                                cloudSheets.unshift(l);
+                            }
+                        } catch(err){}
+                    }
+                }
+            }
+
             const cloudIds = new Set(cloudSheets.map(s => s.id));
-            const filteredLocal = localFiles.filter(l => !cloudIds.has(l.id));
+            const filteredLocal = localFiles.filter(l => l.isLocal && !cloudIds.has(l.id));
             allSheetsList = [...cloudSheets, ...filteredLocal];
             renderSheetsGrid(allSheetsList);
         }
@@ -1338,6 +1353,14 @@
             syncUserDataAndStreak();
             loadUserSheets();
         });
+
+        // Sincronización en tiempo real al volver a la pestaña o periódica
+        window.addEventListener('focus', () => {
+            loadUserSheets();
+        });
+        setInterval(() => {
+            if (!document.hidden) loadUserSheets();
+        }, 15000);
     </script>
 </body>
 </html>

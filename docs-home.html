@@ -1484,7 +1484,7 @@
                 } catch(e){}
             }
 
-            window.location.href = `docs.html?docId=${newFile.id}&template=${type}`;
+            window.location.href = `docs.html?docId=${newFile.id}&template=${type}${newFile.isCloud ? '&isCloud=true' : ''}`;
         }
 
         async function loadUserDocuments() {
@@ -1493,21 +1493,8 @@
                 localDocs = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
                     .filter(f => f.type === 'doc' || f.isDoc || f.mimeType === 'application/vnd.google-apps.document' || (f.name && (f.name.endsWith('.doc') || f.name.endsWith('.docx'))));
                 
-                const mainTitle = localStorage.getItem('smart_doc_title');
-                const mainContent = localStorage.getItem('smart_doc_content');
-
-                if ((mainContent || mainTitle) && !localDocs.some(d => d.id === 'main_smart_doc')) {
-                    localDocs.unshift({
-                        id: 'main_smart_doc',
-                        name: mainTitle || 'Documento sin título',
-                        mimeType: 'application/vnd.google-apps.document',
-                        type: 'doc',
-                        isDoc: true,
-                        updatedAt: Date.now(),
-                        isLocal: true,
-                        isMain: true
-                    });
-                }
+                // Limpiar duplicados sintéticos para evitar tarjetas locales desconectadas
+                localDocs = localDocs.filter(d => d.id !== 'main_smart_doc' && d.id !== 'doc_current');
             } catch(e){}
 
             allDocsList = localDocs;
@@ -1541,11 +1528,40 @@
                             isDoc: true,
                             updatedAt: f.modifiedTime || f.createdTime,
                             webViewLink: f.webViewLink,
-                            isCloud: true
+                            isCloud: true,
+                            isLocal: false
                         }));
+
+                        // Si hay borradores locales huérfanos, subirlos automáticamente a Google Drive
+                        for (let l of localDocs) {
+                            if (l.isLocal && !cloudDocs.some(c => c.id === l.id || c.name === l.name)) {
+                                try {
+                                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken)
+                                        : null;
+                                    const meta = { name: l.name || 'Documento Myxsi', mimeType: 'application/vnd.google-apps.document' };
+                                    if (folderId) meta.parents = [folderId];
+                                    const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
+                                        method: 'POST',
+                                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                                        body: JSON.stringify(meta)
+                                    });
+                                    if (cr.ok) {
+                                        const cData = await cr.json();
+                                        l.id = cData.id;
+                                        l.isCloud = true;
+                                        l.isLocal = false;
+                                        l.webViewLink = `https://docs.google.com/document/d/${cData.id}/edit`;
+                                        cloudDocs.unshift(l);
+                                    }
+                                } catch(err){}
+                            }
+                        }
+
+                        // Google Drive es la fuente autoritativa de la verdad
                         const cloudIds = new Set(cloudDocs.map(c => c.id));
-                        const filteredLocal = localDocs.filter(l => !cloudIds.has(l.id));
-                        allDocsList = [...cloudDocs, ...filteredLocal];
+                        const remainingLocal = localDocs.filter(l => l.isLocal && !cloudIds.has(l.id));
+                        allDocsList = [...cloudDocs, ...remainingLocal];
                         renderDocs();
                     }
                 } catch(e){}
@@ -1856,6 +1872,14 @@
             syncUserDataAndStreak();
             loadUserDocuments();
         });
+
+        // Sincronización en tiempo real al volver a la pestaña o cada 15 segundos
+        window.addEventListener('focus', () => {
+            loadUserDocuments();
+        });
+        setInterval(() => {
+            if (!document.hidden) loadUserDocuments();
+        }, 15000);
     </script>
 </body>
 </html>

@@ -451,6 +451,8 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
             googleProvider.addScope('https://www.googleapis.com/auth/drive');
             googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
             googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+            googleProvider.addScope('https://www.googleapis.com/auth/documents');
+            googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
             googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
             googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
 

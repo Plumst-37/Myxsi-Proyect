@@ -5679,6 +5679,10 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
         }
 
         async function exportDocToGoogleDriveSilent() {
+            if (typeof window.syncDocumentToGoogleDrive === 'function') {
+                await window.syncDocumentToGoogleDrive(true);
+                return;
+            }
             if (!smartDocQuill) return;
 
             const text = smartDocQuill.root.innerHTML.trim();
@@ -5692,81 +5696,84 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             let accessToken = localStorage.getItem('gdrive_access_token');
             const expiresAt = parseInt(localStorage.getItem('gdrive_token_expires_at') || '0', 10);
             if (!accessToken || Date.now() > expiresAt - 60000) {
-                accessToken = await window.ensureValidToken();
-            }
-
-            if (!accessToken) {
-                if (saveStatus) {
-                    saveStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> Error de autenticación`;
+                if (typeof window.ensureValidToken === 'function') {
+                    accessToken = await window.ensureValidToken(false);
                 }
-                if (statusEl) {
-                    statusEl.innerHTML = `<span style="color: #f43f5e; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Reautenticación requerida.</span>`;
-                }
-                return;
             }
+            if (!accessToken) return;
 
-            const isUpdate = !!activeGoogleDocId;
+            let docId = window.activeGoogleDocId || (typeof activeGoogleDocId !== 'undefined' ? activeGoogleDocId : null);
             try {
-                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento sin título';
-                const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.7; padding: 40px; max-width: 800px; margin: 0 auto; background-color: #ffffff; } .header-banner { border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; } .header-logo { font-size: 1.1rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; } .header-date { font-size: 0.85rem; color: #a0aec0; } h1 { font-size: 2.2rem; color: #1a202c; margin-top: 0; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; } h2 { font-size: 1.6rem; color: #6d28d9; margin-top: 35px; margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.25rem; color: #7c3aed; margin-top: 25px; margin-bottom: 10px; font-weight: 600; } p { margin-top: 0; margin-bottom: 16px; font-size: 1.05rem; } code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; background-color: #f7fafc; color: #e53e3e; padding: 3px 6px; border-radius: 6px; font-size: 0.9em; border: 1px solid #edf2f7; } pre { background-color: #1a202c; color: #edf2f7; padding: 20px; border-radius: 12px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #2d3748; } pre code { background-color: transparent; color: inherit; padding: 0; border: none; border-radius: 0; font-size: 0.95em; } ul, ol { margin-top: 0; margin-bottom: 20px; padding-left: 25px; } li { margin-bottom: 8px; font-size: 1.05rem; } blockquote { border-left: 4px solid #7c3aed; background-color: #f7fafc; padding: 15px 20px; color: #4a5568; font-style: italic; margin: 20px 0; border-radius: 0 8px 8px 0; } table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 30px; } th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; } th { background-color: #f7fafc; font-weight: 700; color: #2d3748; } tr:nth-child(even) { background-color: #fafbfe; } .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 0.85rem; color: #718096; text-align: center; }</style></head><body><div class="header-banner"><span class="header-logo">Myxsi AI • Documento Inteligente</span><span class="header-date">${new Date().toLocaleDateString()}</span></div>${text}<div class="footer-note">Documento generado automáticamente por Myxsi AI. Conserva este material para tu estudio académico.</div></body></html>`;
+                let docTitle = document.getElementById('smartDocTitle')?.value?.trim() || 'Documento sin título';
+                const plainText = smartDocQuill.getText();
 
-                const metadata = { name: docTitle };
-                if (!isUpdate) {
-                    metadata.mimeType = 'application/vnd.google-apps.document';
+                if (!docId) {
+                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken)
+                        : null;
+                    const meta = { name: docTitle, mimeType: 'application/vnd.google-apps.document' };
+                    if (folderId) meta.parents = [folderId];
+                    const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(meta)
+                    });
+                    if (cr.ok) {
+                        const cd = await cr.json();
+                        docId = cd.id;
+                        window.activeGoogleDocId = docId;
+                    }
                 }
 
-                const boundary = 'foo_bar_boundary_myxsi';
-                const delimiter = `\r\n--${boundary}\r\n`;
-                const close_delim = `\r\n--${boundary}--`;
+                if (docId) {
+                    // Update Title in Drive
+                    await fetch(`https://www.googleapis.com/drive/v3/files/${docId}`, {
+                        method: 'PATCH',
+                        headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: docTitle })
+                    });
 
-                const multipartRequestBody =
-                    `--${boundary}\r\n` +
-                    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
-                    JSON.stringify(metadata) +
-                    delimiter +
-                    'Content-Type: text/html; charset=UTF-8\r\n\r\n' +
-                    htmlContent +
-                    close_delim;
+                    // Update Content via Docs API
+                    try {
+                        const getRes = await fetch(`https://docs.googleapis.com/v1/documents/${docId}?fields=body(content(endIndex))`, {
+                            headers: { 'Authorization': `Bearer ${accessToken}` }
+                        });
+                        if (getRes.ok) {
+                            const dInfo = await getRes.json();
+                            const contents = dInfo?.body?.content || [];
+                            const lastItem = contents[contents.length - 1];
+                            const endIndex = lastItem?.endIndex || 1;
+                            const reqs = [];
+                            if (endIndex > 2) {
+                                reqs.push({ deleteContentRange: { range: { startIndex: 1, endIndex: endIndex - 1 } } });
+                            }
+                            if (plainText && plainText.trim()) {
+                                reqs.push({ insertText: { location: { index: 1 }, text: plainText } });
+                            }
+                            if (reqs.length > 0) {
+                                await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
+                                    method: 'POST',
+                                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ requests: reqs })
+                                });
+                            }
+                        }
+                    } catch(de) {}
 
-                const url = isUpdate
-                    ? `https://www.googleapis.com/upload/drive/v3/files/${activeGoogleDocId}?uploadType=multipart`
-                    : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
-
-                const response = await fetch(url, {
-                    method: isUpdate ? 'PATCH' : 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`,
-                        'Content-Type': `multipart/related; boundary=${boundary}`
-                    },
-                    body: multipartRequestBody
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Response status: ${response.status}`);
-                }
-
-                const resData = await response.json();
-                if (!isUpdate && resData.id) {
-                    activeGoogleDocId = resData.id;
-                }
-
-                if (saveStatus) {
-                    saveStatus.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #10b981;"></i> Guardado en Google Drive`;
-                }
-                if (statusEl) {
-                    statusEl.innerHTML = `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Sincronizado con Google Drive!</span>`;
+                    if (saveStatus) {
+                        saveStatus.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #10b981;"></i> Guardado en Google Drive`;
+                    }
+                    if (statusEl) {
+                        statusEl.innerHTML = `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Sincronizado con Google Drive!</span>`;
+                    }
                 }
             } catch (err) {
                 console.error("Autosave to Drive failed:", err);
-                if (saveStatus) {
-                    saveStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> Error al guardar`;
-                }
-                if (statusEl) {
-                    statusEl.innerHTML = `<span style="color: #ef4444; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Error de sincronización.</span>`;
-                }
             }
         }
-        window.exportDocToGoogleDriveSilent = exportDocToGoogleDriveSilent;
+        if (!window.exportDocToGoogleDriveSilent) {
+            window.exportDocToGoogleDriveSilent = exportDocToGoogleDriveSilent;
+        }
 
 
         // --- MODAL: CLOUD IDE AI ---
