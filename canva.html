@@ -15,6 +15,8 @@
     
     <link href="css/chat.css?v=5.5.0" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script>
       if ('serviceWorker' in navigator) {
@@ -875,7 +877,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20", authDomain: "myxsi-e4ba3.firebaseapp.com", projectId: "myxsi-e4ba3", storageBucket: "myxsi-e4ba3.firebasestorage.app", messagingSenderId: "321958728313", appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8" };
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 

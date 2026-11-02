@@ -9,7 +9,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, linkWithPopup, reauthenticateWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20", authDomain: "myxsi-e4ba3.firebaseapp.com", projectId: "myxsi-e4ba3", storageBucket: "myxsi-e4ba3.firebasestorage.app", messagingSenderId: "321958728313", appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8" };
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
@@ -93,7 +93,7 @@
             return null;
         }
         window.ensureValidToken = ensureValidToken;
-        let API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
+        let API_URL = window.__MYXSI_API_URL__ || '/api';
 
         let currentUser = null; let currentChatId = null; let chatHistory = []; let isSending = false; let chatsList = [];
 
@@ -894,7 +894,7 @@
                         return;
                     }
                 } catch (e) { }
-                console.log('🌐 Backend local offline. Conectando al backend de producción: https://myxsi-backend.inoxwayoficial.workers.dev');
+                console.log('🌐 Backend local offline. Conectando al backend configurado:', API_URL);
             }
         }
 
@@ -2038,6 +2038,10 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
             return htmlString
                 .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
                 .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+                .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '')
+                .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '')
+                .replace(/\bon\w+\s*=\s*(["'])[\s\S]*?\1/gi, '')
+                .replace(/\bon\w+\s*=\s*[^>\s]+/gi, '')
                 .replace(/href\s*=\s*(["'])javascript:[\s\S]*?\1/gi, 'href="#"');
         }
 

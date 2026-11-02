@@ -16,6 +16,8 @@
     <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -146,15 +148,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
-            authDomain: "myxsi-e4ba3.firebaseapp.com",
-            projectId: "myxsi-e4ba3",
-            storageBucket: "myxsi-e4ba3.firebasestorage.app",
-            messagingSenderId: "321958728313",
-            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8"
-        };
-
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
@@ -283,6 +277,5 @@
             });
         }
     </script>
-
-    <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4bc0f4c7ccb04906a6a10e2d597b8b8d"}'></script><!-- Cloudflare Pages Analytics --></body>
+</body>
 </html>

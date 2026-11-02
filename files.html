@@ -17,6 +17,8 @@
 
     <!-- CSS Base Myxsi -->
     <link rel="stylesheet" href="css/chat.css?v=4.7.0">
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
 
     <script>
         // Sincronización inmediata de tema antes de renderizar para evitar destellos (MODO OSCURO POR DEFECTO)
@@ -1412,15 +1414,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
-            authDomain: "myxsi-e4ba3.firebaseapp.com",
-            projectId: "myxsi-e4ba3",
-            storageBucket: "myxsi-e4ba3.firebasestorage.app",
-            messagingSenderId: "321958728313",
-            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8"
-        };
-
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const googleProvider = new GoogleAuthProvider();
@@ -1435,7 +1429,7 @@
         window.GoogleAuthProvider = GoogleAuthProvider;
         window.signInWithPopup = signInWithPopup;
 
-        const API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
+        const API_URL = window.__MYXSI_API_URL__ || '/api';
 
         let currentUser = null;
         let accessToken = localStorage.getItem('gdrive_access_token') || null;

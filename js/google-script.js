@@ -4,7 +4,7 @@
 // ============================================
 
 // ID DE LA CARPETA DONDE SE GUARDARÁN LOS ARCHIVOS
-const FOLDER_ID = '1EvEtjKDGjpzr0rpS0kYqJ0NPmeZWLjpE';
+const FOLDER_ID = 'TU_GOOGLE_DRIVE_FOLDER_ID';
 
 // ============================================
 // FUNCIÓN PARA CREAR RESPUESTA

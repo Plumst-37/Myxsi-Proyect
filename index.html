@@ -6,7 +6,7 @@
     <title>Myxsi — "Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro"</title>
     <meta name="description" content="Con Myxsi avanzamos todos, la inclusión y tecnología hace el futuro. Tu espacio de productividad inteligente con IA para conversar, redactar, analizar y diseñar.">
     <meta name="robots" content="index, follow">
-    <meta name="google-site-verification" content="google26969b2edde5bfd4">
+    <meta name="google-site-verification" content="TU_CODIGO_DE_VERIFICACION_GOOGLE">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,6 +19,8 @@
     <!-- Favicon & Manifest -->
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="manifest" href="manifest.json">
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
 
     <style>
         :root {
@@ -1024,17 +1026,8 @@
             onAuthStateChanged 
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-        const MYXSI_API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
-            authDomain: "myxsi-e4ba3.firebaseapp.com",
-            projectId: "myxsi-e4ba3",
-            storageBucket: "myxsi-e4ba3.firebasestorage.app",
-            messagingSenderId: "321958728313",
-            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8",
-            measurementId: "G-54WPJGNXHP"
-        };
+        const MYXSI_API_URL = window.__MYXSI_API_URL__ || '/api';
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);

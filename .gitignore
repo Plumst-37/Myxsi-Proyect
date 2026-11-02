@@ -6,6 +6,8 @@
 *.key
 *.cert
 *.crt
+js/config.local.js
+js/*.local.js
 
 # Cloudflare & Wrangler
 .wrangler/

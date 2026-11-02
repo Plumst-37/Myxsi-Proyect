@@ -16,6 +16,8 @@
     <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48x48.png">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <link rel="manifest" href="manifest.json">
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -304,15 +306,7 @@
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCqkZHfAcDku_cNd1cmjAOul-TLNkbPL20",
-            authDomain: "myxsi-e4ba3.firebaseapp.com",
-            projectId: "myxsi-e4ba3",
-            storageBucket: "myxsi-e4ba3.firebasestorage.app",
-            messagingSenderId: "321958728313",
-            appId: "1:321958728313:web:0cd9f5a3f748b19e48faa8",
-            measurementId: "G-54WPJGNXHP"
-        };
+        const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -352,7 +346,7 @@
         // ============================================
         // CONFIGURACIÓN DE API MYXSI
         // ============================================
-        const MYXSI_API_URL = 'https://myxsi-backend.inoxwayoficial.workers.dev';
+        const MYXSI_API_URL = window.__MYXSI_API_URL__ || '/api';
 
         let currentType = 'personal';
         let currentStep = 1;
@@ -857,6 +851,5 @@
             <button onclick="closeTermsModal()" class="btn-register" style="width: 100%; padding: 0.8rem; border: none; border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; background: var(--grad-brand); color: #ffffff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">Entendido y Acepto</button>
         </div>
     </div>
-
-    <!-- Cloudflare Pages Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "4bc0f4c7ccb04906a6a10e2d597b8b8d"}'></script><!-- Cloudflare Pages Analytics --></body>
+</body>
 </html>
