@@ -14,6 +14,10 @@
     <!-- Quill.js Editor CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <link href="css/chat.css?v=5.7.0" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
@@ -568,7 +572,7 @@
             color: inherit;
         }
 
-        /* SIDEBAR DERECHA (COPILOT IA & COMENTARIOS) */
+        /* SIDEBAR DERECHA (CHAT COPILOTO IA Y ASISTENTE) */
         .docs-sidebar-right {
             width: 0;
             min-width: 0;
@@ -579,20 +583,19 @@
             flex-direction: column;
             flex-shrink: 0;
             padding: 0;
-            gap: 14px;
             overflow: hidden;
             opacity: 0;
             pointer-events: none;
-            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, padding 0.2s ease, border 0.2s ease;
+            transition: width 0.28s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease, border 0.2s ease;
         }
 
         .docs-sidebar-right.open {
-            width: 310px;
-            min-width: 310px;
-            max-width: 310px;
+            width: 360px;
+            min-width: 360px;
+            max-width: 360px;
             border-left: 1px solid var(--docs-border);
-            padding: 16px;
-            overflow-y: auto;
+            padding: 0;
+            overflow: hidden;
             opacity: 1;
             pointer-events: auto;
         }
@@ -601,15 +604,21 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 10px 14px;
+            padding: 12px 14px;
             border-bottom: 1px solid var(--docs-border);
-            background: rgba(0, 0, 0, 0.18);
+            background: rgba(0, 0, 0, 0.25);
             flex-shrink: 0;
         }
 
+        .doc-copilot-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
         .sidebar-header-title {
-            font-size: 0.78rem;
-            font-weight: 750;
+            font-size: 0.82rem;
+            font-weight: 800;
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -617,13 +626,52 @@
             letter-spacing: -0.2px;
         }
 
+        .doc-ai-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #34d399;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            letter-spacing: 0.2px;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 8px #34d399;
+            display: inline-block;
+        }
+
+        .doc-chat-header-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--docs-border);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.72rem;
+            transition: all 0.2s;
+        }
+
+        .doc-chat-header-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff;
+        }
+
         .sidebar-close-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--docs-border);
             color: rgba(255, 255, 255, 0.7);
             border-radius: 6px;
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -636,6 +684,275 @@
             background: rgba(239, 68, 68, 0.2);
             color: #ef4444;
             border-color: rgba(239, 68, 68, 0.4);
+        }
+
+        /* CHAT MESSAGES & BUBBLES */
+        .doc-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .doc-chat-welcome {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.12) 0%, rgba(37, 99, 235, 0.09) 100%);
+            border: 1px solid rgba(167, 139, 250, 0.25);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.25);
+        }
+
+        .doc-welcome-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: rgba(167, 139, 250, 0.2);
+            border: 1px solid rgba(167, 139, 250, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c4b5fd;
+            font-size: 1rem;
+        }
+
+        .doc-welcome-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .doc-welcome-sub {
+            font-size: 0.74rem;
+            color: rgba(255,255,255,0.7);
+            line-height: 1.45;
+            margin: 0;
+        }
+
+        .doc-quick-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .doc-quick-chip {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 7px 10px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .doc-quick-chip:hover {
+            background: rgba(124, 58, 237, 0.25);
+            border-color: rgba(167, 139, 250, 0.4);
+            color: #fff;
+            transform: translateX(2px);
+        }
+
+        .doc-chat-bubble {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            max-width: 90%;
+            word-wrap: break-word;
+            animation: fadeInDocMsg 0.22s ease-out;
+        }
+
+        @keyframes fadeInDocMsg {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .doc-chat-bubble.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #ffffff;
+            border-radius: 12px 12px 2px 12px;
+            padding: 9px 13px;
+            font-size: 0.79rem;
+            line-height: 1.42;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+        }
+
+        .doc-chat-bubble.assistant {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px 12px 12px 2px;
+            padding: 11px 13px;
+            font-size: 0.79rem;
+            line-height: 1.48;
+            color: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 4px 18px rgba(0,0,0,0.22);
+        }
+
+        .doc-chat-bubble.assistant h1,
+        .doc-chat-bubble.assistant h2,
+        .doc-chat-bubble.assistant h3 {
+            color: #fff;
+            margin: 4px 0;
+            font-size: 0.88rem;
+        }
+
+        .doc-chat-bubble.assistant p {
+            margin: 0 0 6px 0;
+        }
+
+        .doc-chat-bubble.assistant ul, 
+        .doc-chat-bubble.assistant ol {
+            margin: 0 0 6px 16px;
+            padding: 0;
+        }
+
+        .doc-applied-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.14);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-top: 6px;
+            width: fit-content;
+        }
+
+        .doc-bubble-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .doc-bubble-action-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--docs-border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.69rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .doc-bubble-action-btn:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: #fff;
+        }
+
+        .doc-chat-loading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 13px;
+            background: rgba(124, 58, 237, 0.12);
+            border: 1px dashed rgba(167, 139, 250, 0.35);
+            border-radius: 12px;
+            font-size: 0.74rem;
+            color: #c4b5fd;
+            align-self: flex-start;
+            animation: pulseLoading 1.5s infinite;
+        }
+
+        @keyframes pulseLoading {
+            0%, 100% { opacity: 0.85; }
+            50% { opacity: 1; }
+        }
+
+        .doc-chat-input-wrapper {
+            padding: 10px 12px;
+            border-top: 1px solid var(--docs-border);
+            background: rgba(11, 7, 23, 0.95);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .doc-chat-input-box {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 6px 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .doc-chat-input-box:focus-within {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.25);
+        }
+
+        .doc-chat-textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-size: 0.78rem;
+            resize: none;
+            max-height: 100px;
+            line-height: 1.4;
+            padding: 4px 0;
+            font-family: inherit;
+        }
+
+        .btn-doc-chat-send {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border: none;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        .btn-doc-chat-send:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-doc-chat-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .doc-chat-footnote {
+            font-size: 0.64rem;
+            color: rgba(255, 255, 255, 0.38);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px;
         }
 
         /* MODO ZEN (ENFOQUE TOTAL SIN DISTRACCIONES) */
@@ -1229,6 +1546,31 @@
                     <div id="docsOutlineList" style="display: flex; flex-direction: column; gap: 6px; font-size: 0.78rem;">
                         <span style="color: rgba(255,255,255,0.35); font-style: italic;">Sin encabezados en el documento</span>
                     </div>
+
+                    <!-- MÉTRICAS EN VIVO DEL DOCUMENTO -->
+                    <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--docs-border);">
+                        <label style="font-size: 0.7rem; font-weight: 800; color: rgba(255,255,255,0.4); text-transform: uppercase; display: flex; align-items: center; gap: 5px; margin-bottom: 8px;">
+                            <i class="fa-solid fa-chart-simple" style="color: #60a5fa;"></i> Métricas del Documento
+                        </label>
+                        <div class="stats-badge-grid">
+                            <div class="stat-box">
+                                <div class="stat-box-val" id="statWordsCount">0</div>
+                                <div class="stat-box-lbl">Palabras</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-val" id="statCharsCount">0</div>
+                                <div class="stat-box-lbl">Caracteres</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-val" id="statParagraphsCount">0</div>
+                                <div class="stat-box-lbl">Párrafos</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-box-val" id="statReadingTime">0 min</div>
+                                <div class="stat-box-lbl">Lectura</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- TAB GOOGLE DRIVE -->
@@ -1314,54 +1656,68 @@
             </div>
         </main>
 
-        <!-- SIDEBAR DERECHA (COPILOT IA & COMENTARIOS ESTILO CRYPTPAD) -->
-        <aside class="docs-sidebar-right">
-            <div class="sidebar-header-bar" style="margin: -16px -16px 14px -16px;">
-                <span class="sidebar-header-title"><i class="fa-solid fa-wand-magic-sparkles" style="color: #a78bfa;"></i> Copiloto & Métricas</span>
-                <button class="sidebar-close-btn" onclick="window.toggleSidebar('right')" title="Cerrar panel"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="copilot-card">
-                <div class="copilot-card-title">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Orden Personalizada IA
+        <!-- SIDEBAR DERECHA (CHAT COPILOTO IA DE DOCUMENTOS) -->
+        <aside class="docs-sidebar-right" id="docsSidebarRight">
+            <div class="sidebar-header-bar">
+                <div class="doc-copilot-header-info">
+                    <span class="sidebar-header-title">
+                        <i class="fa-solid fa-wand-magic-sparkles" style="color: #a78bfa;"></i> Copiloto Myxsi AI
+                    </span>
+                    <span class="doc-ai-badge"><span class="badge-dot"></span> Redacción en Vivo</span>
                 </div>
-                <textarea id="aiDocInstruction" class="smart-doc-textarea" placeholder="Ej: Redacta una conclusión formal para este trabajo de investigación..." rows="3" style="width:100%; background:rgba(0,0,0,0.25); border:1px solid var(--docs-border); border-radius:8px; color:#fff; padding:8px; font-size:0.78rem; outline:none; resize:none;"></textarea>
-                <button class="btn-docs-blue" onclick="window.executeCustomDocAI()" style="width:100%; justify-content:center; padding: 7px;">
-                    <i class="fa-solid fa-play"></i> Ejecutar con IA
-                </button>
-            </div>
-
-            <!-- PANEL DE COMENTARIOS / ANOTACIONES ESTILO CRYPTPAD -->
-            <div class="copilot-card">
-                <div class="copilot-card-title" style="justify-content: space-between;">
-                    <span><i class="fa-solid fa-comments"></i> Anotaciones</span>
-                    <button onclick="addCommentPrompt()" style="background:none; border:none; color:#60a5fa; cursor:pointer; font-size:0.75rem;"><i class="fa-solid fa-plus"></i></button>
-                </div>
-                <div id="commentsList" style="display:flex; flex-direction:column; gap:8px; max-height:220px; overflow-y:auto;">
-                    <span style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-style:italic;">Sin comentarios. Selecciona un texto y haz clic en '+'.</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button class="doc-chat-header-btn" onclick="window.clearDocChatHistory()" title="Reiniciar chat">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </button>
+                    <button class="sidebar-close-btn" onclick="window.toggleSidebar('right')" title="Cerrar panel">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="copilot-card">
-                <div class="copilot-card-title">
-                    <i class="fa-solid fa-chart-simple"></i> Métricas del Documento
+            <!-- CONTENEDOR DE MENSAJES DEL CHAT -->
+            <div class="doc-chat-messages" id="docChatMessages">
+                <!-- Mensaje de bienvenida del Copiloto -->
+                <div class="doc-chat-welcome">
+                    <div class="doc-welcome-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                    <h4 class="doc-welcome-title">Asistente de Documento</h4>
+                    <p class="doc-welcome-sub">Pídeme que cree un informe, redacte secciones o mejore el estilo. Modificaré tu hoja en tiempo real de forma profesional y estructurada.</p>
+                    
+                    <div class="doc-quick-chips">
+                        <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Crea un informe completo y formal sobre Myxsi AI, su plataforma y visión estratégica')">
+                            <i class="fa-solid fa-file-lines" style="color: #60a5fa;"></i> Crear informe de Myxsi
+                        </button>
+                        <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Redacta un informe ejecutivo formal con resumen, objetivos, desarrollo y conclusiones')">
+                            <i class="fa-solid fa-briefcase" style="color: #a78bfa;"></i> Informe Ejecutivo
+                        </button>
+                        <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Mejora la redacción del documento actual, corrige ortografía y dale un tono corporativo de alto nivel')">
+                            <i class="fa-solid fa-feather-pointed" style="color: #34d399;"></i> Mejorar redacción y estilo
+                        </button>
+                        <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Agrega una sección formal de conclusiones estratégicas y recomendaciones al final del documento')">
+                            <i class="fa-solid fa-list-check" style="color: #f59e0b;"></i> Añadir conclusiones
+                        </button>
+                    </div>
                 </div>
-                <div class="stats-badge-grid">
-                    <div class="stat-box">
-                        <div class="stat-box-val" id="statWordsCount">0</div>
-                        <div class="stat-box-lbl">Palabras</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-box-val" id="statCharsCount">0</div>
-                        <div class="stat-box-lbl">Caracteres</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-box-val" id="statParagraphsCount">0</div>
-                        <div class="stat-box-lbl">Párrafos</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-box-val" id="statReadingTime">0 min</div>
-                        <div class="stat-box-lbl">Lectura</div>
-                    </div>
+            </div>
+
+            <!-- BARRA DE ENTRADA DEL CHAT -->
+            <div class="doc-chat-input-wrapper">
+                <div class="doc-chat-input-box">
+                    <textarea 
+                        id="docChatInput" 
+                        class="doc-chat-textarea" 
+                        placeholder="Pide un informe, redacción o cambio en la hoja..." 
+                        rows="1"
+                        onkeydown="window.handleDocChatKey(event)"
+                        oninput="window.autoResizeDocChatInput(this)"
+                    ></textarea>
+                    <button id="btnSendDocChat" class="btn-doc-chat-send" onclick="window.sendDocChatMessage()" title="Enviar orden a la IA">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </div>
+                <div class="doc-chat-footnote">
+                    <span><i class="fa-solid fa-bolt" style="color: #a78bfa;"></i> Modifica la hoja directamente</span>
+                    <span>Shift+Enter nueva línea</span>
                 </div>
             </div>
         </aside>
@@ -1386,18 +1742,47 @@
     </div>
 </div>
 
-<!-- MODAL DE USUARIO Y GENERALES DE MYXSI -->
+<!-- MODAL DE USUARIO Y CUENTA MYXSI / GOOGLE DRIVE -->
 <div class="custom-modal-overlay" id="userDetailsModal">
-    <div class="custom-modal-card" style="max-width: 420px; border-radius: 20px;">
+    <div class="custom-modal-card" style="max-width: 440px; border-radius: 20px;">
         <button class="custom-modal-close" onclick="window.toggleUserDetailsModal()"><i class="fa-solid fa-xmark"></i></button>
         <div style="text-align: center; padding-top: 10px;">
-            <div class="user-avatar" id="modalUserAvatar" style="width: 70px; height: 70px; margin: 0 auto 12px; font-size: 1.8rem; background: var(--docs-blue-grad); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff;">U</div>
-            <h3 id="modalUserName" style="font-size: 1.2rem; font-weight: 800; color: #fff;">Usuario Myxsi</h3>
-            <p id="modalUserEmail" style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-top: 2px;">usuario@myxsi.ai</p>
+            <div class="user-avatar" id="modalUserAvatar" style="width: 72px; height: 72px; margin: 0 auto 12px; font-size: 1.8rem; background: var(--docs-blue-grad); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; color: #fff; overflow: hidden; border: 2px solid rgba(96,165,250,0.4);">U</div>
+            <h3 id="modalUserName" style="font-size: 1.15rem; font-weight: 800; color: #fff; margin: 0;">Usuario Myxsi</h3>
+            <p id="modalUserEmail" style="font-size: 0.82rem; color: rgba(255,255,255,0.6); margin: 3px 0 0 0;">usuario@myxsi.ai</p>
+            <div id="modalAccountBadge" style="margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; background: rgba(52,211,153,0.15); border: 1px solid rgba(52,211,153,0.35); color: #34d399; font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;">
+                <i class="fa-solid fa-circle-check"></i> Cuenta Myxsi Conectada
+            </div>
         </div>
-        <div style="margin-top: 20px; border-top: 1px solid var(--docs-border); padding-top: 15px; display: flex; flex-direction: column; gap: 8px;">
-            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='chat.html'" style="width: 100%; justify-content: center;"><i class="fa-solid fa-comments"></i> Ir al Chat Principal</button>
-            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='sheets.html'" style="width: 100%; justify-content: center;"><i class="fa-solid fa-table-cells"></i> Ir a Sheets Studio</button>
+
+        <!-- TARJETA GOOGLE DRIVE INTEGRADA -->
+        <div style="background: rgba(255,255,255,0.035); border: 1px solid var(--docs-border); border-radius: 14px; padding: 14px; margin-top: 16px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-brands fa-google-drive" style="color: #60a5fa; font-size: 1rem;"></i> Google Drive
+                </span>
+                <span id="modalDriveStatus" style="font-size: 0.72rem; font-weight: 700;">
+                    <span style="color: #34d399;"><i class="fa-solid fa-circle-check"></i> Conectado</span>
+                </span>
+            </div>
+            <p style="font-size: 0.73rem; color: rgba(255,255,255,0.6); margin: 6px 0 10px 0; line-height: 1.4;">
+                Tus documentos se guardan automáticamente en tu unidad segura de Google Drive sin perder nada.
+            </p>
+            <button class="btn-docs-blue" onclick="window.connectGoogleDriveAccount()" style="width: 100%; justify-content: center; font-size: 0.78rem; padding: 7px 12px; gap: 8px;">
+                <i class="fa-brands fa-google-drive"></i> Vincular / Reconectar Drive
+            </button>
+        </div>
+
+        <div style="margin-top: 16px; border-top: 1px solid var(--docs-border); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='files.html'" style="width: 100%; justify-content: center; font-size: 0.8rem;">
+                <i class="fa-solid fa-folder-open"></i> Mis Archivos en Myxsi Cloud
+            </button>
+            <button class="btn-docs-ghost" onclick="window.toggleUserDetailsModal(); window.location.href='chat.html'" style="width: 100%; justify-content: center; font-size: 0.8rem;">
+                <i class="fa-solid fa-comments"></i> Ir al Chat Principal
+            </button>
+            <button id="btnModalAuthAction" class="btn-docs-ghost" onclick="window.handleAuthModalAction()" style="width: 100%; justify-content: center; font-size: 0.8rem; color: #f87171; border-color: rgba(239,68,68,0.25);">
+                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
         </div>
     </div>
 </div>
@@ -1408,9 +1793,14 @@
 
 <script>
     let commentsList = [];
+    window.docUndoStack = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof Quill !== 'undefined') {
+    function initDocsApp() {
+        if (window._docsAppInitialized) return;
+        window._docsAppInitialized = true;
+
+        // Inicializar Quill Editor
+        if (typeof Quill !== 'undefined' && document.getElementById('editorQuillStandalone')) {
             window.smartDocQuill = new Quill('#editorQuillStandalone', {
                 theme: 'snow',
                 modules: {
@@ -1449,8 +1839,9 @@
             document.getElementById('smartDocTitle').value = savedTitle;
 
             window.smartDocQuill.on('text-change', () => {
+                const html = window.smartDocQuill.root.innerHTML;
                 if (currentDocId) {
-                    localStorage.setItem('smart_doc_content_' + currentDocId, window.smartDocQuill.root.innerHTML);
+                    localStorage.setItem('smart_doc_content_' + currentDocId, html);
                     try {
                         const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
                         const f = localFiles.find(item => item.id === currentDocId);
@@ -1460,6 +1851,7 @@
                         }
                     } catch(e){}
                 }
+                localStorage.setItem('smart_doc_content', html);
                 if (window.triggerSmartDocAutosave) {
                     window.triggerSmartDocAutosave();
                 }
@@ -1470,9 +1862,9 @@
             const originalSaveTitle = window.saveSmartDocTitle;
             window.saveSmartDocTitle = function(val) {
                 if (typeof originalSaveTitle === 'function') originalSaveTitle(val);
+                const el = document.getElementById('smartDocTitle');
+                const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
                 if (currentDocId) {
-                    const el = document.getElementById('smartDocTitle');
-                    const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
                     localStorage.setItem('smart_doc_title_' + currentDocId, titleVal);
                     try {
                         const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -1484,6 +1876,7 @@
                         }
                     } catch(e){}
                 }
+                localStorage.setItem('smart_doc_title', titleVal);
             };
 
             updateMetrics();
@@ -1494,52 +1887,606 @@
             }
         }
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.menu-dropdown')) {
-                document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
-            }
-        });
+        // Cargar y vincular cuenta de usuario Myxsi y Google Drive
+        loadMyxsiAccount();
+    }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key.toLowerCase() === 'f') {
-                e.preventDefault();
-                openFindReplaceModal();
-            }
-        });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDocsApp);
+    } else {
+        initDocsApp();
+    }
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.menu-dropdown')) {
+            document.querySelectorAll('.menu-dropdown').forEach(m => m.classList.remove('active'));
+        }
     });
 
-    // Añadir Comentario / Anotación estilo CryptPad
-    window.addCommentPrompt = function() {
-        const text = prompt("Añade una anotación o nota al documento:");
-        if (!text) return;
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            openFindReplaceModal();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            window.exportDocToGoogleDrive();
+        }
+    });
 
-        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        commentsList.push({ id: Date.now(), text, time });
-        renderComments();
+    // =========================================================
+    // 1. CONEXIÓN CON CUENTA DE MYXSI & GOOGLE DRIVE
+    // =========================================================
+    function loadMyxsiAccount() {
+        const userStr = localStorage.getItem('myxsi_user');
+        let user = null;
+        try { user = userStr ? JSON.parse(userStr) : null; } catch(e){}
+
+        const topBtn = document.getElementById('btnUserDetails');
+        if (topBtn && user) {
+            const initial = (user.displayName || user.email || 'U')[0].toUpperCase();
+            if (user.photoURL) {
+                topBtn.innerHTML = `<img src="${user.photoURL}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" alt="Avatar">`;
+            } else {
+                topBtn.innerHTML = `<span style="font-size: 0.85rem; font-weight: 800; color: #fff;">${initial}</span>`;
+            }
+            topBtn.title = `Cuenta Myxsi: ${user.displayName || user.email}`;
+        }
+        updateUserDetailsInModal();
+    }
+
+    window.toggleUserDetailsModal = function() {
+        const modal = document.getElementById('userDetailsModal');
+        if (!modal) return;
+        modal.classList.toggle('show');
+        updateUserDetailsInModal();
     };
 
-    function renderComments() {
-        const container = document.getElementById('commentsList');
-        if (!container) return;
-        if (commentsList.length === 0) {
-            container.innerHTML = '<span style="font-size:0.75rem; color:rgba(255,255,255,0.4); font-style:italic;">Sin comentarios. Selecciona un texto y haz clic en "+".</span>';
+    function updateUserDetailsInModal() {
+        const userStr = localStorage.getItem('myxsi_user');
+        let user = null;
+        try { user = userStr ? JSON.parse(userStr) : null; } catch(e){}
+
+        const avatarEl = document.getElementById('modalUserAvatar');
+        const nameEl = document.getElementById('modalUserName');
+        const emailEl = document.getElementById('modalUserEmail');
+        const badgeEl = document.getElementById('modalAccountBadge');
+        const driveStatusEl = document.getElementById('modalDriveStatus');
+        const authActionBtn = document.getElementById('btnModalAuthAction');
+
+        const hasDriveToken = !!localStorage.getItem('gdrive_access_token');
+        if (driveStatusEl) {
+            driveStatusEl.innerHTML = hasDriveToken
+                ? '<span style="color: #34d399;"><i class="fa-solid fa-circle-check"></i> Conectado</span>'
+                : '<span style="color: rgba(255,255,255,0.45);"><i class="fa-solid fa-circle-info"></i> No vinculado</span>';
+        }
+
+        if (user) {
+            const initial = (user.displayName || user.email || 'U')[0].toUpperCase();
+            if (nameEl) nameEl.textContent = user.displayName || 'Usuario Myxsi';
+            if (emailEl) emailEl.textContent = user.email || 'usuario@myxsi.ai';
+            if (avatarEl) {
+                if (user.photoURL) {
+                    avatarEl.innerHTML = `<img src="${user.photoURL}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                } else {
+                    avatarEl.textContent = initial;
+                }
+            }
+            if (badgeEl) {
+                badgeEl.style.display = 'inline-flex';
+                badgeEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Cuenta Myxsi Conectada';
+            }
+            if (authActionBtn) {
+                authActionBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión';
+                authActionBtn.style.color = '#f87171';
+            }
+        } else {
+            if (nameEl) nameEl.textContent = 'Modo Invitado';
+            if (emailEl) emailEl.textContent = 'Inicia sesión para sincronizar tus documentos en la nube';
+            if (avatarEl) avatarEl.innerHTML = '<i class="fa-solid fa-user-astronaut"></i>';
+            if (badgeEl) {
+                badgeEl.style.display = 'none';
+            }
+            if (authActionBtn) {
+                authActionBtn.innerHTML = '<i class="fa-brands fa-google"></i> Iniciar Sesión con Google';
+                authActionBtn.style.color = '#60a5fa';
+            }
+        }
+    }
+
+    window.handleAuthModalAction = async function() {
+        const userStr = localStorage.getItem('myxsi_user');
+        if (userStr) {
+            if (confirm("¿Deseas cerrar tu sesión actual de Myxsi?")) {
+                localStorage.removeItem('myxsi_user');
+                localStorage.removeItem('myxsi_user_email');
+                localStorage.removeItem('gdrive_access_token');
+                localStorage.removeItem('gdrive_token_expires_at');
+                if (typeof window.signOut === 'function' && window.auth) {
+                    try { await window.signOut(window.auth); } catch(e){}
+                }
+                loadMyxsiAccount();
+                window.toggleUserDetailsModal();
+            }
+        } else {
+            if (typeof window.loginWithGoogle === 'function') {
+                window.toggleUserDetailsModal();
+                await window.loginWithGoogle();
+                loadMyxsiAccount();
+            } else {
+                window.location.href = 'index.html';
+            }
+        }
+    };
+
+    window.connectGoogleDriveAccount = async function() {
+        try {
+            if (typeof window.ensureValidToken === 'function') {
+                const token = await window.ensureValidToken();
+                if (token) {
+                    alert("✅ Cuenta de Google Drive conectada con éxito. Tus documentos se sincronizarán.");
+                    updateUserDetailsInModal();
+                    return;
+                }
+            }
+            if (typeof window.loginWithGoogle === 'function') {
+                await window.loginWithGoogle();
+                updateUserDetailsInModal();
+                alert("✅ Cuenta vinculada correctamente.");
+            } else {
+                alert("Por favor inicia sesión con tu cuenta Google desde la página principal o el chat de Myxsi.");
+            }
+        } catch(err) {
+            console.error("Error conectando Drive:", err);
+            alert("No se pudo completar la conexión con Google: " + err.message);
+        }
+    };
+
+    // =========================================================
+    // 2. SINCRONIZACIÓN Y GUARDADO CON GOOGLE DRIVE
+    // =========================================================
+    window.exportDocToGoogleDrive = async function() {
+        if (!window.smartDocQuill) return;
+
+        const titleInput = document.getElementById('smartDocTitle');
+        const docTitle = (titleInput ? titleInput.value.trim() : '') || 'Documento Inteligente Myxsi';
+        const text = window.smartDocQuill.root.innerHTML.trim();
+
+        if (!text || text === '<p><br></p>') {
+            alert("⚠️ El documento está vacío. Escribe algo antes de exportar.");
             return;
         }
 
-        container.innerHTML = '';
-        commentsList.forEach(c => {
-            const item = document.createElement('div');
-            item.className = 'comment-item-card';
-            item.innerHTML = `
-                <div class="comment-author-badge">
-                    <span><i class="fa-solid fa-user-pen"></i> Usuario Myxsi</span>
-                    <span style="font-size:0.65rem; color:rgba(255,255,255,0.4);">${c.time}</span>
+        const btn = document.getElementById('btnExportToDrive');
+        const originalBtnHtml = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Guardando...';
+        }
+
+        // Respaldo local prioritario en Myxsi Files para no perder nada nunca
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentDocId = urlParams.get('docId') || ('doc_' + Date.now());
+        localStorage.setItem('smart_doc_content_' + currentDocId, text);
+        localStorage.setItem('smart_doc_title_' + currentDocId, docTitle);
+        localStorage.setItem('smart_doc_content', text);
+        localStorage.setItem('smart_doc_title', docTitle);
+
+        try {
+            const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            let f = localFiles.find(item => item.id === currentDocId);
+            const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+            if (!f) {
+                f = { id: currentDocId, name: docTitle, type: 'doc', updatedAt: Date.now(), userEmail: user?.email || 'local' };
+                localFiles.unshift(f);
+            } else {
+                f.name = docTitle;
+                f.updatedAt = Date.now();
+                if (user?.email) f.userEmail = user.email;
+            }
+            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+        } catch(e){}
+
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${docTitle}</title><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1e293b; line-height: 1.7; padding: 40px; max-width: 820px; margin: 0 auto; background: #ffffff; } h1 { font-size: 2.1rem; color: #0f172a; margin-bottom: 12px; font-weight: 800; } h2 { font-size: 1.5rem; color: #4338ca; margin-top: 28px; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.2rem; color: #6366f1; margin-top: 20px; margin-bottom: 8px; } p { margin: 0 0 14px 0; font-size: 1.05rem; } ul, ol { margin: 0 0 16px 24px; } li { margin-bottom: 6px; } blockquote { border-left: 4px solid #6366f1; background: #f8fafc; padding: 12px 18px; margin: 16px 0; font-style: italic; color: #475569; } table { width: 100%; border-collapse: collapse; margin: 20px 0; } th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; } th { background: #f1f5f9; font-weight: 700; color: #0f172a; } .doc-footer { margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 0.8rem; color: #94a3b8; text-align: center; }</style></head><body>${text}<div class="doc-footer">Documento creado y sincronizado con Myxsi Docs Studio • ${new Date().toLocaleDateString()}</div></body></html>`;
+
+        let accessToken = null;
+        if (typeof window.ensureValidToken === 'function') {
+            try { accessToken = await window.ensureValidToken(); } catch(e){}
+        }
+
+        if (!accessToken) {
+            // Descarga de respaldo instantáneo en formato Word (.doc) para que nada se pierda
+            const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docTitle.replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '_')}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+            alert("💾 Tu documento se ha guardado localmente en tu cuenta de Myxsi y se descargó una copia en Word (.doc) para que no pierdas nada.\n\nPara guardarlo directamente en tu Google Drive en la nube, vincula tu cuenta de Google.");
+            return;
+        }
+
+        // Subida directa a Google Drive
+        try {
+            const isUpdate = !!window.activeGoogleDocId;
+            let folderId = null;
+            if (typeof getOrCreateMyxsiDriveFolder === 'function') {
+                folderId = await getOrCreateMyxsiDriveFolder(accessToken);
+            }
+
+            const metadata = { name: docTitle };
+            if (!isUpdate && folderId) metadata.parents = [folderId];
+            if (!isUpdate) metadata.mimeType = 'application/vnd.google-apps.document';
+
+            const boundary = 'foo_bar_boundary_myxsi_docs';
+            const multipart =
+                `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+                JSON.stringify(metadata) +
+                `\r\n--${boundary}\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n` +
+                fullHtml +
+                `\r\n--${boundary}--`;
+
+            const uploadUrl = isUpdate
+                ? `https://www.googleapis.com/upload/drive/v3/files/${window.activeGoogleDocId}?uploadType=multipart`
+                : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+
+            const res = await fetch(uploadUrl, {
+                method: isUpdate ? 'PATCH' : 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': `multipart/related; boundary=${boundary}`
+                },
+                body: multipart
+            });
+
+            if (!res.ok) {
+                throw new Error(`Google Drive API error: ${res.statusText}`);
+            }
+
+            const resData = await res.json();
+            window.activeGoogleDocId = resData.id;
+            const realLink = `https://docs.google.com/document/d/${resData.id}/edit`;
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> <span>En Drive</span>';
+                setTimeout(() => { if (btn) btn.innerHTML = originalBtnHtml; }, 3500);
+            }
+
+            const openNow = confirm(`✅ ¡Documento guardado con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Docs?`);
+            if (openNow) {
+                window.open(realLink, '_blank');
+            }
+        } catch(err) {
+            console.error("Error al subir a Google Drive:", err);
+            const blob = new Blob([fullHtml], { type: 'application/msword;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${docTitle.replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '_')}.doc`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
+
+            alert("⚠️ La sincronización con Google Drive API no pudo completarse. El documento se guardó localmente en tu cuenta y se descargó en Word para proteger tus cambios.");
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalBtnHtml;
+            }
+        }
+    };
+
+    // =========================================================
+    // 3. COPILOTO IA & CHAT EN TIEMPO REAL CON LA HOJA
+    // =========================================================
+    window.autoResizeDocChatInput = function(el) {
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    };
+
+    window.handleDocChatKey = function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            window.sendDocChatMessage();
+        }
+    };
+
+    window.sendDocPromptChip = function(promptText) {
+        const input = document.getElementById('docChatInput');
+        if (input) input.value = promptText;
+        window.sendDocChatMessage();
+    };
+
+    window.clearDocChatHistory = function() {
+        const msgContainer = document.getElementById('docChatMessages');
+        if (!msgContainer) return;
+        msgContainer.innerHTML = `
+            <div class="doc-chat-welcome">
+                <div class="doc-welcome-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h4 class="doc-welcome-title">Asistente de Documento</h4>
+                <p class="doc-welcome-sub">Pídeme que cree un informe, redacte secciones o mejore el estilo. Modificaré tu hoja en tiempo real de forma profesional y estructurada.</p>
+                
+                <div class="doc-quick-chips">
+                    <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Crea un informe completo y formal sobre Myxsi AI, su plataforma y visión estratégica')">
+                        <i class="fa-solid fa-file-lines" style="color: #60a5fa;"></i> Crear informe de Myxsi
+                    </button>
+                    <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Redacta un informe ejecutivo formal con resumen, objetivos, desarrollo y conclusiones')">
+                        <i class="fa-solid fa-briefcase" style="color: #a78bfa;"></i> Informe Ejecutivo
+                    </button>
+                    <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Mejora la redacción del documento actual, corrige ortografía y dale un tono corporativo de alto nivel')">
+                        <i class="fa-solid fa-feather-pointed" style="color: #34d399;"></i> Mejorar redacción y estilo
+                    </button>
+                    <button class="doc-quick-chip" onclick="window.sendDocPromptChip('Agrega una sección formal de conclusiones estratégicas y recomendaciones al final del documento')">
+                        <i class="fa-solid fa-list-check" style="color: #f59e0b;"></i> Añadir conclusiones
+                    </button>
                 </div>
-                <div style="color:#ffffff;">${c.text}</div>
-            `;
-            container.appendChild(item);
-        });
+            </div>
+        `;
+    };
+
+    window.undoLastDocAiChange = function() {
+        if (window.docUndoStack.length === 0) {
+            alert("No hay cambios previos de la IA para deshacer.");
+            return;
+        }
+        const prev = window.docUndoStack.pop();
+        if (window.smartDocQuill && prev) {
+            window.smartDocQuill.root.innerHTML = prev.content;
+            if (prev.title) {
+                document.getElementById('smartDocTitle').value = prev.title;
+                window.saveSmartDocTitle(prev.title);
+            }
+            updateOutline();
+            updateMetrics();
+            if (window.triggerSmartDocAutosave) window.triggerSmartDocAutosave();
+            appendAssistantChatMessage("↺ Se ha restaurado la hoja al estado anterior.");
+        }
+    };
+
+    function appendUserChatMessage(text) {
+        const container = document.getElementById('docChatMessages');
+        if (!container) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'doc-chat-bubble user';
+        bubble.textContent = text;
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
     }
+
+    function appendAssistantChatMessage(htmlContent, showAppliedBadge = false, newTitle = '') {
+        const container = document.getElementById('docChatMessages');
+        if (!container) return;
+        const bubble = document.createElement('div');
+        bubble.className = 'doc-chat-bubble assistant';
+        
+        let innerHtml = `<div class="doc-bubble-text">${typeof marked !== 'undefined' ? marked.parse(htmlContent) : htmlContent}</div>`;
+        
+        if (showAppliedBadge) {
+            innerHtml += `
+                <div class="doc-applied-tag">
+                    <i class="fa-solid fa-circle-check"></i> Modificado en tu hoja${newTitle ? ': <strong>' + newTitle + '</strong>' : ''}
+                </div>
+                <div class="doc-bubble-actions">
+                    <button class="doc-bubble-action-btn" onclick="window.undoLastDocAiChange()" title="Revertir este cambio">
+                        <i class="fa-solid fa-rotate-left"></i> Deshacer
+                    </button>
+                    <button class="doc-bubble-action-btn" onclick="window.printOrExportPDF()" title="Exportar hoja en PDF limpio">
+                        <i class="fa-solid fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="doc-bubble-action-btn" onclick="window.exportDocToGoogleDrive()" title="Guardar en Google Drive">
+                        <i class="fa-brands fa-google-drive"></i> Drive
+                    </button>
+                </div>
+            `;
+        }
+        
+        bubble.innerHTML = innerHtml;
+        container.appendChild(bubble);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    window.sendDocChatMessage = async function() {
+        const input = document.getElementById('docChatInput');
+        const btn = document.getElementById('btnSendDocChat');
+        const userText = input ? input.value.trim() : '';
+        if (!userText || !window.smartDocQuill) return;
+
+        input.value = '';
+        input.style.height = 'auto';
+
+        // Asegurarse de que el sidebar derecho esté abierto
+        const rightSidebar = document.querySelector('.docs-sidebar-right');
+        const btnCopilot = document.getElementById('btnToggleCopilot');
+        if (rightSidebar && !rightSidebar.classList.contains('open')) {
+            rightSidebar.classList.add('open');
+            if (btnCopilot) btnCopilot.classList.add('active');
+        }
+
+        appendUserChatMessage(userText);
+
+        const container = document.getElementById('docChatMessages');
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'doc-chat-loading';
+        loadingEl.id = 'docChatLoadingBubble';
+        loadingEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Redactando informe y aplicando cambios a la hoja...';
+        container.appendChild(loadingEl);
+        container.scrollTop = container.scrollHeight;
+
+        if (btn) btn.disabled = true;
+
+        const currentTitle = document.getElementById('smartDocTitle')?.value || 'Documento sin título';
+        const currentHtml = window.smartDocQuill.root.innerHTML;
+        const currentPlainText = window.smartDocQuill.getText().trim();
+
+        // Guardar estado actual en el historial de deshacer
+        window.docUndoStack.push({
+            content: currentHtml,
+            title: currentTitle
+        });
+        if (window.docUndoStack.length > 20) window.docUndoStack.shift();
+
+        const prompt = `Eres el Asistente Ejecutivo de Redacción y Edición de Myxsi Docs Studio.
+El usuario te ha dado la siguiente instrucción para su documento/hoja de trabajo:
+"${userText}"
+
+Estado actual del documento:
+- Título actual: "${currentTitle}"
+- Contenido actual: "${currentPlainText.slice(0, 1500)}"
+
+TU MISIÓN:
+Generar una redacción impecable, profesional, ordenada y estructurada que cumpla exactamente el requerimiento del usuario.
+
+REGLAS DE FORMATO Y CONTENIDO:
+1. Si el usuario pide un informe (por ejemplo sobre "Myxsi", un proyecto, una empresa o un tema):
+   - Redacta un documento formal, exhaustivo y de calidad ejecutiva / académica.
+   - Si es sobre Myxsi: describe a Myxsi como el ecosistema integral de inteligencia artificial con chat inteligente, Docs Studio, Canva creativo, Sheets analítico, Code Studio y almacenamiento seguro en la nube.
+   - Estructura obligatoria:
+     • Encabezado formal con Título en <h1>
+     • Resumen Ejecutivo (en un bloque destacado o párrafo con <strong>)
+     • Datos del documento (Fecha, Versión, Autor / Myxsi AI)
+     • Secciones temáticas ordenadas con subtítulos en <h2> y <h3>
+     • Listas de viñetas con viñetas limpias (<ul><li>...</li></ul>) para puntos clave o métricas
+     • Conclusiones estratégicas y recomendaciones formales
+     • Nota de cierre formal
+2. Si el usuario pide modificar o añadir algo al documento existente:
+   - Mantén la coherencia del documento y aplica los cambios con la máxima elegancia y orden.
+3. FORMATO ESTRICTO DE SALIDA:
+Debes responder EXACTAMENTE con estos delimitadores:
+
+===HTML_DOCUMENTO===
+(Aquí coloca ÚNICAMENTE el código HTML limpio formateado para editor Quill: usa <h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>, <blockquote>, <hr>. NO uses bloques de markdown \`\`\`html, NO incluyas <html>, <head> o <body>, solo el cuerpo interno estructurado)
+===FIN_HTML_DOCUMENTO===
+
+===TITULO_DOCUMENTO===
+(Un título formal y conciso de 3 a 7 palabras para el documento)
+===FIN_TITULO_DOCUMENTO===
+
+===MENSAJE_CHAT===
+(Un mensaje breve, amable y profesional para el chat explicando qué se ha redactado o modificado en la hoja y ofreciendo próximos pasos)
+===FIN_MENSAJE_CHAT===`;
+
+        try {
+            const apiUrl = window.__MYXSI_API_URL__ || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+            const res = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'chat',
+                    message: prompt
+                })
+            });
+
+            const data = await res.json();
+            const rawText = data?.response || '';
+
+            if (!rawText) {
+                throw new Error("No se recibió respuesta del modelo de IA.");
+            }
+
+            let htmlDoc = '';
+            let docTitleSuggested = '';
+            let chatExplanation = '';
+
+            const htmlMatch = rawText.match(/===HTML_DOCUMENTO===([\s\S]*?)===FIN_HTML_DOCUMENTO===/i);
+            const titleMatch = rawText.match(/===TITULO_DOCUMENTO===([\s\S]*?)===FIN_TITULO_DOCUMENTO===/i);
+            const chatMatch = rawText.match(/===MENSAJE_CHAT===([\s\S]*?)===FIN_MENSAJE_CHAT===/i);
+
+            if (htmlMatch && htmlMatch[1].trim()) {
+                htmlDoc = htmlMatch[1].trim();
+            }
+            if (titleMatch && titleMatch[1].trim()) {
+                docTitleSuggested = titleMatch[1].trim();
+            }
+            if (chatMatch && chatMatch[1].trim()) {
+                chatExplanation = chatMatch[1].trim();
+            }
+
+            if (!htmlDoc) {
+                if (rawText.includes('<h1') || rawText.includes('<p>') || rawText.includes('<h2>')) {
+                    htmlDoc = rawText;
+                } else if (typeof marked !== 'undefined') {
+                    htmlDoc = marked.parse(rawText);
+                } else {
+                    htmlDoc = `<p>${rawText.replace(/\n/g, '<br>')}</p>`;
+                }
+            }
+
+            htmlDoc = htmlDoc.replace(/^```html\s*/i, '').replace(/```$/i, '').trim();
+
+            if (!chatExplanation) {
+                chatExplanation = `He redactado y aplicado el informe profesional directamente en tu hoja de documento con formato ordenado y estructurado.`;
+            }
+
+            // MODIFICAR DIRECTAMENTE LA HOJA
+            const isAppendInstruction = /a[ñn]ad(e|ir)|agrega(r)?|anexa(r)?/i.test(userText);
+            if (isAppendInstruction && currentPlainText.length > 50) {
+                window.smartDocQuill.root.innerHTML = currentHtml + '<hr style="border:none; border-top:1px solid #cbd5e1; margin:25px 0;">' + htmlDoc;
+            } else {
+                window.smartDocQuill.root.innerHTML = htmlDoc;
+            }
+
+            // Actualizar título si es default
+            if (docTitleSuggested && (!currentTitle || currentTitle.toLowerCase().includes('sin título') || currentTitle === 'Documento')) {
+                document.getElementById('smartDocTitle').value = docTitleSuggested;
+                window.saveSmartDocTitle(docTitleSuggested);
+            }
+
+            updateMetrics();
+            updateOutline();
+            if (window.triggerSmartDocAutosave) window.triggerSmartDocAutosave();
+
+            const currentLoading = document.getElementById('docChatLoadingBubble');
+            if (currentLoading) currentLoading.remove();
+
+            appendAssistantChatMessage(chatExplanation, true, docTitleSuggested || currentTitle);
+
+        } catch (err) {
+            console.error("Error en Copiloto IA:", err);
+            const currentLoading = document.getElementById('docChatLoadingBubble');
+            if (currentLoading) currentLoading.remove();
+            appendAssistantChatMessage(`❌ Ocurrió un error al procesar tu instrucción: ${err.message}. Intenta reformularla o verifica tu conexión.`);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    };
+
+    window.triggerSmartDocAI = function(action) {
+        const rightSidebar = document.querySelector('.docs-sidebar-right');
+        const btnCopilot = document.getElementById('btnToggleCopilot');
+        if (rightSidebar && !rightSidebar.classList.contains('open')) {
+            rightSidebar.classList.add('open');
+            if (btnCopilot) btnCopilot.classList.add('active');
+        }
+
+        let promptText = '';
+        if (action === 'correct') {
+            promptText = 'Mejora y pule la redacción de este documento, corrigiendo gramática y dándole un tono corporativo formal.';
+        } else if (action === 'expand') {
+            promptText = 'Expande las ideas y puntos clave de este documento agregando argumentos sólidos, detalles y viñetas descriptivas.';
+        } else if (action === 'vocabulary') {
+            promptText = 'Enriquece el vocabulario de este documento sustituyendo palabras comunes por términos profesionales de alto nivel.';
+        }
+        if (promptText) {
+            window.sendDocPromptChip(promptText);
+        }
+    };
+
+    // =========================================================
+    // 4. UTILIDADES GENERALES
+    // =========================================================
+    window.createNewSmartDoc = function() {
+        if (window.smartDocQuill && window.smartDocQuill.getText().trim().length > 10) {
+            if (!confirm("¿Deseas iniciar un documento nuevo en blanco? Los cambios guardados se mantendrán en tu historial.")) {
+                return;
+            }
+        }
+        const newDocId = 'doc_' + Date.now();
+        window.location.href = `docs.html?docId=${newDocId}`;
+    };
 
     // Insertar Ecuación Matemática LaTeX
     window.insertMathEquation = function() {
@@ -1796,10 +2743,15 @@
         const paragraphs = text ? text.split(/\n+/).filter(p => p.length > 0).length : 0;
         const readTime = Math.ceil(words / 200);
 
-        document.getElementById('statWordsCount').textContent = words;
-        document.getElementById('statCharsCount').textContent = chars;
-        document.getElementById('statParagraphsCount').textContent = paragraphs;
-        document.getElementById('statReadingTime').textContent = readTime + " min";
+        const elWords = document.getElementById('statWordsCount');
+        const elChars = document.getElementById('statCharsCount');
+        const elParagraphs = document.getElementById('statParagraphsCount');
+        const elRead = document.getElementById('statReadingTime');
+
+        if (elWords) elWords.textContent = words;
+        if (elChars) elChars.textContent = chars;
+        if (elParagraphs) elParagraphs.textContent = paragraphs;
+        if (elRead) elRead.textContent = readTime + " min";
     }
 
     function updateOutline() {
@@ -1848,10 +2800,8 @@
         const docTitle = (titleInput ? titleInput.value.trim() : '') || 'Documento Myxsi';
         const originalDocTitle = document.title;
         
-        // Asignar el título del documento para que el archivo PDF se nombre correctamente
         document.title = docTitle;
 
-        // Si html2pdf está disponible, generar el PDF de forma directa, limpia y aislada
         if (typeof html2pdf !== 'undefined') {
             const paper = document.getElementById('paperSheet');
             if (paper) {
@@ -1900,7 +2850,6 @@
             }
         }
 
-        // Impresión nativa del navegador con reglas @media print estrictas
         window.print();
         setTimeout(() => {
             document.title = originalDocTitle;

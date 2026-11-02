@@ -1982,6 +1982,7 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
         function renderChatsList() {
             const container = document.getElementById('chatsList');
+            if (!container) return;
             if (chatsList.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:3rem 1.5rem; color:var(--fog); font-size: 0.85rem;"><i class="fa-regular fa-comment-dots" style="font-size: 1.8rem; margin-bottom: 0.8rem; display: block; opacity: 0.5;"></i>No hay historial de chats</div>`;
                 return;
@@ -5122,10 +5123,13 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             }
             autosaveTimeout = setTimeout(async () => {
                 try {
-                    let html = smartDocQuill.root.innerHTML;
+                    const quillInstance = smartDocQuill || window.smartDocQuill;
+                    if (!quillInstance) return;
+                    let html = quillInstance.root.innerHTML;
                     // Strip script tags for security and E2E test F2-Toolbar-10
                     html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-                    const title = document.getElementById('smartDocTitle').value.trim() || 'Documento sin título';
+                    const titleEl = document.getElementById('smartDocTitle');
+                    const title = (titleEl ? titleEl.value.trim() : '') || 'Documento sin título';
                     localStorage.setItem('smart_doc_content', html);
                     localStorage.setItem('smart_doc_title', title);
 
@@ -5427,24 +5431,28 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             const statusEl = document.getElementById('driveExportStatus');
             const btn = document.getElementById('btnExportToDrive');
 
+            let docTitle = document.getElementById('smartDocTitle')?.value?.trim() || 'Documento Inteligente Myxsi';
+            const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.7; padding: 40px; max-width: 800px; margin: 0 auto; background-color: #ffffff; } .header-banner { border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; } .header-logo { font-size: 1.1rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; } .header-date { font-size: 0.85rem; color: #a0aec0; } h1 { font-size: 2.2rem; color: #1a202c; margin-top: 0; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; } h2 { font-size: 1.6rem; color: #6d28d9; margin-top: 35px; margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.25rem; color: #7c3aed; margin-top: 25px; margin-bottom: 10px; font-weight: 600; } p { margin-top: 0; margin-bottom: 16px; font-size: 1.05rem; } code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; background-color: #f7fafc; color: #e53e3e; padding: 3px 6px; border-radius: 6px; font-size: 0.9em; border: 1px solid #edf2f7; } pre { background-color: #1a202c; color: #edf2f7; padding: 20px; border-radius: 12px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #2d3748; } pre code { background-color: transparent; color: inherit; padding: 0; border: none; border-radius: 0; font-size: 0.95em; } ul, ol { margin-top: 0; margin-bottom: 20px; padding-left: 25px; } li { margin-bottom: 8px; font-size: 1.05rem; } blockquote { border-left: 4px solid #7c3aed; background-color: #f7fafc; padding: 15px 20px; color: #4a5568; font-style: italic; margin: 20px 0; border-radius: 0 8px 8px 0; } table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 30px; } th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; } th { background-color: #f7fafc; font-weight: 700; color: #2d3748; } tr:nth-child(even) { background-color: #fafbfe; } .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 0.85rem; color: #718096; text-align: center; }</style></head><body><div class="header-banner"><span class="header-logo">Myxsi AI • Documento Inteligente</span><span class="header-date">${new Date().toLocaleDateString()}</span></div>${text}<div class="footer-note">Documento generado automáticamente por Myxsi AI. Conserva este material para tu estudio académico.</div></body></html>`;
+
             if (!navigator.onLine) {
-                statusEl.innerHTML = `<span style="color: #f43f5e; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Fallo al subir.</span>`;
+                if (statusEl) statusEl.innerHTML = `<span style="color: #f43f5e; font-weight: 700;"><i class="fa-solid fa-circle-xmark"></i> Fallo al subir.</span>`;
                 showNotification("⚠️ No hay conexión a internet. Sincronización fallida.");
                 return;
             }
 
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
+            if (btn) {
+                btn.disabled = true;
+                btn.style.opacity = '0.7';
+            }
 
-            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Comprobando credenciales de Google...`;
+            if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Comprobando credenciales de Google...`;
 
-            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #f59e0b;"></i> Solicitando acceso a Google Drive...`;
+            if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #f59e0b;"></i> Solicitando acceso a Google Drive...`;
             await new Promise(r => setTimeout(r, 600)); // Delay to allow E2E test to detect spinner
             let accessToken = await window.ensureValidToken();
             if (!accessToken) {
-                statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
+                if (statusEl) statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
                 
-                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
                 localStorage.setItem('smart_doc_title', docTitle);
                 localStorage.setItem('smart_doc_content', text);
 
@@ -5458,23 +5466,21 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                 setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
 
                 showNotification("📄 Documento guardado localmente en Myxsi y descargado en formato Word.");
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
                 return;
             }
 
             const isUpdate = !!activeGoogleDocId;
-            statusEl.innerHTML = isUpdate 
-                ? `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Guardando cambios en Google Drive...`
-                : `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Creando documento nuevo en Google Drive...`;
+            if (statusEl) {
+                statusEl.innerHTML = isUpdate 
+                    ? `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Guardando cambios en Google Drive...`
+                    : `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> Creando documento nuevo en Google Drive...`;
+            }
 
             try {
-                // Usar el título del documento interactivo o uno por defecto
-                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
-
-                // Generar el archivo HTML con estilo premium e imprimir el contenido del Quill
-                const htmlContent = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #2d3748; line-height: 1.7; padding: 40px; max-width: 800px; margin: 0 auto; background-color: #ffffff; } .header-banner { border-bottom: 3px solid #7c3aed; padding-bottom: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; } .header-logo { font-size: 1.1rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; } .header-date { font-size: 0.85rem; color: #a0aec0; } h1 { font-size: 2.2rem; color: #1a202c; margin-top: 0; margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px; } h2 { font-size: 1.6rem; color: #6d28d9; margin-top: 35px; margin-bottom: 15px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; } h3 { font-size: 1.25rem; color: #7c3aed; margin-top: 25px; margin-bottom: 10px; font-weight: 600; } p { margin-top: 0; margin-bottom: 16px; font-size: 1.05rem; } code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; background-color: #f7fafc; color: #e53e3e; padding: 3px 6px; border-radius: 6px; font-size: 0.9em; border: 1px solid #edf2f7; } pre { background-color: #1a202c; color: #edf2f7; padding: 20px; border-radius: 12px; overflow-x: auto; margin-bottom: 24px; border: 1px solid #2d3748; } pre code { background-color: transparent; color: inherit; padding: 0; border: none; border-radius: 0; font-size: 0.95em; } ul, ol { margin-top: 0; margin-bottom: 20px; padding-left: 25px; } li { margin-bottom: 8px; font-size: 1.05rem; } blockquote { border-left: 4px solid #7c3aed; background-color: #f7fafc; padding: 15px 20px; color: #4a5568; font-style: italic; margin: 20px 0; border-radius: 0 8px 8px 0; } table { border-collapse: collapse; width: 100%; margin-top: 20px; margin-bottom: 30px; } th, td { border: 1px solid #e2e8f0; padding: 12px 15px; text-align: left; } th { background-color: #f7fafc; font-weight: 700; color: #2d3748; } tr:nth-child(even) { background-color: #fafbfe; } .footer-note { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 0.85rem; color: #718096; text-align: center; }</style></head><body><div class="header-banner"><span class="header-logo">Myxsi AI • Documento Inteligente</span><span class="header-date">${new Date().toLocaleDateString()}</span></div>${text}<div class="footer-note">Documento generado automáticamente por Myxsi AI. Conserva este material para tu estudio académico.</div></body></html>`;
-
                 const folderId = await getOrCreateMyxsiDriveFolder(accessToken);
                 const metadata = {
                     name: docTitle
@@ -5541,9 +5547,11 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
                 const realLink = `https://docs.google.com/document/d/${fileId}/edit?usp=drivesdk`;
 
-                statusEl.innerHTML = isUpdate
-                    ? `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Cambios guardados en Google Drive!</span>`
-                    : `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Creado y Guardado en Google Drive!</span>`;
+                if (statusEl) {
+                    statusEl.innerHTML = isUpdate
+                        ? `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Cambios guardados en Google Drive!</span>`
+                        : `<span style="color: #10b981; font-weight: 700;"><i class="fa-solid fa-circle-check"></i> ¡Creado y Guardado en Google Drive!</span>`;
+                }
 
                 // Quitar cualquier notificación previa del enlace para no duplicar
                 const oldNotification = document.getElementById('driveLinkCard');
@@ -5571,18 +5579,17 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                 `;
 
                 const editorPanel = document.querySelector('.editor-main-panel');
-                editorPanel.appendChild(notification);
+                if (editorPanel) editorPanel.appendChild(notification);
 
                 showNotification(isUpdate ? "💾 Cambios sincronizados en Google Drive." : "💾 Nuevo documento guardado en Google Drive.");
                 
                 // Actualizar la lista en segundo plano si está en la pestaña correspondiente
-                listGoogleDocsFromDrive();
+                if (typeof listGoogleDocsFromDrive === 'function') listGoogleDocsFromDrive();
             } catch (error) {
                 console.error("Error al sincronizar con Google Drive API:", error);
-                statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
+                if (statusEl) statusEl.innerHTML = `<span style="color: #a78bfa; font-weight: 700;"><i class="fa-solid fa-cloud-arrow-down"></i> Guardado localmente en Myxsi.</span>`;
                 
                 // Guardar borrador en almacenamiento local para no perder nada
-                let docTitle = document.getElementById('smartDocTitle').value.trim() || 'Documento Inteligente Myxsi';
                 localStorage.setItem('smart_doc_title', docTitle);
                 localStorage.setItem('smart_doc_content', text);
 
@@ -5598,8 +5605,10 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
                 showNotification("📄 Documento guardado localmente y descargado en formato Word/Doc.");
             } finally {
-                btn.disabled = false;
-                btn.style.opacity = '1';
+                if (btn) {
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                }
             }
         }
 
