@@ -1720,6 +1720,25 @@
                         isCloudLoaded = true;
                         localStorage.setItem('myxsi_gdrive_cached_files', JSON.stringify(cloudFiles));
                     }
+
+                    // Si estamos en la raíz (Mi unidad), traer también los archivos más recientes editados en Drive
+                    if (folderId === 'root') {
+                        try {
+                            const recentQuery = encodeURIComponent("trashed = false and mimeType != 'application/vnd.google-apps.folder'");
+                            const recentUrl = `https://www.googleapis.com/drive/v3/files?q=${recentQuery}&fields=files(id,name,mimeType,size,webViewLink,webContentLink,createdTime,modifiedTime)&pageSize=30&orderBy=modifiedTime desc`;
+                            let recentRes = await fetch(recentUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+                            if (recentRes.ok) {
+                                const rData = await recentRes.json();
+                                const existingIds = new Set(cloudFiles.map(f => f.id));
+                                (rData.files || []).forEach(rf => {
+                                    if (!existingIds.has(rf.id)) {
+                                        cloudFiles.push({ ...rf, isCloud: true, isLocal: false });
+                                        existingIds.add(rf.id);
+                                    }
+                                });
+                            }
+                        } catch(rErr){}
+                    }
                 } catch(e) {
                     console.warn("Could not load Google Drive files, falling back to cache:", e);
                     try {
@@ -1748,10 +1767,81 @@
 
             allFolderFiles = [...cloudFiles, ...uniqueLocal];
 
-            applyFiltersAndRender();
+            // Poblar myxsi_local_files para que las otras páginas (docs-home, sheets-home) tengan los archivos al iniciar sesión en otra PC
+            if (cloudFiles.length > 0) {
+                try {
+                    let centralFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                    const centralIds = new Set(centralFiles.map(c => c.id));
+                    cloudFiles.forEach(cf => {
+                        if (!centralIds.has(cf.id) && cf.mimeType !== 'application/vnd.google-apps.folder') {
+                            centralFiles.unshift({
+                                id: cf.id,
+                                name: cf.name,
+                                mimeType: cf.mimeType,
+                                isDoc: cf.mimeType === 'application/vnd.google-apps.document' || cf.name.endsWith('.doc') || cf.name.endsWith('.docx'),
+                                isSheet: cf.mimeType === 'application/vnd.google-apps.spreadsheet' || cf.name.endsWith('.xlsx') || cf.name.endsWith('.csv'),
+                                type: (cf.mimeType === 'application/vnd.google-apps.document') ? 'doc' : (cf.mimeType === 'application/vnd.google-apps.spreadsheet' ? 'sheet' : 'file'),
+                                updatedAt: cf.modifiedTime || cf.createdTime || Date.now(),
+                                isCloud: true,
+                                isLocal: false,
+                                webViewLink: cf.webViewLink
+                            });
+                            centralIds.add(cf.id);
+                        }
+                    });
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(centralFiles));
+                } catch(cErr){}
+            }
+
+            await applyFiltersAndRender();
             if (loading) loading.style.display = 'none';
         }
         window.loadCurrentFolder = loadCurrentFolder;
+
+        // Búsqueda remota en todo Google Drive por categoría para ver archivos creados en cualquier PC
+        async function fetchCategoryCloudFiles(cat, search) {
+            let token = typeof window.ensureValidToken === 'function'
+                ? await window.ensureValidToken(false)
+                : (accessToken || localStorage.getItem('gdrive_access_token'));
+            if (!token) return [];
+
+            let qParts = ["trashed = false"];
+            if (cat === 'docs') {
+                qParts.push("(mimeType = 'application/vnd.google-apps.document' or name contains '.doc' or name contains '.docx' or name contains '.txt')");
+            } else if (cat === 'sheets') {
+                qParts.push("(mimeType = 'application/vnd.google-apps.spreadsheet' or mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or name contains '.xlsx' or name contains '.csv')");
+            } else if (cat === 'pdf') {
+                qParts.push("(mimeType = 'application/pdf' or name contains '.pdf')");
+            } else if (cat === 'images') {
+                qParts.push("(mimeType contains 'image/' or name contains '.png' or name contains '.jpg' or name contains '.jpeg' or name contains '.webp')");
+            } else if (cat === 'cloud') {
+                // Todo lo de Google Drive
+            }
+
+            if (search) {
+                qParts.push(`name contains '${search.replace(/'/g, "\\'")}'`);
+            }
+
+            const query = qParts.join(" and ");
+            const url = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(query)}&fields=files(id,name,mimeType,size,webViewLink,webContentLink,createdTime,modifiedTime)&pageSize=100&orderBy=modifiedTime desc`;
+            
+            try {
+                let res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                if (res.status === 401 || res.status === 403) {
+                    const freshToken = await window.ensureValidToken(true);
+                    if (freshToken) {
+                        res = await fetch(url, { headers: { 'Authorization': `Bearer ${freshToken}` } });
+                    }
+                }
+                if (res && res.ok) {
+                    const data = await res.json();
+                    return (data.files || []).map(f => ({ ...f, isCloud: true, isLocal: false }));
+                }
+            } catch(e) {
+                console.warn("fetchCategoryCloudFiles warning:", e);
+            }
+            return [];
+        }
 
         // Obtener Archivos Locales Guardados
         function getLocalFilesList(folderId = 'root') {
@@ -1770,9 +1860,23 @@
             });
         }
 
-        // Aplicar Filtros y Renderizar
-        function applyFiltersAndRender() {
+        // Aplicar Filtros y Renderizar (Soporte local + nube completa)
+        async function applyFiltersAndRender() {
             let files = [...allFolderFiles];
+
+            // Si hay un filtro por categoría o búsqueda activa, consultar también en todo Google Drive
+            if ((activeCategoryFilter !== 'all' || activeSearchQuery) && (accessToken || localStorage.getItem('gdrive_access_token'))) {
+                const categoryCloud = await fetchCategoryCloudFiles(activeCategoryFilter, activeSearchQuery);
+                if (categoryCloud.length > 0) {
+                    const existingIds = new Set(files.map(f => f.id));
+                    categoryCloud.forEach(cf => {
+                        if (!existingIds.has(cf.id)) {
+                            files.push(cf);
+                            existingIds.add(cf.id);
+                        }
+                    });
+                }
+            }
 
             // Filtro de Búsqueda
             if (activeSearchQuery) {
@@ -1792,6 +1896,9 @@
             } else if (activeCategoryFilter === 'cloud') {
                 files = files.filter(f => f.isCloud);
             }
+
+            renderFilesDisplay(files);
+        }
 
             renderFilesDisplay(files);
         }
@@ -2380,9 +2487,13 @@
             applyFiltersAndRender();
         };
 
+        let searchDebounceTimer = null;
         window.filterFiles = function(val) {
             activeSearchQuery = val || '';
-            applyFiltersAndRender();
+            if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => {
+                applyFiltersAndRender();
+            }, 300);
         };
 
         window.setFileTypeView = function(mode) {

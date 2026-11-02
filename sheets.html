@@ -588,7 +588,11 @@
                 <span>Sheets Studio Pro</span>
             </div>
             
-            <input type="text" id="sheetBookTitle" class="sheet-title-input" value="Libro de cálculo sin título" placeholder="Título del libro..." onchange="saveSheetBookTitle()">
+            <input type="text" id="sheetBookTitle" class="sheet-title-input" value="Libro de cálculo sin título" placeholder="Título del libro..." 
+                   oninput="window.handleSheetTitleInput(this.value)" 
+                   onchange="window.saveSheetBookTitle(this.value)" 
+                   onblur="window.saveSheetBookTitle(this.value)" 
+                   onkeydown="if(event.key==='Enter'){event.preventDefault(); this.blur();}">
 
             <div class="cloud-saved-status" id="sheetSaveStatus" style="font-size: 0.75rem; color: #34d399; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(52, 211, 153, 0.25);">
                 <i class="fa-solid fa-cloud"></i> <span>Sincronizado en la Nube (Google Drive)</span>
@@ -909,6 +913,7 @@
         renderGrid();
         saveSheetData();
         updateStatusCalcs();
+        if (window.triggerSheetAutosave) window.triggerSheetAutosave();
     }
 
     // MOTOR DE FÓRMULAS EXTENDIDO (=SUM, =AVERAGE, =MIN, =MAX, =COUNT, =COUNTA, =IF, =ROUND, =CONCAT)
@@ -1152,6 +1157,53 @@
         return parsed;
     }
 
+    window._userHasModifiedSheetTitle = false;
+    let sheetTitleDebounceTimer = null;
+
+    window.handleSheetTitleInput = function(val) {
+        window._userHasModifiedSheetTitle = true;
+        const clean = (val !== undefined && typeof val === 'string' ? val : (document.getElementById('sheetBookTitle')?.value || '')).trim() || 'Libro de cálculo sin título';
+        document.title = clean + ' — Myxsi Sheets';
+        if (sheetTitleDebounceTimer) clearTimeout(sheetTitleDebounceTimer);
+        sheetTitleDebounceTimer = setTimeout(() => {
+            window.saveSheetBookTitle(val);
+        }, 500);
+    };
+
+    window.saveSheetBookTitle = function(val) {
+        const el = document.getElementById('sheetBookTitle');
+        const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Libro de cálculo sin título';
+        if (el && val !== undefined && el.value !== titleVal && document.activeElement !== el) {
+            el.value = titleVal;
+        }
+        document.title = titleVal + ' — Myxsi Sheets';
+
+        saveSheetData();
+
+        // Si la hoja ya está vinculada a Google Drive, actualizar su nombre inmediatamente en la nube
+        if (window.activeGoogleSheetId && localStorage.getItem('gdrive_access_token')) {
+            const token = localStorage.getItem('gdrive_access_token');
+            fetch(`https://www.googleapis.com/drive/v3/files/${window.activeGoogleSheetId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name: titleVal })
+            }).then(res => {
+                if (res.ok) {
+                    const statusEl = document.getElementById('sheetSaveStatus');
+                    if (statusEl) {
+                        statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Nombre actualizado en Drive</span>`;
+                        setTimeout(() => {
+                            if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud" style="color: #34d399;"></i> <span>Sincronizado con Google Drive</span>`;
+                        }, 2500);
+                    }
+                }
+            }).catch(err => console.warn("Error actualizando nombre de Sheet en Drive:", err));
+        }
+    };
+
     function saveSheetData() {
         const effectiveId = currentSheetId || window.activeGoogleSheetId || 'main_sheet';
         const title = (document.getElementById('sheetBookTitle')?.value || '').trim() || 'Libro de cálculo Myxsi';
@@ -1245,8 +1297,9 @@
                     });
                     if (metaRes.ok) {
                         const meta = await metaRes.json();
-                        if (meta.name) {
+                        if (meta.name && !window._userHasModifiedSheetTitle && document.activeElement !== document.getElementById('sheetBookTitle')) {
                             document.getElementById('sheetBookTitle').value = meta.name;
+                            document.title = meta.name + ' — Myxsi Sheets';
                             localStorage.setItem('sheets_studio_title_' + effectiveId, meta.name);
                         }
                     }
@@ -1466,6 +1519,153 @@
                 alert("⚠️ Error al sincronizar con Google Drive: " + (err.message || err));
             }
         }
+    };
+
+    // Autosave Silencioso a Google Drive para Sheets
+    window.exportSheetToGoogleDriveSilent = async function() {
+        const title = document.getElementById('sheetBookTitle')?.value?.trim() || 'Libro de cálculo Myxsi';
+        let csv = "";
+        for (let r = 1; r <= 35; r++) {
+            let rowVals = [];
+            let hasDataInRow = false;
+            COLS.slice(0, 15).forEach(col => {
+                const raw = gridData[`${col}${r}`]?.raw || gridData[`${col}${r}`]?.val || "";
+                if (raw) hasDataInRow = true;
+                rowVals.push(`"${String(raw).replace(/"/g, '""')}"`);
+            });
+            if (hasDataInRow || r <= 10) {
+                csv += rowVals.join(",") + "\n";
+            }
+        }
+
+        let token = localStorage.getItem('gdrive_access_token');
+        if (!token && typeof window.ensureValidToken === 'function') {
+            token = await window.ensureValidToken(false);
+        }
+        if (!token) return;
+
+        const statusEl = document.getElementById('sheetSaveStatus');
+        if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #60a5fa;"></i> <span>Sincronizando con Drive...</span>`;
+        }
+
+        const isUpdate = Boolean(window.activeGoogleSheetId);
+        let folderId = null;
+        if (!isUpdate && typeof window.getOrCreateMyxsiDriveFolder === 'function') {
+            folderId = await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', token);
+        }
+
+        const metadata = { name: title };
+        if (!isUpdate) {
+            metadata.mimeType = 'application/vnd.google-apps.spreadsheet';
+            if (folderId) metadata.parents = [folderId];
+        }
+
+        const boundary = 'foo_bar_boundary_myxsi_sheets_silent';
+        const multipart =
+            `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n` +
+            JSON.stringify(metadata) +
+            `\r\n--${boundary}\r\nContent-Type: text/csv; charset=UTF-8\r\n\r\n` +
+            csv +
+            `\r\n--${boundary}--`;
+
+        const uploadUrl = isUpdate
+            ? `https://www.googleapis.com/upload/drive/v3/files/${window.activeGoogleSheetId}?uploadType=multipart`
+            : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+
+        try {
+            let res = await fetch(uploadUrl, {
+                method: isUpdate ? 'PATCH' : 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': `multipart/related; boundary=${boundary}`
+                },
+                body: multipart
+            });
+
+            if (res.status === 401 || res.status === 403) {
+                if (typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(true);
+                    if (token) {
+                        res = await fetch(uploadUrl, {
+                            method: isUpdate ? 'PATCH' : 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': `multipart/related; boundary=${boundary}`
+                            },
+                            body: multipart
+                        });
+                    }
+                }
+            }
+
+            if (res && res.ok) {
+                const driveFile = await res.json();
+                const returnedId = driveFile.id || window.activeGoogleSheetId;
+                window.activeGoogleSheetId = returnedId;
+                const realLink = `https://docs.google.com/spreadsheets/d/${returnedId}/edit`;
+
+                try {
+                    const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                    let f = localFiles.find(item => item.id === returnedId);
+                    const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+                    if (f) {
+                        f.id = returnedId;
+                        f.name = title;
+                        f.type = 'sheet';
+                        f.isSheet = true;
+                        f.isCloud = true;
+                        f.isLocal = false;
+                        f.webViewLink = realLink;
+                        f.updatedAt = Date.now();
+                    } else {
+                        localFiles.unshift({
+                            id: returnedId,
+                            name: title,
+                            type: 'sheet',
+                            isSheet: true,
+                            mimeType: 'application/vnd.google-apps.spreadsheet',
+                            updatedAt: Date.now(),
+                            isCloud: true,
+                            isLocal: false,
+                            webViewLink: realLink,
+                            userEmail: user?.email || 'local'
+                        });
+                    }
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                } catch(e){}
+
+                try {
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('sheetId', returnedId);
+                    newUrl.searchParams.set('isCloud', 'true');
+                    window.history.replaceState({}, '', newUrl.toString());
+                } catch(e){}
+
+                if (statusEl) {
+                    statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Sincronizado con Google Drive</span>`;
+                }
+            }
+        } catch(e) {
+            console.warn("Silent Sheets autosave error:", e);
+        }
+    };
+
+    let sheetAutosaveTimeout = null;
+    window.triggerSheetAutosave = function() {
+        const statusEl = document.getElementById('sheetSaveStatus');
+        if (statusEl) {
+            statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: #60a5fa;"></i> <span>Guardando...</span>`;
+        }
+        if (sheetAutosaveTimeout) clearTimeout(sheetAutosaveTimeout);
+        sheetAutosaveTimeout = setTimeout(async () => {
+            const hasDrive = Boolean(localStorage.getItem('gdrive_access_token'));
+            if (hasDrive) {
+                await window.exportSheetToGoogleDriveSilent();
+            } else if (statusEl) {
+                statusEl.innerHTML = `<i class="fa-solid fa-hard-drive" style="color: #a78bfa;"></i> <span>Guardado local</span>`;
+            }
+        }, 2000);
     };
 
     function exportToJSON() {

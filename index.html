@@ -1116,6 +1116,8 @@
                     const credential = GoogleAuthProvider.credentialFromResult(result);
                     if (credential?.accessToken) {
                         sessionStorage.setItem('google_access_token', credential.accessToken);
+                        localStorage.setItem('gdrive_access_token', credential.accessToken);
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
                     }
                     const idToken = await result.user.getIdToken();
                     sessionStorage.setItem('firebase_id_token', idToken);
