@@ -1093,27 +1093,191 @@
         document.getElementById('calcCount').textContent = count;
     }
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSheetId = urlParams.get('sheetId');
+    const templateParam = urlParams.get('template');
+    const isCloudSheet = urlParams.get('isCloud') === 'true' || (currentSheetId && !currentSheetId.startsWith('sheet_') && !currentSheetId.startsWith('main_'));
+
+    if (isCloudSheet && currentSheetId) {
+        window.activeGoogleSheetId = currentSheetId;
+    }
+
+    function parseCSVToGrid(csvText) {
+        const rows = [];
+        let currentRow = [];
+        let currentCell = '';
+        let insideQuotes = false;
+
+        for (let i = 0; i < csvText.length; i++) {
+            const char = csvText[i];
+            const nextChar = csvText[i + 1];
+
+            if (char === '"') {
+                if (insideQuotes && nextChar === '"') {
+                    currentCell += '"';
+                    i++;
+                } else {
+                    insideQuotes = !insideQuotes;
+                }
+            } else if (char === ',' && !insideQuotes) {
+                currentRow.push(currentCell.trim());
+                currentCell = '';
+            } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+                if (char === '\r' && nextChar === '\n') i++;
+                currentRow.push(currentCell.trim());
+                if (currentRow.length > 0 && currentRow.some(c => c !== '')) {
+                    rows.push(currentRow);
+                }
+                currentRow = [];
+                currentCell = '';
+            } else {
+                currentCell += char;
+            }
+        }
+        if (currentCell || currentRow.length > 0) {
+            currentRow.push(currentCell.trim());
+            rows.push(currentRow);
+        }
+
+        const parsed = {};
+        rows.forEach((row, rIdx) => {
+            const rNum = rIdx + 1;
+            row.forEach((val, cIdx) => {
+                if (cIdx < COLS.length && val !== '') {
+                    const colLetter = COLS[cIdx];
+                    parsed[`${colLetter}${rNum}`] = { val: val, raw: val };
+                }
+            });
+        });
+        return parsed;
+    }
+
     function saveSheetData() {
+        const effectiveId = currentSheetId || window.activeGoogleSheetId || 'main_sheet';
+        const title = (document.getElementById('sheetBookTitle')?.value || '').trim() || 'Libro de cálculo Myxsi';
+
+        localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+        localStorage.setItem('sheets_studio_title_' + effectiveId, title);
         localStorage.setItem('sheets_studio_data', JSON.stringify(gridData));
-        localStorage.setItem('sheets_studio_title', document.getElementById('sheetBookTitle').value);
+        localStorage.setItem('sheets_studio_title', title);
+
+        try {
+            const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            let f = localFiles.find(item => item.id === effectiveId || (window.activeGoogleSheetId && item.id === window.activeGoogleSheetId));
+            const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+
+            if (f) {
+                f.name = title;
+                f.updatedAt = Date.now();
+                f.type = 'sheet';
+                f.isSheet = true;
+                f.mimeType = 'application/vnd.google-apps.spreadsheet';
+            } else {
+                localFiles.unshift({
+                    id: effectiveId,
+                    name: title,
+                    type: 'sheet',
+                    isSheet: true,
+                    mimeType: 'application/vnd.google-apps.spreadsheet',
+                    updatedAt: Date.now(),
+                    isLocal: !window.activeGoogleSheetId,
+                    isCloud: !!window.activeGoogleSheetId,
+                    webViewLink: window.activeGoogleSheetId ? `https://docs.google.com/spreadsheets/d/${window.activeGoogleSheetId}/edit` : null,
+                    userEmail: user?.email || 'local'
+                });
+            }
+            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+        } catch(e){}
     }
 
     function loadSheetData() {
-        const saved = localStorage.getItem('sheets_studio_data');
-        if (saved) {
-            try { gridData = JSON.parse(saved); } catch (e) {}
+        const effectiveId = currentSheetId || window.activeGoogleSheetId;
+        let loaded = false;
+
+        if (effectiveId) {
+            const saved = localStorage.getItem('sheets_studio_data_' + effectiveId);
+            if (saved) {
+                try {
+                    gridData = JSON.parse(saved);
+                    loaded = true;
+                } catch(e) {}
+            }
+            const title = localStorage.getItem('sheets_studio_title_' + effectiveId);
+            if (title) {
+                document.getElementById('sheetBookTitle').value = title;
+            }
         }
-        const title = localStorage.getItem('sheets_studio_title');
-        if (title) {
-            document.getElementById('sheetBookTitle').value = title;
+
+        if (!loaded) {
+            const generalSaved = localStorage.getItem('sheets_studio_data');
+            if (generalSaved && (!templateParam || templateParam === 'blank')) {
+                try {
+                    gridData = JSON.parse(generalSaved);
+                    loaded = true;
+                } catch(e) {}
+            }
+            const generalTitle = localStorage.getItem('sheets_studio_title');
+            if (generalTitle && !effectiveId) {
+                document.getElementById('sheetBookTitle').value = generalTitle;
+            }
         }
+
+        if (!loaded && templateParam && templateParam !== 'blank') {
+            loadSamplePreset(templateParam);
+            loaded = true;
+        }
+
         renderGrid();
+
+        // Sincronización remota desde Google Drive si es un archivo de la nube
+        if (isCloudSheet && effectiveId) {
+            (async () => {
+                let token = localStorage.getItem('gdrive_access_token');
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(false);
+                }
+                if (!token) return;
+
+                try {
+                    // Obtener nombre del archivo
+                    const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}?fields=id,name,mimeType`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (metaRes.ok) {
+                        const meta = await metaRes.json();
+                        if (meta.name) {
+                            document.getElementById('sheetBookTitle').value = meta.name;
+                            localStorage.setItem('sheets_studio_title_' + effectiveId, meta.name);
+                        }
+                    }
+
+                    // Exportar contenido CSV oficial de Google Sheets
+                    const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}/export?mimeType=text/csv`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (exportRes.ok) {
+                        const csvContent = await exportRes.text();
+                        if (csvContent && csvContent.trim()) {
+                            gridData = parseCSVToGrid(csvContent);
+                            renderGrid();
+                            localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+                            if (typeof window.showMyxsiToast === 'function') {
+                                window.showMyxsiToast("Libro sincronizado desde Google Drive", "success");
+                            }
+                        }
+                    }
+                } catch(err) {
+                    console.warn("No se pudo cargar la hoja desde Google Drive:", err);
+                }
+            })();
+        }
     }
 
     function createNewSheetBook() {
         if (confirm("¿Crear un libro de cálculo completamente nuevo?")) {
             gridData = {};
-            document.getElementById('sheetBookTitle').value = "Libro de cálculo sin título";
+            const newTitle = "Libro de cálculo sin título";
+            document.getElementById('sheetBookTitle').value = newTitle;
             renderGrid();
             saveSheetData();
         }
@@ -1153,6 +1317,8 @@
             }
         }
 
+        saveSheetData();
+
         let token = localStorage.getItem('gdrive_access_token');
         if (!token && typeof window.ensureValidToken === 'function') {
             const wantConnect = confirm("📂 Guardar en Google Drive:\n\nTu libro de cálculo está protegido localmente. ¿Deseas vincular tu cuenta de Google Drive para sincronizarlo en la nube como una Hoja de Google Sheets?");
@@ -1168,11 +1334,17 @@
         }
 
         try {
-            if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast("Subiendo hoja a Google Drive...", "info");
+            const isUpdate = Boolean(window.activeGoogleSheetId);
+            if (typeof window.showMyxsiToast === 'function') {
+                window.showMyxsiToast(isUpdate ? "Actualizando hoja en Google Drive..." : "Subiendo hoja a Google Drive...", "info");
+            }
+
             const metadata = {
-                name: title,
-                mimeType: 'application/vnd.google-apps.spreadsheet'
+                name: title
             };
+            if (!isUpdate) {
+                metadata.mimeType = 'application/vnd.google-apps.spreadsheet';
+            }
 
             const boundary = 'foo_bar_boundary_myxsi_sheets';
             const multipart =
@@ -1182,8 +1354,12 @@
                 csv +
                 `\r\n--${boundary}--`;
 
-            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-                method: 'POST',
+            const uploadUrl = isUpdate
+                ? `https://www.googleapis.com/upload/drive/v3/files/${window.activeGoogleSheetId}?uploadType=multipart`
+                : `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`;
+
+            const res = await fetch(uploadUrl, {
+                method: isUpdate ? 'PATCH' : 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': `multipart/related; boundary=${boundary}`
@@ -1193,10 +1369,57 @@
 
             if (res.ok) {
                 const driveFile = await res.json();
-                const realLink = `https://docs.google.com/spreadsheets/d/${driveFile.id}/edit`;
+                const returnedId = driveFile.id || window.activeGoogleSheetId;
+                window.activeGoogleSheetId = returnedId;
+                const realLink = `https://docs.google.com/spreadsheets/d/${returnedId}/edit`;
+
+                // Actualizar registro central en myxsi_local_files
+                try {
+                    const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                    let f = localFiles.find(item => item.id === (currentSheetId || returnedId) || item.id === returnedId);
+                    const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+                    if (f) {
+                        f.id = returnedId;
+                        f.name = title;
+                        f.type = 'sheet';
+                        f.isSheet = true;
+                        f.mimeType = 'application/vnd.google-apps.spreadsheet';
+                        f.isCloud = true;
+                        f.isLocal = false;
+                        f.webViewLink = realLink;
+                        f.updatedAt = Date.now();
+                        if (user?.email) f.userEmail = user.email;
+                    } else {
+                        localFiles.unshift({
+                            id: returnedId,
+                            name: title,
+                            type: 'sheet',
+                            isSheet: true,
+                            mimeType: 'application/vnd.google-apps.spreadsheet',
+                            updatedAt: Date.now(),
+                            isCloud: true,
+                            isLocal: false,
+                            webViewLink: realLink,
+                            userEmail: user?.email || 'local'
+                        });
+                    }
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                    localStorage.setItem('sheets_studio_data_' + returnedId, JSON.stringify(gridData));
+                    localStorage.setItem('sheets_studio_title_' + returnedId, title);
+                } catch(e){}
+
+                // Actualizar URL sin recargar
+                try {
+                    const newUrl = new URL(window.location.href);
+                    newUrl.searchParams.set('sheetId', returnedId);
+                    newUrl.searchParams.set('isCloud', 'true');
+                    window.history.replaceState({}, '', newUrl.toString());
+                } catch(e){}
+
                 if (typeof window.updateDriveStatusUI === 'function') window.updateDriveStatusUI(true);
-                if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast("¡Libro guardado en Google Drive!", "success");
-                const openNow = confirm("✅ ¡Libro guardado con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Sheets?");
+                const toastMsg = isUpdate ? "¡Libro actualizado en Google Drive!" : "¡Libro guardado en Google Drive!";
+                if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast(toastMsg, "success");
+                const openNow = confirm(`✅ ¡Libro ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Sheets?`);
                 if (openNow) window.open(realLink, '_blank');
             } else {
                 throw new Error(`Error ${res.status}`);
@@ -1242,6 +1465,17 @@
             setCellValue("A3", "Febrero"); setCellValue("B3", "6200");
             setCellValue("A4", "Marzo"); setCellValue("B4", "7800");
             setCellValue("A5", "TOTAL Q1"); setCellValue("B5", "=SUM(B2:B4)");
+        } else if (type === 'tasks') {
+            document.getElementById('sheetBookTitle').value = "Lista de Tareas y Seguimiento";
+            setCellValue("A1", "Tarea / Objetivo"); setCellValue("B1", "Responsable"); setCellValue("C1", "Prioridad"); setCellValue("D1", "Estado");
+            setCellValue("A2", "Diseñar interfaz de usuario"); setCellValue("B2", "Equipo UX"); setCellValue("C2", "Alta"); setCellValue("D2", "Completado");
+            setCellValue("A3", "Conectar Google Drive API"); setCellValue("B3", "Backend"); setCellValue("C3", "Crítica"); setCellValue("D3", "En progreso");
+            setCellValue("A4", "Pruebas de sincronización"); setCellValue("B4", "QA"); setCellValue("C4", "Media"); setCellValue("D4", "Pendiente");
+        } else if (type === 'planner') {
+            document.getElementById('sheetBookTitle').value = "Planificador de Horarios Semanal";
+            setCellValue("A1", "Franja Horaria"); setCellValue("B1", "Lunes"); setCellValue("C1", "Martes"); setCellValue("D1", "Miércoles"); setCellValue("E1", "Jueves"); setCellValue("F1", "Viernes");
+            setCellValue("A2", "09:00 - 11:00"); setCellValue("B2", "Reunión de equipo"); setCellValue("C2", "Desarrollo"); setCellValue("D2", "Revisión"); setCellValue("E2", "Diseño UI"); setCellValue("F2", "Retrospectiva");
+            setCellValue("A3", "11:30 - 13:30"); setCellValue("B3", "Planificación"); setCellValue("C3", "Soporte"); setCellValue("D3", "Desarrollo"); setCellValue("E3", "Pruebas"); setCellValue("F3", "Cierre semanal");
         }
     }
 

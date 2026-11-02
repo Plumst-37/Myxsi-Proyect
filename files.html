@@ -1329,6 +1329,9 @@
                     </div>
                 </div>
                 <div class="preview-header-actions">
+                    <button class="btn-file-action btn-action-primary" id="previewBtnStudio" onclick="window.openInStudioPreview()" title="Editar en Myxsi Studio" style="display: none;">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Editar en Studio</span>
+                    </button>
                     <button class="btn-file-action btn-action-secondary" id="previewBtnDownload" onclick="window.downloadPreviewFile()" title="Descargar archivo">
                         <i class="fa-solid fa-download"></i> <span>Descargar</span>
                     </button>
@@ -1382,6 +1385,10 @@
 
     <!-- MENÚ CONTEXTUAL DE CLIC DERECHO ESTILO GOOGLE DRIVE -->
     <div class="context-menu-glass" id="customContextMenu">
+        <button class="context-menu-item" id="contextMenuStudioOption" onclick="window.contextActionStudio()" style="display: none;">
+            <i class="fa-solid fa-wand-magic-sparkles" style="color: #a78bfa;"></i>
+            <span id="contextMenuStudioText">Editar en Studio</span>
+        </button>
         <button class="context-menu-item" onclick="window.contextActionPreview()">
             <i class="fa-solid fa-eye" style="color: #a78bfa;"></i>
             <span>Previsualizar</span>
@@ -1930,10 +1937,30 @@
 
             const menu = document.getElementById('customContextMenu');
             const driveOption = document.getElementById('contextMenuDriveOption');
+            const studioOption = document.getElementById('contextMenuStudioOption');
+            const studioText = document.getElementById('contextMenuStudioText');
             if (!menu) return;
 
             if (driveOption) {
                 driveOption.style.display = (file.isCloud && file.webViewLink) ? 'flex' : 'none';
+            }
+
+            if (studioOption) {
+                const fname = cleanName || file.name || '';
+                const isDoc = file.type === 'doc' || file.isDoc || file.mimeType?.includes('document') || /\.(doc|docx)$/i.test(fname);
+                const isSheet = file.type === 'sheet' || file.isSheet || file.mimeType?.includes('spreadsheet') || /\.(xlsx|csv)$/i.test(fname);
+                const isCanva = file.isCanva || file.type === 'canva';
+                const isVideo = file.isVideo || file.type === 'video';
+
+                if (isDoc || isSheet || isCanva || isVideo) {
+                    studioOption.style.display = 'flex';
+                    if (isDoc && studioText) studioText.textContent = "Editar en Myxsi Docs";
+                    else if (isSheet && studioText) studioText.textContent = "Editar en Myxsi Sheets";
+                    else if (isCanva && studioText) studioText.textContent = "Editar en Myxsi Canva";
+                    else if (isVideo && studioText) studioText.textContent = "Editar en Myxsi Video";
+                } else {
+                    studioOption.style.display = 'none';
+                }
             }
 
             const x = Math.min(e ? e.clientX : 200, window.innerWidth - 240);
@@ -1961,6 +1988,22 @@
         });
 
         // Acciones del Menú Contextual
+        window.contextActionStudio = function() {
+            hideContextMenu();
+            if (!activeContextMenuFile) return;
+            const file = activeContextMenuFile;
+            const fname = file.cleanName || file.name || '';
+            const isDoc = file.type === 'doc' || file.isDoc || file.mimeType?.includes('document') || /\.(doc|docx)$/i.test(fname);
+            const isSheet = file.type === 'sheet' || file.isSheet || file.mimeType?.includes('spreadsheet') || /\.(xlsx|csv)$/i.test(fname);
+            const isCanva = file.isCanva || file.type === 'canva';
+            const isVideo = file.isVideo || file.type === 'video';
+
+            if (isDoc) window.location.href = `docs.html?docId=${file.id}${file.isCloud ? '&isCloud=true' : ''}`;
+            else if (isSheet) window.location.href = `sheets.html?sheetId=${file.id}${file.isCloud ? '&isCloud=true' : ''}`;
+            else if (isCanva) window.location.href = `canva.html?canvasId=${file.id}`;
+            else if (isVideo) window.location.href = `video.html?id=${file.id}`;
+            else window.previewFile(file);
+        };
         window.contextActionPreview = function() {
             hideContextMenu();
             if (!activeContextMenuFile) return;
@@ -2102,6 +2145,7 @@
             const bodyEl = document.getElementById('previewModalBody');
             const iconEl = document.getElementById('previewFileIcon');
             const driveBtn = document.getElementById('previewBtnDrive');
+            const studioBtn = document.getElementById('previewBtnStudio');
 
             const cleanName = (file.name || 'Archivo').replace('.folder', '');
             nameEl.textContent = cleanName;
@@ -2109,6 +2153,34 @@
 
             sizeEl.textContent = file.size ? formatBytes(file.size) : (file.mimeType === 'application/vnd.google-apps.folder' ? 'Carpeta' : 'Documento en la nube');
             dateEl.textContent = file.modifiedTime || file.updatedAt ? new Date(file.modifiedTime || file.updatedAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Reciente';
+
+            const fname = cleanName || file.name || '';
+            const isDoc = file.type === 'doc' || file.isDoc || file.mimeType?.includes('document') || /\.(doc|docx)$/i.test(fname);
+            const isSheet = file.type === 'sheet' || file.isSheet || file.mimeType?.includes('spreadsheet') || /\.(xlsx|csv)$/i.test(fname);
+            const isCanva = file.isCanva || file.type === 'canva';
+            const isVideo = file.isVideo || file.type === 'video';
+
+            if (studioBtn) {
+                if (isDoc) {
+                    studioBtn.style.display = 'inline-flex';
+                    studioBtn.innerHTML = '<i class="fa-solid fa-file-lines"></i> <span>Editar en Docs</span>';
+                    studioBtn.onclick = () => window.location.href = `docs.html?docId=${file.id}${file.isCloud ? '&isCloud=true' : ''}`;
+                } else if (isSheet) {
+                    studioBtn.style.display = 'inline-flex';
+                    studioBtn.innerHTML = '<i class="fa-solid fa-table-cells"></i> <span>Editar en Sheets</span>';
+                    studioBtn.onclick = () => window.location.href = `sheets.html?sheetId=${file.id}${file.isCloud ? '&isCloud=true' : ''}`;
+                } else if (isCanva) {
+                    studioBtn.style.display = 'inline-flex';
+                    studioBtn.innerHTML = '<i class="fa-solid fa-palette"></i> <span>Editar en Canva</span>';
+                    studioBtn.onclick = () => window.location.href = `canva.html?canvasId=${file.id}`;
+                } else if (isVideo) {
+                    studioBtn.style.display = 'inline-flex';
+                    studioBtn.innerHTML = '<i class="fa-solid fa-film"></i> <span>Editar en Video</span>';
+                    studioBtn.onclick = () => window.location.href = `video.html?id=${file.id}`;
+                } else {
+                    studioBtn.style.display = 'none';
+                }
+            }
 
             if (file.isCloud) {
                 badgeEl.className = 'cloud-badge badge-cloud';
@@ -2232,6 +2304,12 @@
             if (currentPreviewFile && currentPreviewFile.webViewLink) {
                 window.open(currentPreviewFile.webViewLink, '_blank');
             }
+        };
+
+        window.openInStudioPreview = function() {
+            if (!currentPreviewFile) return;
+            activeContextMenuFile = currentPreviewFile;
+            window.contextActionStudio();
         };
 
         // Miga de Pan Render

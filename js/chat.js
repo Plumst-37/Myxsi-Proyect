@@ -3229,7 +3229,13 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
 
-                if (response.status === 401) {
+                if (response.status === 401 || response.status === 403) {
+                    if (typeof window.ensureValidToken === 'function') {
+                        const freshToken = await window.ensureValidToken(true);
+                        if (freshToken) {
+                            return loadPickerFolder(folderId);
+                        }
+                    }
                     localStorage.removeItem('gdrive_access_token');
                     alert('Sesión de Google Drive expirada. Vuelve a intentarlo.');
                     window.closeDriveFilePicker();
@@ -3380,26 +3386,54 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             const originalStatus = statusEl.innerHTML;
             statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin" style="color: var(--violet-soft); margin-right: 6px;"></i> Descargando desde Drive...`;
 
-            const accessToken = localStorage.getItem('gdrive_access_token');
+            let accessToken = localStorage.getItem('gdrive_access_token');
             const isGoogleDoc = mimeType === 'application/vnd.google-apps.document';
+            const isGoogleSheet = mimeType === 'application/vnd.google-apps.spreadsheet';
+            const isGoogleSlides = mimeType === 'application/vnd.google-apps.presentation';
             
             let url = `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`;
             if (isGoogleDoc) {
                 url = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/plain`;
+            } else if (isGoogleSheet) {
+                url = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/csv`;
+            } else if (isGoogleSlides) {
+                url = `https://www.googleapis.com/drive/v3/files/${fileId}/export?mimeType=text/plain`;
             }
 
             try {
-                const response = await fetch(url, {
+                let response = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
+
+                if (response.status === 401 || response.status === 403) {
+                    if (typeof window.ensureValidToken === 'function') {
+                        accessToken = await window.ensureValidToken(true);
+                        if (accessToken) {
+                            response = await fetch(url, {
+                                headers: { 'Authorization': `Bearer ${accessToken}` }
+                            });
+                        }
+                    }
+                }
 
                 if (!response.ok) throw new Error("Fallo al descargar el archivo de Google Drive.");
 
                 const blob = await response.blob();
                 
-                const finalName = isGoogleDoc && !fileName.toLowerCase().endsWith('.txt') ? fileName + '.txt' : fileName;
-                const fileObj = new File([blob], finalName, { type: isGoogleDoc ? 'text/plain' : mimeType });
+                let finalName = fileName;
+                let finalType = mimeType;
+                if (isGoogleDoc) {
+                    finalName = !fileName.toLowerCase().endsWith('.txt') ? fileName + '.txt' : fileName;
+                    finalType = 'text/plain';
+                } else if (isGoogleSheet) {
+                    finalName = !fileName.toLowerCase().endsWith('.csv') ? fileName + '.csv' : fileName;
+                    finalType = 'text/csv';
+                } else if (isGoogleSlides) {
+                    finalName = !fileName.toLowerCase().endsWith('.txt') ? fileName + '.txt' : fileName;
+                    finalType = 'text/plain';
+                }
 
+                const fileObj = new File([blob], finalName, { type: finalType });
                 await window.handleGDriveAttachmentSelected(fileObj);
             } catch (err) {
                 console.error("Error downloading Drive file:", err);

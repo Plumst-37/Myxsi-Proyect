@@ -1801,92 +1801,189 @@
         if (window._docsAppInitialized) return;
         window._docsAppInitialized = true;
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentDocId = urlParams.get('docId');
+        const templateParam = urlParams.get('template');
+        const isCloudDoc = urlParams.get('isCloud') === 'true' || (currentDocId && !currentDocId.startsWith('doc_') && !currentDocId.startsWith('main_'));
+
+        if (isCloudDoc && currentDocId) {
+            window.activeGoogleDocId = currentDocId;
+        }
+
+        let savedContent = '';
+        let savedTitle = '';
+
+        if (currentDocId) {
+            savedContent = localStorage.getItem('smart_doc_content_' + currentDocId) || '';
+            savedTitle = localStorage.getItem('smart_doc_title_' + currentDocId) || '';
+        }
+
+        if (!savedContent) {
+            savedContent = localStorage.getItem('smart_doc_content');
+        }
+
+        if (!savedTitle) {
+            savedTitle = localStorage.getItem('smart_doc_title') || 'Documento sin título';
+        }
+        const titleInputEl = document.getElementById('smartDocTitle');
+        if (titleInputEl) titleInputEl.value = savedTitle;
+
+        // Sincronización remota desde Google Drive si es un archivo en la nube
+        if (isCloudDoc && currentDocId) {
+            (async () => {
+                let token = localStorage.getItem('gdrive_access_token');
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(false);
+                }
+                if (!token) return;
+
+                try {
+                    const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${currentDocId}?fields=id,name,mimeType`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (metaRes.ok) {
+                        const meta = await metaRes.json();
+                        if (meta.name) {
+                            if (titleInputEl) titleInputEl.value = meta.name;
+                            localStorage.setItem('smart_doc_title_' + currentDocId, meta.name);
+                        }
+                    }
+
+                    const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${currentDocId}/export?mimeType=text/html`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (exportRes.ok) {
+                        const htmlContent = await exportRes.text();
+                        const parser = new DOMParser();
+                        const docDom = parser.parseFromString(htmlContent, 'text/html');
+                        const cleanBody = docDom.body ? docDom.body.innerHTML : htmlContent;
+                        if (cleanBody && cleanBody.trim()) {
+                            savedContent = cleanBody;
+                            if (window.smartDocQuill) {
+                                window.smartDocQuill.root.innerHTML = cleanBody;
+                            } else {
+                                const paperEl = document.getElementById('editorQuillStandalone');
+                                if (paperEl) paperEl.innerHTML = cleanBody;
+                            }
+                            localStorage.setItem('smart_doc_content_' + currentDocId, cleanBody);
+                            updateMetrics();
+                            updateOutline();
+                            if (typeof window.showMyxsiToast === 'function') {
+                                window.showMyxsiToast("Documento sincronizado desde Google Drive", "success");
+                            }
+                        }
+                    }
+                } catch(err) {
+                    console.warn("No se pudo cargar el documento desde Google Drive:", err);
+                }
+            })();
+        }
+
         // Inicializar Quill Editor
-        if (typeof Quill !== 'undefined' && document.getElementById('editorQuillStandalone')) {
-            window.smartDocQuill = new Quill('#editorQuillStandalone', {
-                theme: 'snow',
-                modules: {
-                    toolbar: '#standaloneToolbar'
-                },
-                placeholder: 'Comienza a redactar tu documento inteligente aquí...'
-            });
+        function tryInitQuill() {
+            if (typeof Quill !== 'undefined' && document.getElementById('editorQuillStandalone') && !window.smartDocQuill) {
+                window.smartDocQuill = new Quill('#editorQuillStandalone', {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: '#standaloneToolbar'
+                    },
+                    placeholder: 'Comienza a redactar tu documento inteligente aquí...'
+                });
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentDocId = urlParams.get('docId');
-            const templateParam = urlParams.get('template');
+                if (savedContent && savedContent.trim() !== '') {
+                    window.smartDocQuill.root.innerHTML = savedContent;
+                } else if (templateParam && typeof window.loadTemplate === 'function') {
+                    window.loadTemplate(templateParam);
+                } else {
+                    window.smartDocQuill.root.innerHTML = '<h1>Documento sin título</h1><p>Comienza a redactar tu documento aquí...</p>';
+                }
 
-            let savedContent = '';
-            let savedTitle = '';
+                window.smartDocQuill.on('text-change', () => {
+                    const html = window.smartDocQuill.root.innerHTML;
+                    const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_' + Date.now();
+                    localStorage.setItem('smart_doc_content_' + effectiveId, html);
+                    localStorage.setItem('smart_doc_content', html);
 
-            if (currentDocId) {
-                savedContent = localStorage.getItem('smart_doc_content_' + currentDocId) || '';
-                savedTitle = localStorage.getItem('smart_doc_title_' + currentDocId) || '';
-            }
-
-            if (!savedContent) {
-                savedContent = localStorage.getItem('smart_doc_content');
-            }
-
-            if (savedContent && savedContent.trim() !== '') {
-                window.smartDocQuill.root.innerHTML = savedContent;
-            } else if (templateParam && typeof window.loadTemplate === 'function') {
-                window.loadTemplate(templateParam);
-            } else {
-                window.smartDocQuill.root.innerHTML = '<h1>Documento sin título</h1><p>Comienza a redactar tu documento aquí...</p>';
-            }
-
-            if (!savedTitle) {
-                savedTitle = localStorage.getItem('smart_doc_title') || 'Documento sin título';
-            }
-            document.getElementById('smartDocTitle').value = savedTitle;
-
-            window.smartDocQuill.on('text-change', () => {
-                const html = window.smartDocQuill.root.innerHTML;
-                if (currentDocId) {
-                    localStorage.setItem('smart_doc_content_' + currentDocId, html);
                     try {
                         const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                        const f = localFiles.find(item => item.id === currentDocId);
+                        let f = localFiles.find(item => item.id === effectiveId || (window.activeGoogleDocId && item.id === window.activeGoogleDocId));
+                        const titleVal = (document.getElementById('smartDocTitle')?.value || '').trim() || 'Documento sin título';
+                        const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+
                         if (f) {
                             f.updatedAt = Date.now();
-                            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
-                        }
-                    } catch(e){}
-                }
-                localStorage.setItem('smart_doc_content', html);
-                if (window.triggerSmartDocAutosave) {
-                    window.triggerSmartDocAutosave();
-                }
-                updateMetrics();
-                updateOutline();
-            });
-
-            const originalSaveTitle = window.saveSmartDocTitle;
-            window.saveSmartDocTitle = function(val) {
-                if (typeof originalSaveTitle === 'function') originalSaveTitle(val);
-                const el = document.getElementById('smartDocTitle');
-                const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
-                if (currentDocId) {
-                    localStorage.setItem('smart_doc_title_' + currentDocId, titleVal);
-                    try {
-                        const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                        const f = localFiles.find(item => item.id === currentDocId);
-                        if (f) {
                             f.name = titleVal;
-                            f.updatedAt = Date.now();
-                            localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                            f.type = 'doc';
+                            f.isDoc = true;
+                        } else {
+                            localFiles.unshift({
+                                id: effectiveId,
+                                name: titleVal,
+                                type: 'doc',
+                                isDoc: true,
+                                mimeType: 'application/vnd.google-apps.document',
+                                updatedAt: Date.now(),
+                                isLocal: !window.activeGoogleDocId,
+                                isCloud: !!window.activeGoogleDocId,
+                                userEmail: user?.email || 'local'
+                            });
                         }
+                        localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
                     } catch(e){}
+
+                    if (window.triggerSmartDocAutosave) {
+                        window.triggerSmartDocAutosave();
+                    }
+                    updateMetrics();
+                    updateOutline();
+                });
+            } else if (!window.smartDocQuill && document.getElementById('editorQuillStandalone')) {
+                const editorEl = document.getElementById('editorQuillStandalone');
+                if (editorEl && savedContent && savedContent.trim() !== '' && !editorEl.innerHTML) {
+                    editorEl.innerHTML = savedContent;
                 }
-                localStorage.setItem('smart_doc_title', titleVal);
-            };
-
-            updateMetrics();
-            updateOutline();
-
-            if (window.renderSmartDocDriveList) {
-                window.renderSmartDocDriveList();
+                setTimeout(tryInitQuill, 100);
             }
+        }
+        tryInitQuill();
+
+        const originalSaveTitle = window.saveSmartDocTitle;
+        window.saveSmartDocTitle = function(val) {
+            if (typeof originalSaveTitle === 'function') originalSaveTitle(val);
+            const el = document.getElementById('smartDocTitle');
+            const titleVal = (val !== undefined && typeof val === 'string' ? val : (el ? el.value : '')).trim() || 'Documento sin título';
+            const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_current';
+            localStorage.setItem('smart_doc_title_' + effectiveId, titleVal);
+            localStorage.setItem('smart_doc_title', titleVal);
+            try {
+                const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                let f = localFiles.find(item => item.id === effectiveId || (window.activeGoogleDocId && item.id === window.activeGoogleDocId));
+                if (f) {
+                    f.name = titleVal;
+                    f.updatedAt = Date.now();
+                    f.type = 'doc';
+                    f.isDoc = true;
+                } else {
+                    localFiles.unshift({
+                        id: effectiveId,
+                        name: titleVal,
+                        type: 'doc',
+                        isDoc: true,
+                        mimeType: 'application/vnd.google-apps.document',
+                        updatedAt: Date.now(),
+                        isLocal: !window.activeGoogleDocId,
+                        isCloud: !!window.activeGoogleDocId
+                    });
+                }
+                localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+            } catch(e){}
+        };
+
+        updateMetrics();
+        updateOutline();
+
+        if (window.renderSmartDocDriveList) {
+            window.renderSmartDocDriveList();
         }
 
         // Cargar y vincular cuenta de usuario Myxsi y Google Drive
@@ -2163,10 +2260,56 @@
             }
 
             const resData = await res.json();
-            window.activeGoogleDocId = resData.id;
-            const realLink = `https://docs.google.com/document/d/${resData.id}/edit`;
+            const returnedId = resData.id || window.activeGoogleDocId;
+            window.activeGoogleDocId = returnedId;
+            const realLink = `https://docs.google.com/document/d/${returnedId}/edit`;
+
+            // Actualizar registro central en myxsi_local_files
+            try {
+                const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                let f = localFiles.find(item => item.id === currentDocId || item.id === returnedId);
+                const user = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+                if (f) {
+                    f.id = returnedId;
+                    f.name = docTitle;
+                    f.type = 'doc';
+                    f.isDoc = true;
+                    f.mimeType = 'application/vnd.google-apps.document';
+                    f.isCloud = true;
+                    f.isLocal = false;
+                    f.webViewLink = realLink;
+                    f.updatedAt = Date.now();
+                    if (user?.email) f.userEmail = user.email;
+                } else {
+                    localFiles.unshift({
+                        id: returnedId,
+                        name: docTitle,
+                        type: 'doc',
+                        isDoc: true,
+                        mimeType: 'application/vnd.google-apps.document',
+                        updatedAt: Date.now(),
+                        isCloud: true,
+                        isLocal: false,
+                        webViewLink: realLink,
+                        userEmail: user?.email || 'local'
+                    });
+                }
+                localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                localStorage.setItem('smart_doc_content_' + returnedId, text);
+                localStorage.setItem('smart_doc_title_' + returnedId, docTitle);
+            } catch(e){}
+
+            // Actualizar URL sin recargar para que futuras acciones usen este ID en Drive
+            try {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('docId', returnedId);
+                newUrl.searchParams.set('isCloud', 'true');
+                window.history.replaceState({}, '', newUrl.toString());
+            } catch(e){}
+
             if (typeof window.updateDriveStatusUI === 'function') window.updateDriveStatusUI(true);
-            if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast("¡Documento sincronizado con Google Drive!", "success");
+            const successMsg = isUpdate ? "¡Documento actualizado en Google Drive!" : "¡Documento guardado en Google Drive!";
+            if (typeof window.showMyxsiToast === 'function') window.showMyxsiToast(successMsg, "success");
 
             if (btn) {
                 btn.disabled = false;
@@ -2174,7 +2317,7 @@
                 setTimeout(() => { if (btn) btn.innerHTML = originalBtnHtml; }, 3500);
             }
 
-            const openNow = confirm(`✅ ¡Documento guardado con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Docs?`);
+            const openNow = confirm(`✅ ¡Documento ${isUpdate ? 'actualizado' : 'guardado'} con éxito en tu Google Drive!\n\n¿Deseas abrirlo ahora en Google Docs?`);
             if (openNow) {
                 window.open(realLink, '_blank');
             }

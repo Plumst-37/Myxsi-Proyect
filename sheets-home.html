@@ -1118,10 +1118,11 @@
             const newFile = {
                 id: docId,
                 name: sheetTitle,
+                type: 'sheet',
+                isSheet: true,
                 mimeType: 'application/vnd.google-apps.spreadsheet',
                 updatedAt: Date.now(),
-                isLocal: true,
-                isSheet: true
+                isLocal: true
             };
 
             localFiles.unshift(newFile);
@@ -1149,6 +1150,7 @@
                             newFile.id = driveFile.id;
                             newFile.isLocal = false;
                             newFile.isCloud = true;
+                            newFile.webViewLink = `https://docs.google.com/spreadsheets/d/${driveFile.id}/edit`;
                             localStorage.setItem('sheets_studio_title_' + driveFile.id, sheetTitle);
                             localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
                         }
@@ -1158,7 +1160,7 @@
                 }
             }
 
-            window.location.href = `sheets.html?sheetId=${newFile.id}&template=${type}`;
+            window.location.href = `sheets.html?sheetId=${newFile.id}&template=${type}${newFile.isCloud ? '&isCloud=true' : ''}`;
         }
         window.createNewSheet = createNewSheet;
 
@@ -1177,6 +1179,8 @@
                             id: f.id,
                             name: f.name,
                             mimeType: f.mimeType,
+                            type: 'sheet',
+                            isSheet: true,
                             updatedAt: f.modifiedTime || f.createdTime,
                             webViewLink: f.webViewLink,
                             isCloud: true
@@ -1190,16 +1194,18 @@
             let localFiles = [];
             try {
                 localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
-                    .filter(f => f.mimeType === 'application/vnd.google-apps.spreadsheet' || (f.name && (f.name.endsWith('.xlsx') || f.name.endsWith('.csv'))) || f.isSheet);
+                    .filter(f => f.type === 'sheet' || f.isSheet || f.mimeType === 'application/vnd.google-apps.spreadsheet' || (f.name && (f.name.endsWith('.xlsx') || f.name.endsWith('.csv'))));
                 
                 const mainSheetTitle = localStorage.getItem('sheets_studio_title') || 'Libro de cálculo sin título';
                 const mainSheetData = localStorage.getItem('sheets_studio_data');
 
-                if (mainSheetData || mainSheetTitle) {
+                if ((mainSheetData || mainSheetTitle) && !localFiles.some(f => f.id === 'main_sheets_doc')) {
                     localFiles.unshift({
                         id: 'main_sheets_doc',
                         name: mainSheetTitle,
                         mimeType: 'application/vnd.google-apps.spreadsheet',
+                        type: 'sheet',
+                        isSheet: true,
                         updatedAt: Date.now(),
                         isLocal: true,
                         isMain: true
@@ -1207,7 +1213,9 @@
                 }
             } catch(e){}
 
-            allSheetsList = [...cloudSheets, ...localFiles];
+            const cloudIds = new Set(cloudSheets.map(s => s.id));
+            const filteredLocal = localFiles.filter(l => !cloudIds.has(l.id));
+            allSheetsList = [...cloudSheets, ...filteredLocal];
             renderSheetsGrid(allSheetsList);
         }
 
@@ -1232,6 +1240,10 @@
 
                 const card = document.createElement('div');
                 card.className = 'sheet-item-card';
+                card.onclick = (e) => {
+                    if (e.target.closest('.sheet-drive-btn')) return;
+                    window.location.href = `sheets.html?sheetId=${sheet.id}${sheet.isCloud ? '&isCloud=true' : ''}`;
+                };
                 card.innerHTML = `
                     <div class="sheet-card-thumb">
                         <div class="sheet-thumb-grid">
@@ -1255,10 +1267,12 @@
                             </span>
                             <span>• ${dateStr}</span>
                         </div>
-                        ${sheet.isCloud && sheet.webViewLink ? 
-                            `<a href="${sheet.webViewLink}" target="_blank" class="sheet-open-btn"><i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en Drive</a>` :
-                            `<a href="sheets.html?sheetId=${sheet.id}" class="sheet-open-btn"><i class="fa-solid fa-pen-to-square"></i> Abrir / Editar</a>`
-                        }
+                        <div style="display: flex; gap: 8px; margin-top: 10px;">
+                            <a href="sheets.html?sheetId=${sheet.id}${sheet.isCloud ? '&isCloud=true' : ''}" class="sheet-open-btn" style="flex: 1;"><i class="fa-solid fa-pen-to-square"></i> Editar en Myxsi</a>
+                            ${sheet.isCloud && sheet.webViewLink ? 
+                                `<a href="${sheet.webViewLink}" target="_blank" onclick="event.stopPropagation();" class="sheet-open-btn sheet-drive-btn" style="width: 40px; flex: 0 0 40px; padding: 0; justify-content: center; background: rgba(255,255,255,0.06);" title="Abrir en Google Sheets"><i class="fa-brands fa-google-drive" style="color: #34d399;"></i></a>` : ''
+                            }
+                        </div>
                     </div>
                 `;
                 grid.appendChild(card);

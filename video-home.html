@@ -1746,7 +1746,7 @@
         }
 
         function getEditorPage() {
-            return (window.innerWidth <= 850 || ('ontouchstart' in window && window.innerWidth <= 1024)) ? 'video-mobile.html' : 'video.html';
+            return 'video-mobile.html';
         }
 
         // Crear nuevo proyecto
@@ -1775,6 +1775,7 @@
                 id: projectId,
                 name: projectTitle + '.mp4',
                 mimeType: 'video/mp4',
+                type: 'video',
                 updatedAt: timestamp,
                 isVideo: true,
                 isLocal: true,

@@ -23,15 +23,10 @@
     <script src="js/config.local.js" onerror="this.remove()"></script>
     <script type="module" src="js/auth-shared.js"></script>
 
-    <!-- Redirección automática a la versión de teléfono estilo CapCut -->
+    <!-- Redirección unificada al Editor Myxsi adaptado para PC y Móvil -->
     <script>
         (function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const forceDesktop = urlParams.get('desktop') === '1';
-            const isMobile = window.innerWidth <= 850 || ('ontouchstart' in window && window.innerWidth <= 1024);
-            if (!forceDesktop && isMobile) {
-                window.location.replace('video-mobile.html' + window.location.search);
-            }
+            window.location.replace('video-mobile.html' + window.location.search);
         })();
     </script>
 
@@ -1905,7 +1900,7 @@
         }
 
         /* ========================================================================= */
-        /* MODO CAPCUT MÓVIL (COMPLETO, RESPONSIVO Y TOUCH-FRIENDLY)                 */
+        /* MODO vstudio MÓVIL (COMPLETO, RESPONSIVO Y TOUCH-FRIENDLY)                 */
         /* ========================================================================= */
         @media (max-width: 900px) {
             body {
@@ -1962,7 +1957,7 @@
                 padding: 2px 6px;
             }
 
-            .topbar-right .btn-topbar-tool:not(#btnToggleCapCutMobile) {
+            .topbar-right .btn-topbar-tool:not(#btnToggleMyxsiMobile) {
                 display: none;
             }
 
@@ -2076,7 +2071,7 @@
                 touch-action: none !important;
             }
 
-            .capcut-bottom-dock {
+            .vstudio-bottom-dock {
                 display: flex !important;
             }
 
@@ -2093,8 +2088,8 @@
             }
         }
 
-        /* REGLAS COMPATIBLES CON body.capcut-mobile-mode EN CUALQUIER RESOLUCIÓN */
-        body.capcut-mobile-mode {
+        /* REGLAS COMPATIBLES CON body.vstudio-mobile-mode EN CUALQUIER RESOLUCIÓN */
+        body.vstudio-mobile-mode {
             display: flex;
             flex-direction: column;
             height: 100vh;
@@ -2103,63 +2098,63 @@
             overflow: hidden;
         }
 
-        body.capcut-mobile-mode .video-topbar {
+        body.vstudio-mobile-mode .video-topbar {
             height: 48px;
             padding: 0 10px;
             background: #0d0e14;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        body.capcut-mobile-mode .topbar-left,
-        body.capcut-mobile-mode .topbar-center,
-        body.capcut-mobile-mode .topbar-right {
+        body.vstudio-mobile-mode .topbar-left,
+        body.vstudio-mobile-mode .topbar-center,
+        body.vstudio-mobile-mode .topbar-right {
             gap: 6px;
         }
 
-        body.capcut-mobile-mode .btn-topbar-home {
+        body.vstudio-mobile-mode .btn-topbar-home {
             width: 32px;
             height: 32px;
             border-radius: 8px;
         }
 
-        body.capcut-mobile-mode .drift-brand-badge,
-        body.capcut-mobile-mode .btn-topbar-import,
-        body.capcut-mobile-mode .tools-rail,
-        body.capcut-mobile-mode .tool-panel-content,
-        body.capcut-mobile-mode #splitterLeft,
-        body.capcut-mobile-mode #splitterRight,
-        body.capcut-mobile-mode #splitterTimeline,
-        body.capcut-mobile-mode .properties-panel,
-        body.capcut-mobile-mode .viewport-toolbar {
+        body.vstudio-mobile-mode .drift-brand-badge,
+        body.vstudio-mobile-mode .btn-topbar-import,
+        body.vstudio-mobile-mode .tools-rail,
+        body.vstudio-mobile-mode .tool-panel-content,
+        body.vstudio-mobile-mode #splitterLeft,
+        body.vstudio-mobile-mode #splitterRight,
+        body.vstudio-mobile-mode #splitterTimeline,
+        body.vstudio-mobile-mode .properties-panel,
+        body.vstudio-mobile-mode .viewport-toolbar {
             display: none !important;
         }
 
-        body.capcut-mobile-mode .project-title-input {
+        body.vstudio-mobile-mode .project-title-input {
             max-width: 110px;
             font-size: 0.8rem;
             padding: 3px 6px;
         }
 
-        body.capcut-mobile-mode .aspect-ratio-selector {
+        body.vstudio-mobile-mode .aspect-ratio-selector {
             padding: 3px 6px;
             font-size: 0.72rem;
         }
 
-        body.capcut-mobile-mode .timecode-display {
+        body.vstudio-mobile-mode .timecode-display {
             font-size: 0.72rem;
             padding: 2px 6px;
         }
 
-        body.capcut-mobile-mode .topbar-right .btn-topbar-tool:not(#btnToggleCapCutMobile) {
+        body.vstudio-mobile-mode .topbar-right .btn-topbar-tool:not(#btnToggleMyxsiMobile) {
             display: none;
         }
 
-        body.capcut-mobile-mode .btn-export-main {
+        body.vstudio-mobile-mode .btn-export-main {
             padding: 6px 12px;
             font-size: 0.78rem;
         }
 
-        body.capcut-mobile-mode .video-workspace {
+        body.vstudio-mobile-mode .video-workspace {
             flex: none;
             height: 42%;
             min-height: 180px;
@@ -2167,7 +2162,7 @@
             background: #090a0f;
         }
 
-        body.capcut-mobile-mode .player-stage {
+        body.vstudio-mobile-mode .player-stage {
             padding: 4px;
             background: #090a0f;
             display: flex;
@@ -2176,13 +2171,13 @@
             justify-content: center;
         }
 
-        body.capcut-mobile-mode .canvas-container {
+        body.vstudio-mobile-mode .canvas-container {
             max-height: calc(100% - 34px);
             border-radius: 8px;
             box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
         }
 
-        body.capcut-mobile-mode .transport-controls-bar {
+        body.vstudio-mobile-mode .transport-controls-bar {
             margin-top: 4px;
             padding: 2px 10px;
             gap: 10px;
@@ -2190,19 +2185,19 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        body.capcut-mobile-mode .btn-transport {
+        body.vstudio-mobile-mode .btn-transport {
             width: 28px;
             height: 28px;
             font-size: 0.8rem;
         }
 
-        body.capcut-mobile-mode .btn-transport-play {
+        body.vstudio-mobile-mode .btn-transport-play {
             width: 32px;
             height: 32px;
             font-size: 0.9rem;
         }
 
-        body.capcut-mobile-mode .video-timeline-area {
+        body.vstudio-mobile-mode .video-timeline-area {
             flex: 1;
             height: auto !important;
             max-height: none !important;
@@ -2213,19 +2208,19 @@
             padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px));
         }
 
-        body.capcut-mobile-mode .timeline-toolbar {
+        body.vstudio-mobile-mode .timeline-toolbar {
             height: 36px;
             padding: 0 8px;
             overflow-x: auto;
             background: #151620;
         }
 
-        body.capcut-mobile-mode .btn-tl-tool {
+        body.vstudio-mobile-mode .btn-tl-tool {
             padding: 3px 8px;
             font-size: 0.72rem;
         }
 
-        body.capcut-mobile-mode .track-header-fixed {
+        body.vstudio-mobile-mode .track-header-fixed {
             width: 36px !important;
             min-width: 36px !important;
             padding: 0 4px !important;
@@ -2233,25 +2228,25 @@
             background: #13141c !important;
         }
 
-        body.capcut-mobile-mode .track-header-fixed span {
+        body.vstudio-mobile-mode .track-header-fixed span {
             display: none !important;
         }
 
-        body.capcut-mobile-mode .track-header-fixed i.track-main-icon {
+        body.vstudio-mobile-mode .track-header-fixed i.track-main-icon {
             display: block !important;
             font-size: 0.92rem !important;
             margin: 0 !important;
         }
 
-        body.capcut-mobile-mode .track-header-actions {
+        body.vstudio-mobile-mode .track-header-actions {
             display: none !important;
         }
 
-        body.capcut-mobile-mode #playheadLine {
+        body.vstudio-mobile-mode #playheadLine {
             left: 36px !important;
         }
 
-        body.capcut-mobile-mode .playhead-needle {
+        body.vstudio-mobile-mode .playhead-needle {
             top: -4px !important;
             left: -12px !important;
             width: 26px !important;
@@ -2259,25 +2254,25 @@
             touch-action: none !important;
         }
 
-        body.capcut-mobile-mode .clip-trim-handle {
+        body.vstudio-mobile-mode .clip-trim-handle {
             width: 22px !important;
             touch-action: none !important;
         }
 
-        body.capcut-mobile-mode .export-modal-card-filmora {
+        body.vstudio-mobile-mode .export-modal-card-filmora {
             max-height: 90vh;
             overflow-y: auto;
             padding: 1.2rem;
             width: 95%;
         }
 
-        body.capcut-mobile-mode .export-dialog-grid {
+        body.vstudio-mobile-mode .export-dialog-grid {
             grid-template-columns: 1fr !important;
             gap: 12px;
         }
 
-        /* DOCK DE HERRAMIENTAS INFERIOR ESTILO CAPCUT */
-        .capcut-bottom-dock {
+        /* DOCK DE HERRAMIENTAS INFERIOR ESTILO vstudio */
+        .vstudio-bottom-dock {
             display: none;
             position: fixed;
             bottom: 0;
@@ -2298,15 +2293,15 @@
             scrollbar-width: none;
         }
 
-        .capcut-bottom-dock::-webkit-scrollbar {
+        .vstudio-bottom-dock::-webkit-scrollbar {
             display: none;
         }
 
-        body.capcut-mobile-mode .capcut-bottom-dock {
+        body.vstudio-mobile-mode .vstudio-bottom-dock {
             display: flex !important;
         }
 
-        .capcut-dock-btn {
+        .vstudio-dock-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -2325,22 +2320,22 @@
             white-space: nowrap;
         }
 
-        .capcut-dock-btn i {
+        .vstudio-dock-btn i {
             font-size: 1.15rem;
             color: #cbd5e1;
         }
 
-        .capcut-dock-btn:hover,
-        .capcut-dock-btn.active {
+        .vstudio-dock-btn:hover,
+        .vstudio-dock-btn.active {
             color: #feb504;
         }
 
-        .capcut-dock-btn.active i {
+        .vstudio-dock-btn.active i {
             color: #feb504;
         }
 
-        /* DRAWER / BOTTOM SHEET ESTILO CAPCUT */
-        .capcut-bottom-sheet {
+        /* DRAWER / BOTTOM SHEET ESTILO vstudio */
+        .vstudio-bottom-sheet {
             position: fixed;
             bottom: calc(56px + env(safe-area-inset-bottom, 0px));
             left: 0;
@@ -2358,7 +2353,7 @@
             backdrop-filter: blur(24px);
         }
 
-        .capcut-sheet-pull-bar {
+        .vstudio-sheet-pull-bar {
             width: 40px;
             height: 4px;
             background: rgba(255, 255, 255, 0.35);
@@ -2366,7 +2361,7 @@
             margin: 0 auto 10px auto;
         }
 
-        .capcut-bottom-sheet.open {
+        .vstudio-bottom-sheet.open {
             display: flex;
             animation: slideUpSheet 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -2376,7 +2371,7 @@
             to { transform: translateY(0); }
         }
 
-        .capcut-sheet-header {
+        .vstudio-sheet-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -2385,7 +2380,7 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        .capcut-sheet-title {
+        .vstudio-sheet-title {
             font-size: 0.88rem;
             font-weight: 700;
             color: #ffffff;
@@ -2394,7 +2389,7 @@
             gap: 8px;
         }
 
-        .capcut-sheet-close {
+        .vstudio-sheet-close {
             background: rgba(255, 255, 255, 0.08);
             border: none;
             color: #cbd5e1;
@@ -2441,8 +2436,8 @@
 
         <div class="topbar-right" style="display: flex; align-items: center; gap: 8px;">
             <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
-            <a href="video-mobile.html" class="btn-topbar-tool" id="btnToggleCapCutMobile" title="Abrir versión móvil dedicada estilo CapCut">
-                <i class="fa-solid fa-mobile-screen"></i> Versión Móvil CapCut
+            <a href="video-mobile.html" class="btn-topbar-tool" id="btnToggleMyxsiMobile" title="Abrir versión móvil dedicada estilo Myxsi">
+                <i class="fa-solid fa-mobile-screen"></i> Versión Móvil Myxsi
             </a>
             <button class="btn-topbar-tool" onclick="saveProjectToLocal()" title="Guardar proyecto">
                 <i class="fa-solid fa-floppy-disk"></i> Guardar
@@ -3481,54 +3476,54 @@
         </div>
     </section>
 
-    <!-- DOCK DE HERRAMIENTAS INFERIOR ESTILO CAPCUT (SOLO VISIBLE EN MODO MÓVIL) -->
-    <nav class="capcut-bottom-dock" id="capcutBottomDock">
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('edit')">
+    <!-- DOCK DE HERRAMIENTAS INFERIOR ESTILO vstudio (SOLO VISIBLE EN MODO MÓVIL) -->
+    <nav class="vstudio-bottom-dock" id="vstudioBottomDock">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('edit')">
             <i class="fa-solid fa-scissors"></i>
             <span>Editar</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('audio')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('audio')">
             <i class="fa-solid fa-music"></i>
             <span>Audio</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('text')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('text')">
             <i class="fa-solid fa-font"></i>
             <span>Texto</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('effects')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('effects')">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
             <span>Efectos</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('trans')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('trans')">
             <i class="fa-solid fa-arrows-split-up-and-left"></i>
             <span>Transic.</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('filters')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('filters')">
             <i class="fa-solid fa-sliders"></i>
             <span>Filtros</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openCapCutSheet('ratio')">
+        <button type="button" class="vstudio-dock-btn" onclick="openMyxsiSheet('ratio')">
             <i class="fa-solid fa-crop"></i>
             <span>Formato</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="document.getElementById('mediaUploadInput').click()">
+        <button type="button" class="vstudio-dock-btn" onclick="document.getElementById('mediaUploadInput').click()">
             <i class="fa-solid fa-cloud-arrow-up"></i>
             <span>Importar</span>
         </button>
-        <button type="button" class="capcut-dock-btn" onclick="openExportModal()" style="color: #feb504;">
+        <button type="button" class="vstudio-dock-btn" onclick="openExportModal()" style="color: #feb504;">
             <i class="fa-solid fa-arrow-up-from-bracket" style="color: #feb504;"></i>
             <span>Exportar</span>
         </button>
     </nav>
 
-    <!-- DRAWER / BOTTOM SHEET ESTILO CAPCUT -->
-    <div class="capcut-bottom-sheet" id="capcutBottomSheet">
-        <div class="capcut-sheet-pull-bar"></div>
-        <div class="capcut-sheet-header">
-            <span class="capcut-sheet-title" id="capcutSheetTitle"><i class="fa-solid fa-scissors"></i> Herramientas CapCut</span>
-            <button type="button" class="capcut-sheet-close" onclick="closeCapCutSheet()"><i class="fa-solid fa-xmark"></i></button>
+    <!-- DRAWER / BOTTOM SHEET ESTILO vstudio -->
+    <div class="vstudio-bottom-sheet" id="vstudioBottomSheet">
+        <div class="vstudio-sheet-pull-bar"></div>
+        <div class="vstudio-sheet-header">
+            <span class="vstudio-sheet-title" id="vstudioSheetTitle"><i class="fa-solid fa-scissors"></i> Herramientas Myxsi</span>
+            <button type="button" class="vstudio-sheet-close" onclick="closeMyxsiSheet()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div id="capcutSheetContent">
+        <div id="vstudioSheetContent">
             <!-- Contenido dinámico según herramienta seleccionada -->
         </div>
     </div>
@@ -5820,7 +5815,7 @@
         }
 
         function getTrackHeaderWidth() {
-            return (document.body.classList.contains('capcut-mobile-mode') || window.innerWidth <= 900) ? 36 : 125;
+            return (document.body.classList.contains('vstudio-mobile-mode') || window.innerWidth <= 900) ? 36 : 125;
         }
 
         function buildTimelineRuler() {
@@ -7057,22 +7052,22 @@
         }
 
         // =========================================================================
-        // MODO MÓVIL ESTILO CAPCUT (DOCK INFERIOR Y HERRAMIENTAS COMPLETAS)
+        // MODO MÓVIL ESTILO vstudio (DOCK INFERIOR Y HERRAMIENTAS COMPLETAS)
         // =========================================================================
-        let currentCapCutSheet = null;
+        let currentMyxsiSheet = null;
         let userManuallyToggledMobileMode = false;
 
         function detectAndApplyMobileMode(isResize = false) {
             if (isResize && userManuallyToggledMobileMode) return;
             const isMobileDevice = window.innerWidth <= 900 || ('ontouchstart' in window && window.innerWidth <= 1024);
             const urlParams = new URLSearchParams(window.location.search);
-            const forceCapcut = urlParams.get('mode') === 'capcut' || urlParams.get('mobile') === '1';
+            const forcevstudio = urlParams.get('mode') === 'vstudio' || urlParams.get('mobile') === '1';
 
-            if (isMobileDevice || forceCapcut) {
-                if (!document.body.classList.contains('capcut-mobile-mode')) {
-                    document.body.classList.add('capcut-mobile-mode');
+            if (isMobileDevice || forcevstudio) {
+                if (!document.body.classList.contains('vstudio-mobile-mode')) {
+                    document.body.classList.add('vstudio-mobile-mode');
                 }
-                const btn = document.getElementById('btnToggleCapCutMobile');
+                const btn = document.getElementById('btnToggleMyxsiMobile');
                 if (btn) {
                     btn.classList.add('active');
                     btn.innerHTML = '<i class="fa-solid fa-desktop"></i> Modo PC';
@@ -7084,27 +7079,27 @@
                     if (ratioSelect) ratioSelect.value = '9:16';
                 }
             } else if (!isResize) {
-                document.body.classList.remove('capcut-mobile-mode');
-                const btn = document.getElementById('btnToggleCapCutMobile');
+                document.body.classList.remove('vstudio-mobile-mode');
+                const btn = document.getElementById('btnToggleMyxsiMobile');
                 if (btn) {
                     btn.classList.remove('active');
-                    btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Modo CapCut';
+                    btn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> Modo Myxsi';
                 }
             }
         }
 
-        function toggleCapCutMobileMode() {
+        function toggleMyxsiMobileMode() {
             userManuallyToggledMobileMode = true;
-            const isMobile = document.body.classList.toggle('capcut-mobile-mode');
-            const btn = document.getElementById('btnToggleCapCutMobile');
+            const isMobile = document.body.classList.toggle('vstudio-mobile-mode');
+            const btn = document.getElementById('btnToggleMyxsiMobile');
             if (btn) {
                 btn.classList.toggle('active', isMobile);
                 btn.innerHTML = isMobile
                     ? `<i class="fa-solid fa-desktop"></i> Modo PC`
-                    : `<i class="fa-solid fa-mobile-screen"></i> Modo CapCut`;
+                    : `<i class="fa-solid fa-mobile-screen"></i> Modo Myxsi`;
             }
             if (!isMobile) {
-                closeCapCutSheet();
+                closeMyxsiSheet();
             } else if (projectState.aspectRatio === '16:9') {
                 projectState.aspectRatio = '9:16';
                 const ratioSelect = document.getElementById('aspectRatioSelect');
@@ -7159,12 +7154,12 @@
 
         function setupMobileSheetDismissal() {
             function handleOutsideDismiss(e) {
-                const sheet = document.getElementById('capcutBottomSheet');
-                const dock = document.getElementById('capcutBottomDock');
+                const sheet = document.getElementById('vstudioBottomSheet');
+                const dock = document.getElementById('vstudioBottomDock');
                 if (sheet && sheet.classList.contains('open')) {
                     const target = e.target;
                     if (!sheet.contains(target) && !dock.contains(target)) {
-                        closeCapCutSheet();
+                        closeMyxsiSheet();
                     }
                 }
             }
@@ -7202,7 +7197,7 @@
                 updateEffectParam('contrast', 115);
                 updateEffectParam('saturation', 80);
             }
-            openCapCutSheet('filters');
+            openMyxsiSheet('filters');
         }
 
         function applyTextPreset(preset) {
@@ -7239,52 +7234,52 @@
             }
             renderTimelineClips();
             syncPropertiesPanel();
-            openCapCutSheet('text');
+            openMyxsiSheet('text');
         }
 
-        function openCapCutSheet(tab) {
-            const sheet = document.getElementById('capcutBottomSheet');
+        function openMyxsiSheet(tab) {
+            const sheet = document.getElementById('vstudioBottomSheet');
             if (!sheet) return;
 
-            if (currentCapCutSheet === tab && sheet.classList.contains('open')) {
-                closeCapCutSheet();
+            if (currentMyxsiSheet === tab && sheet.classList.contains('open')) {
+                closeMyxsiSheet();
                 return;
             }
 
-            const titleEl = document.getElementById('capcutSheetTitle');
-            const contentEl = document.getElementById('capcutSheetContent');
+            const titleEl = document.getElementById('vstudioSheetTitle');
+            const contentEl = document.getElementById('vstudioSheetContent');
             if (!contentEl) return;
 
-            document.querySelectorAll('.capcut-dock-btn').forEach(b => b.classList.remove('active'));
-            const clickedBtn = document.querySelector(`.capcut-dock-btn[onclick*="${tab}"]`);
+            document.querySelectorAll('.vstudio-dock-btn').forEach(b => b.classList.remove('active'));
+            const clickedBtn = document.querySelector(`.vstudio-dock-btn[onclick*="${tab}"]`);
             if (clickedBtn) clickedBtn.classList.add('active');
 
-            currentCapCutSheet = tab;
+            currentMyxsiSheet = tab;
 
-            let titleHtml = '<i class="fa-solid fa-scissors"></i> Herramientas CapCut';
+            let titleHtml = '<i class="fa-solid fa-scissors"></i> Herramientas Myxsi';
             let bodyHtml = '';
 
             if (tab === 'edit') {
                 titleHtml = '<i class="fa-solid fa-scissors" style="color: #feb504;"></i> Edición de Clip';
-                bodyHtml = renderCapCutEditSheet();
+                bodyHtml = renderMyxsiEditSheet();
             } else if (tab === 'audio') {
                 titleHtml = '<i class="fa-solid fa-music" style="color: #06b6d4;"></i> Audio y Modulación Vocal';
-                bodyHtml = renderCapCutAudioSheet();
+                bodyHtml = renderMyxsiAudioSheet();
             } else if (tab === 'text') {
                 titleHtml = '<i class="fa-solid fa-font" style="color: #feb504;"></i> Títulos y Subtítulos';
-                bodyHtml = renderCapCutTextSheet();
+                bodyHtml = renderMyxsiTextSheet();
             } else if (tab === 'effects') {
                 titleHtml = '<i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i> Efectos Drift & Shaders';
-                bodyHtml = renderCapCutEffectsSheet();
+                bodyHtml = renderMyxsiEffectsSheet();
             } else if (tab === 'trans') {
                 titleHtml = '<i class="fa-solid fa-arrows-split-up-and-left" style="color: #10b981;"></i> Transiciones Cinemáticas';
-                bodyHtml = renderCapCutTransitionsSheet();
+                bodyHtml = renderMyxsiTransitionsSheet();
             } else if (tab === 'filters') {
                 titleHtml = '<i class="fa-solid fa-sliders" style="color: #fbbf24;"></i> Filtros y Corrección de Color';
-                bodyHtml = renderCapCutFiltersSheet();
+                bodyHtml = renderMyxsiFiltersSheet();
             } else if (tab === 'ratio') {
                 titleHtml = '<i class="fa-solid fa-crop" style="color: #38bdf8;"></i> Formato y Relación de Aspecto';
-                bodyHtml = renderCapCutRatioSheet();
+                bodyHtml = renderMyxsiRatioSheet();
             }
 
             if (titleEl) titleEl.innerHTML = titleHtml;
@@ -7292,14 +7287,14 @@
             sheet.classList.add('open');
         }
 
-        function closeCapCutSheet() {
-            const sheet = document.getElementById('capcutBottomSheet');
+        function closeMyxsiSheet() {
+            const sheet = document.getElementById('vstudioBottomSheet');
             if (sheet) sheet.classList.remove('open');
-            document.querySelectorAll('.capcut-dock-btn').forEach(b => b.classList.remove('active'));
-            currentCapCutSheet = null;
+            document.querySelectorAll('.vstudio-dock-btn').forEach(b => b.classList.remove('active'));
+            currentMyxsiSheet = null;
         }
 
-        function renderCapCutEditSheet() {
+        function renderMyxsiEditSheet() {
             const activeClip = projectState.clips.find(c => c.id === projectState.activeClipId);
             return `
                 <div style="display: flex; flex-direction: column; gap: 12px;">
@@ -7336,23 +7331,23 @@
                     <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px;">
                             <span style="color: #cbd5e1;">Velocidad de Clip:</span>
-                            <strong style="color: #feb504;" id="capcutSpeedVal">${(activeClip.speed || 1.0).toFixed(2)}x</strong>
+                            <strong style="color: #feb504;" id="vstudioSpeedVal">${(activeClip.speed || 1.0).toFixed(2)}x</strong>
                         </div>
                         <input type="range" min="0.25" max="4.0" step="0.25" value="${activeClip.speed || 1.0}" style="width: 100%; accent-color: #feb504;" oninput="
                             const val = parseFloat(this.value);
                             const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                            if (clip) { clip.speed = val; document.getElementById('capcutSpeedVal').innerText = val.toFixed(2) + 'x'; syncPropertiesPanel(); }
+                            if (clip) { clip.speed = val; document.getElementById('vstudioSpeedVal').innerText = val.toFixed(2) + 'x'; syncPropertiesPanel(); }
                         ">
                     </div>
                     <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px;">
                             <span style="color: #cbd5e1;">Opacidad:</span>
-                            <strong style="color: #feb504;" id="capcutOpacityVal">${Math.round((activeClip.opacity ?? 1.0) * 100)}%</strong>
+                            <strong style="color: #feb504;" id="vstudioOpacityVal">${Math.round((activeClip.opacity ?? 1.0) * 100)}%</strong>
                         </div>
                         <input type="range" min="0" max="100" step="5" value="${Math.round((activeClip.opacity ?? 1.0) * 100)}" style="width: 100%; accent-color: #feb504;" oninput="
                             const val = parseInt(this.value) / 100;
                             const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                            if (clip) { clip.opacity = val; document.getElementById('capcutOpacityVal').innerText = Math.round(val * 100) + '%'; syncPropertiesPanel(); }
+                            if (clip) { clip.opacity = val; document.getElementById('vstudioOpacityVal').innerText = Math.round(val * 100) + '%'; syncPropertiesPanel(); }
                         ">
                     </div>
                     ` : ''}
@@ -7360,7 +7355,7 @@
             `;
         }
 
-        function renderCapCutAudioSheet() {
+        function renderMyxsiAudioSheet() {
             return `
                 <div style="display: flex; flex-direction: column; gap: 12px;">
                     <button type="button" class="btn-tl-tool" style="padding: 10px 14px; justify-content: center; gap: 8px; font-weight: 700;" onclick="detachAudioFromActiveClip();">
@@ -7397,7 +7392,7 @@
             `;
         }
 
-        function renderCapCutTextSheet() {
+        function renderMyxsiTextSheet() {
             const textClip = projectState.clips.find(c => c.id === projectState.activeClipId && c.type === 'text')
                           || projectState.clips.find(c => c.type === 'text');
             return `
@@ -7414,11 +7409,11 @@
                         ">${textClip.text || ''}</textarea>
                         <div style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
                             <div style="flex: 1;">
-                                <label style="font-size: 0.65rem; color: #94a3b8;">Tamaño: <span id="capcutFontSizeVal">${textClip.fontSize || 44}px</span></label>
+                                <label style="font-size: 0.65rem; color: #94a3b8;">Tamaño: <span id="vstudioFontSizeVal">${textClip.fontSize || 44}px</span></label>
                                 <input type="range" min="16" max="120" step="2" value="${textClip.fontSize || 44}" style="width: 100%; accent-color: #feb504;" oninput="
                                     const val = parseInt(this.value);
                                     const clip = projectState.clips.find(c => c.id === '${textClip.id}');
-                                    if (clip) { clip.fontSize = val; document.getElementById('capcutFontSizeVal').innerText = val + 'px'; syncPropertiesPanel(); }
+                                    if (clip) { clip.fontSize = val; document.getElementById('vstudioFontSizeVal').innerText = val + 'px'; syncPropertiesPanel(); }
                                 ">
                             </div>
                             <div>
@@ -7442,7 +7437,7 @@
             `;
         }
 
-        function renderCapCutEffectsSheet() {
+        function renderMyxsiEffectsSheet() {
             const shaders = [
                 { id: 'none', label: 'Sin Efecto', icon: 'ban' },
                 { id: 'vhs', label: 'VHS Retro', icon: 'tape' },
@@ -7478,7 +7473,7 @@
             `;
         }
 
-        function renderCapCutTransitionsSheet() {
+        function renderMyxsiTransitionsSheet() {
             const transitions = [
                 { id: 'fade', label: 'Disolución Cruzada', icon: 'circle-half-stroke' },
                 { id: 'wipe_left', label: 'Barrido Izq.', icon: 'arrow-left' },
@@ -7511,7 +7506,7 @@
             `;
         }
 
-        function renderCapCutFiltersSheet() {
+        function renderMyxsiFiltersSheet() {
             return `
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
@@ -7526,30 +7521,30 @@
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #cbd5e1; margin-bottom: 2px;">
                                 <span>Brillo:</span>
-                                <strong style="color: #feb504;" id="capcutBrVal">${projectState.filters.brightness}%</strong>
+                                <strong style="color: #feb504;" id="vstudioBrVal">${projectState.filters.brightness}%</strong>
                             </div>
-                            <input type="range" min="0" max="200" value="${projectState.filters.brightness}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('brightness', this.value); document.getElementById('capcutBrVal').innerText = this.value + '%';">
+                            <input type="range" min="0" max="200" value="${projectState.filters.brightness}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('brightness', this.value); document.getElementById('vstudioBrVal').innerText = this.value + '%';">
                         </div>
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #cbd5e1; margin-bottom: 2px;">
                                 <span>Contraste:</span>
-                                <strong style="color: #feb504;" id="capcutCtVal">${projectState.filters.contrast}%</strong>
+                                <strong style="color: #feb504;" id="vstudioCtVal">${projectState.filters.contrast}%</strong>
                             </div>
-                            <input type="range" min="0" max="200" value="${projectState.filters.contrast}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('contrast', this.value); document.getElementById('capcutCtVal').innerText = this.value + '%';">
+                            <input type="range" min="0" max="200" value="${projectState.filters.contrast}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('contrast', this.value); document.getElementById('vstudioCtVal').innerText = this.value + '%';">
                         </div>
                         <div>
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: #cbd5e1; margin-bottom: 2px;">
                                 <span>Saturación:</span>
-                                <strong style="color: #feb504;" id="capcutStVal">${projectState.filters.saturation}%</strong>
+                                <strong style="color: #feb504;" id="vstudioStVal">${projectState.filters.saturation}%</strong>
                             </div>
-                            <input type="range" min="0" max="200" value="${projectState.filters.saturation}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('saturation', this.value); document.getElementById('capcutStVal').innerText = this.value + '%';">
+                            <input type="range" min="0" max="200" value="${projectState.filters.saturation}" style="width: 100%; accent-color: #feb504;" oninput="updateFilterParam('saturation', this.value); document.getElementById('vstudioStVal').innerText = this.value + '%';">
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        function renderCapCutRatioSheet() {
+        function renderMyxsiRatioSheet() {
             const ratios = [
                 { id: '16:9', label: '16:9 Horizontal (YouTube, TV)', icon: 'desktop' },
                 { id: '9:16', label: '9:16 Vertical (TikTok, Reels, Shorts)', icon: 'mobile-screen' },
@@ -7566,7 +7561,7 @@
                             if (sel) sel.value = '${r.id}';
                             setupCanvasSize();
                             updateTransformGizmo();
-                            openCapCutSheet('ratio');
+                            openMyxsiSheet('ratio');
                         ">
                             <i class="fa-solid fa-${r.icon}" style="font-size: 1.1rem; color: ${projectState.aspectRatio === r.id ? '#feb504' : '#cbd5e1'}; width: 22px;"></i>
                             <span style="font-weight: 700;">${r.label}</span>
@@ -7618,9 +7613,9 @@
         window.closeExportModal = closeExportModal;
         window.applyExportProfile = applyExportProfile;
         window.startVideoRendering = startVideoRendering;
-        window.toggleCapCutMobileMode = toggleCapCutMobileMode;
-        window.openCapCutSheet = openCapCutSheet;
-        window.closeCapCutSheet = closeCapCutSheet;
+        window.toggleMyxsiMobileMode = toggleMyxsiMobileMode;
+        window.openMyxsiSheet = openMyxsiSheet;
+        window.closeMyxsiSheet = closeMyxsiSheet;
         window.detectAndApplyMobileMode = detectAndApplyMobileMode;
         window.applyColorPreset = applyColorPreset;
         window.applyTextPreset = applyTextPreset;

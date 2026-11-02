@@ -954,6 +954,7 @@
             const newFile = {
                 id: docId,
                 name: canvaTitle,
+                type: 'canva',
                 mimeType: 'application/pdf',
                 updatedAt: Date.now(),
                 isLocal: true,
@@ -1022,21 +1023,27 @@
             let localFiles = [];
             try {
                 localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
-                    .filter(f => f.mimeType === 'application/pdf' || (f.name && f.name.endsWith('.pdf')) || f.isCanva);
+                    .filter(f => f.type === 'canva' || f.isCanva || f.mimeType === 'application/pdf' || (f.name && f.name.endsWith('.pdf')));
                 
                 const mainTitle = localStorage.getItem('canva_presentation_title') || 'Presentación Canva sin título';
 
-                localFiles.unshift({
-                    id: 'main_canva_doc',
-                    name: mainTitle,
-                    mimeType: 'application/pdf',
-                    updatedAt: Date.now(),
-                    isLocal: true,
-                    isMain: true
-                });
+                if (!localFiles.some(f => f.id === 'main_canva_doc')) {
+                    localFiles.unshift({
+                        id: 'main_canva_doc',
+                        name: mainTitle,
+                        type: 'canva',
+                        isCanva: true,
+                        mimeType: 'application/pdf',
+                        updatedAt: Date.now(),
+                        isLocal: true,
+                        isMain: true
+                    });
+                }
             } catch(e){}
 
-            allCanvaList = [...cloudCanva, ...localFiles];
+            const cloudIds = new Set(cloudCanva.map(c => c.id));
+            const filteredLocal = localFiles.filter(l => !cloudIds.has(l.id));
+            allCanvaList = [...cloudCanva, ...filteredLocal];
             renderCanvaGrid(allCanvaList);
         }
 

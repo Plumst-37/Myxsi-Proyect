@@ -1283,10 +1283,13 @@
     <!-- MENÚ CONTEXTUAL (⋮) -->
     <div class="myxsi-context-menu-box" id="docContextMenu">
         <button class="context-menu-button" onclick="contextAction('open')">
-            <i class="fa-regular fa-folder-open" style="font-size: 12px; width: 16px;"></i> Abrir
+            <i class="fa-regular fa-folder-open" style="font-size: 12px; width: 16px;"></i> Abrir en Myxsi Docs
         </button>
         <button class="context-menu-button" onclick="contextAction('newtab')">
             <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 12px; width: 16px;"></i> Abrir en pestaña nueva
+        </button>
+        <button class="context-menu-button" onclick="contextAction('drive')">
+            <i class="fa-brands fa-google-drive" style="font-size: 12px; width: 16px; color: #60a5fa;"></i> Abrir en Google Docs
         </button>
         <button class="context-menu-button" onclick="contextAction('ai_edit')">
             <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 12px; width: 16px; color: var(--mx-brand-purple);"></i> Editar con IA de Myxsi
@@ -1466,7 +1469,7 @@
             let localDocs = [];
             try {
                 localDocs = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]')
-                    .filter(f => f.mimeType === 'application/vnd.google-apps.document' || f.name.endsWith('.doc') || f.name.endsWith('.docx') || f.isDoc);
+                    .filter(f => f.type === 'doc' || f.isDoc || f.mimeType === 'application/vnd.google-apps.document' || (f.name && (f.name.endsWith('.doc') || f.name.endsWith('.docx'))));
                 
                 const mainTitle = localStorage.getItem('smart_doc_title');
                 const mainContent = localStorage.getItem('smart_doc_content');
@@ -1476,6 +1479,8 @@
                         id: 'main_smart_doc',
                         name: mainTitle || 'Documento sin título',
                         mimeType: 'application/vnd.google-apps.document',
+                        type: 'doc',
+                        isDoc: true,
                         updatedAt: Date.now(),
                         isLocal: true,
                         isMain: true
@@ -1499,11 +1504,15 @@
                             id: f.id,
                             name: f.name,
                             mimeType: f.mimeType,
+                            type: 'doc',
+                            isDoc: true,
                             updatedAt: f.modifiedTime || f.createdTime,
                             webViewLink: f.webViewLink,
                             isCloud: true
                         }));
-                        allDocsList = [...cloudDocs, ...localDocs];
+                        const cloudIds = new Set(cloudDocs.map(c => c.id));
+                        const filteredLocal = localDocs.filter(l => !cloudIds.has(l.id));
+                        allDocsList = [...cloudDocs, ...filteredLocal];
                         renderDocs();
                     }
                 } catch(e){}
@@ -1576,9 +1585,16 @@
                         <div class="doc-card-lower-info">
                             <div class="doc-title-row-item">
                                 <span class="doc-name-headline" title="${escapeHtml(doc.name)}">${escapeHtml(doc.name)}</span>
-                                <button class="doc-kebab-menu-btn" onclick="openContextMenu(event, '${doc.id}')" title="Más opciones">
-                                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                                </button>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    ${doc.isCloud && doc.webViewLink ? `
+                                        <a href="${doc.webViewLink}" target="_blank" onclick="event.stopPropagation();" class="doc-kebab-menu-btn" title="Abrir en Google Docs" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #60a5fa;">
+                                            <i class="fa-brands fa-google-drive"></i>
+                                        </a>
+                                    ` : ''}
+                                    <button class="doc-kebab-menu-btn" onclick="openContextMenu(event, '${doc.id}')" title="Más opciones">
+                                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="doc-meta-row-info">
                                 <div style="display: flex; align-items: center; gap: 6px;">
@@ -1607,7 +1623,12 @@
                             </div>
                             <div style="font-size: 0.82rem; color: var(--mx-txt-sub);">${doc.isCloud ? 'Google Drive' : 'Myxsi Local'}</div>
                             <div style="font-size: 0.82rem; color: var(--mx-txt-sub);">${formatRelativeDate(doc.updatedAt)}</div>
-                            <div style="text-align: right;">
+                            <div style="text-align: right; display: flex; align-items: center; justify-content: flex-end; gap: 6px;">
+                                ${doc.isCloud && doc.webViewLink ? `
+                                    <a href="${doc.webViewLink}" target="_blank" onclick="event.stopPropagation();" class="doc-kebab-menu-btn" title="Abrir en Google Docs" style="display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: #60a5fa;">
+                                        <i class="fa-brands fa-google-drive"></i>
+                                    </a>
+                                ` : ''}
                                 <button class="doc-kebab-menu-btn" onclick="openContextMenu(event, '${doc.id}')" title="Más opciones">
                                     <i class="fa-solid fa-ellipsis-vertical"></i>
                                 </button>
@@ -1619,11 +1640,7 @@
         }
 
         function openDoc(docId, isCloud, webViewLink) {
-            if (isCloud && webViewLink) {
-                window.open(webViewLink, '_blank');
-            } else {
-                window.location.href = `docs.html?docId=${docId}`;
-            }
+            window.location.href = `docs.html?docId=${docId}${isCloud ? '&isCloud=true' : ''}`;
         }
 
         function setViewMode(mode) {
@@ -1681,8 +1698,10 @@
             if (action === 'open') {
                 openDoc(doc.id, doc.isCloud, doc.webViewLink);
             } else if (action === 'newtab') {
+                window.open(`docs.html?docId=${doc.id}${doc.isCloud ? '&isCloud=true' : ''}`, '_blank');
+            } else if (action === 'drive') {
                 if (doc.isCloud && doc.webViewLink) window.open(doc.webViewLink, '_blank');
-                else window.open(`docs.html?docId=${doc.id}`, '_blank');
+                else window.open(`https://docs.google.com/document/d/${doc.id}/edit`, '_blank');
             } else if (action === 'ai_edit') {
                 window.location.href = `chat.html?editDocId=${doc.id}`;
             } else if (action === 'rename') {

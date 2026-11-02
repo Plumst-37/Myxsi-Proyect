@@ -3,16 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#000000">
-    <title>Myxsi Video — CapCut Mobile Studio</title>
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <title>Myxsi Video Studio — Editor Móvil & PC</title>
+    <meta name="description" content="Editor de video profesional adaptado para PC y teléfonos móviles con timeline multipista, filtros, efectos y exportación en alta fidelidad.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+
+    <!-- Fuentes oficiales Myxsi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@500;700;800;900&family=Fira+Code:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Motor de Almacenamiento Local Myxsi Video (IndexedDB) -->
     <script src="js/video-db.js"></script>
 
     <style>
+        :root {
+            --vs-bg: #000000;
+            --vs-topbar: #0c0d13;
+            --vs-surface: #12141c;
+            --vs-surface-elevated: #1a1d29;
+            --vs-border: rgba(255, 255, 255, 0.08);
+            --vs-border-strong: rgba(255, 255, 255, 0.16);
+            --vs-accent: #feb504;
+            --vs-accent-hover: #ffc72c;
+            --vs-accent-cyan: #00e5ff;
+            --vs-accent-purple: #a855f7;
+            --vs-accent-emerald: #10b981;
+            --vs-text: #ffffff;
+            --vs-text-muted: #94a3b8;
+            --vs-text-subtle: #64748b;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -22,136 +47,136 @@
             -webkit-user-select: none;
         }
 
-        :root {
-            --cap-bg: #000000;
-            --cap-surface: #0e0f14;
-            --cap-surface-2: #161822;
-            --cap-surface-3: #202230;
-            --cap-border: rgba(255, 255, 255, 0.1);
-            --cap-accent: #feb504;
-            --cap-accent-cyan: #00e5ff;
-            --cap-accent-purple: #a855f7;
-            --cap-text: #ffffff;
-            --cap-text-sub: #94a3b8;
-            --cap-red: #ef4444;
-            --cap-green: #10b981;
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-            --safe-top: env(safe-area-inset-top, 0px);
-        }
-
-        body {
-            background: var(--cap-bg);
-            color: var(--cap-text);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            height: 100vh;
-            height: 100dvh;
-            width: 100vw;
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background: var(--vs-bg);
+            color: var(--vs-text);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            position: fixed;
+            inset: 0;
             display: flex;
             flex-direction: column;
-            position: fixed;
-            top: 0;
-            left: 0;
         }
 
-        /* 1. TOPBAR CAPCUT */
-        .capcut-topbar {
-            height: calc(46px + var(--safe-top));
-            padding: var(--safe-top) 10px 0 10px;
-            background: #08090d;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        /* 1. TOPBAR */
+        .vstudio-topbar {
+            height: calc(44px + var(--safe-top));
+            padding-top: var(--safe-top);
+            background: var(--vs-topbar);
+            border-bottom: 1px solid var(--vs-border);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            flex-shrink: 0;
+            padding-left: 10px;
+            padding-right: 12px;
             z-index: 100;
+            flex-shrink: 0;
         }
 
-        .topbar-left, .topbar-right {
+        .topbar-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            min-width: 0;
         }
 
-        .topbar-btn {
+        .topbar-icon-btn {
             width: 32px;
             height: 32px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--vs-border);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
             cursor: pointer;
             text-decoration: none;
-            transition: all 0.15s;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
         }
 
-        .topbar-btn:active {
-            transform: scale(0.92);
-            background: rgba(254, 181, 4, 0.2);
-            border-color: var(--cap-accent);
+        .topbar-icon-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--vs-accent);
+        }
+
+        .topbar-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+            outline: none;
+            padding: 2px 6px;
+            border-radius: 6px;
+            cursor: text;
+        }
+
+        .topbar-title:hover, .topbar-title:focus {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .topbar-ratio-badge {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 14px;
-            padding: 3px 10px;
-            color: #ffffff;
-            font-size: 0.72rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--vs-border);
+            border-radius: 99px;
+            padding: 3px 9px;
+            color: #cbd5e1;
+            font-size: 0.68rem;
             font-weight: 700;
             display: flex;
             align-items: center;
             gap: 5px;
             cursor: pointer;
+            transition: all 0.15s ease;
         }
 
-        .topbar-ratio-badge:active {
-            background: rgba(254, 181, 4, 0.25);
-            color: var(--cap-accent);
+        .topbar-ratio-badge:hover {
+            background: rgba(254, 181, 4, 0.15);
+            border-color: var(--vs-accent);
+            color: var(--vs-accent);
         }
 
-        .topbar-mode-btn {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 8px;
-            padding: 4px 8px;
-            color: #cbd5e1;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-decoration: none;
+        .topbar-right {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 8px;
         }
 
         .topbar-export-btn {
             background: linear-gradient(135deg, #feb504 0%, #ff8800 100%);
             border: none;
             border-radius: 99px;
-            padding: 5px 14px;
+            padding: 6px 14px;
             color: #000000;
             font-size: 0.75rem;
             font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
-            box-shadow: 0 2px 12px rgba(254, 181, 4, 0.35);
+            gap: 6px;
+            box-shadow: 0 2px 14px rgba(254, 181, 4, 0.35);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .topbar-export-btn:hover {
+            filter: brightness(1.08);
+            transform: scale(1.02);
         }
 
         .topbar-export-btn:active {
-            transform: scale(0.94);
-            filter: brightness(1.1);
+            transform: scale(0.96);
         }
 
         /* 2. ESCENARIO DE PREVISUALIZACIÓN DE VIDEO */
-        .capcut-stage-area {
+        .vstudio-stage-area {
             flex: 1;
-            min-height: 180px;
+            min-height: 190px;
             max-height: 48%;
             background: #000000;
             position: relative;
@@ -159,134 +184,126 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 6px;
+            padding: 8px;
             overflow: hidden;
         }
 
-        .capcut-canvas-container {
+        .vstudio-stage-area::before {
+            content: '';
+            position: absolute;
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(0, 229, 255, 0.03) 50%, transparent 75%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .vstudio-canvas-container {
             position: relative;
-            max-height: calc(100% - 36px);
+            max-height: calc(100% - 44px);
             max-width: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 10px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.85);
-            background: #050608;
+            box-shadow: 0 8px 36px rgba(0, 0, 0, 0.9);
+            background: #06070a;
+            z-index: 2;
         }
 
         #mainVideoCanvas {
+            display: block;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
-            display: block;
+            border-radius: 12px;
+            cursor: crosshair;
         }
 
-        /* GIZMO TÁCTIL DE TRANSFORMACIÓN */
-        .capcut-gizmo-box {
+        /* CONTROLES FLOTANTES DEL REPRODUCTOR */
+        .vstudio-stage-controls {
             position: absolute;
-            border: 2px solid var(--cap-accent);
-            display: none;
-            pointer-events: auto;
-            z-index: 50;
-            touch-action: none;
-        }
-
-        .gizmo-handle {
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border: 2px solid var(--cap-accent);
-            border-radius: 50%;
-            touch-action: none;
-        }
-
-        .gizmo-tl { top: -9px; left: -9px; }
-        .gizmo-tr { top: -9px; right: -9px; }
-        .gizmo-bl { bottom: -9px; left: -9px; }
-        .gizmo-br { bottom: -9px; right: -9px; }
-
-        .gizmo-rot-stem {
-            position: absolute;
-            top: -24px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 16px;
-            background: var(--cap-accent);
-        }
-
-        .gizmo-rot-knob {
-            position: absolute;
-            top: -34px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--cap-accent);
-            border: 2px solid #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.6rem;
-            color: #000000;
-        }
-
-        /* BARRA DE TRANSPORTE FLOTANTE (BAJO EL PREVIEW) */
-        .stage-floating-transport {
-            height: 32px;
-            width: 100%;
+            left: 0;
+            right: 0;
+            bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 10px;
-            margin-top: 4px;
+            padding: 0 16px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .stage-side-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: auto;
         }
 
         .transport-btn {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 0.95rem;
-            width: 32px;
-            height: 32px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(18, 20, 28, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 0.85rem;
             cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: all 0.15s ease;
+        }
+
+        .transport-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: var(--vs-accent);
         }
 
         .transport-btn:active {
-            color: #ffffff;
-            transform: scale(0.9);
+            transform: scale(0.92);
+        }
+
+        .transport-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
         }
 
         .transport-center-group {
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(22, 24, 34, 0.85);
-            padding: 3px 12px;
+            background: rgba(18, 20, 28, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 99px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(12px);
+            padding: 4px 14px 4px 5px;
+            backdrop-filter: blur(16px);
+            pointer-events: auto;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
         }
 
         .btn-play-pause-circle {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: var(--cap-accent);
+            background: var(--vs-accent);
             border: none;
             color: #000000;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.72rem;
+            font-size: 0.85rem;
             cursor: pointer;
+            box-shadow: 0 0 12px rgba(254, 181, 4, 0.5);
+            transition: transform 0.12s ease;
+        }
+
+        .btn-play-pause-circle:hover {
+            transform: scale(1.08);
         }
 
         .btn-play-pause-circle:active {
@@ -294,25 +311,26 @@
         }
 
         .stage-timecode {
+            font-family: 'Fira Code', monospace;
             font-size: 0.72rem;
             font-weight: 700;
-            font-variant-numeric: tabular-nums;
-            color: #cbd5e1;
+            color: #ffffff;
+            letter-spacing: -0.2px;
         }
 
-        /* 3. LÍNEA DE TIEMPO NATIVA ESTILO CAPCUT */
-        .capcut-timeline-wrapper {
-            flex: 1;
-            background: #090a10;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        /* 3. LÍNEA DE TIEMPO MULTIPISTA */
+        .vstudio-timeline-wrapper {
+            height: 215px;
+            background: #090a0f;
+            border-top: 1px solid var(--vs-border);
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
-        /* AGUJA BLANCA FIJA CENTRAL (50vw) */
-        .capcut-center-needle {
+        .vstudio-center-needle {
             position: absolute;
             left: 50%;
             top: 0;
@@ -322,7 +340,7 @@
             transform: translateX(-50%);
             z-index: 60;
             pointer-events: none;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
         }
 
         .needle-pip {
@@ -336,46 +354,51 @@
             clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
         }
 
-        /* COLUMNA LATERAL DE ACCIONES DE PISTA */
+        /* ACCIONES LATERALES FIJAS */
         .timeline-side-actions {
             position: absolute;
             left: 0;
             top: 24px;
             bottom: 0;
-            width: 44px;
-            background: rgba(12, 13, 19, 0.95);
-            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            width: 48px;
+            background: rgba(9, 10, 15, 0.96);
+            border-right: 1px solid var(--vs-border);
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 12px;
-            padding-top: 8px;
+            padding-top: 10px;
             z-index: 55;
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px);
         }
 
         .side-action-btn {
             background: none;
             border: none;
             color: #64748b;
-            font-size: 0.85rem;
+            font-size: 0.62rem;
+            font-weight: 600;
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
-            font-size: 0.6rem;
+            gap: 3px;
+            transition: color 0.15s ease;
         }
 
         .side-action-btn i {
-            font-size: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .side-action-btn:hover {
+            color: #ffffff;
         }
 
         .side-action-btn.active {
-            color: var(--cap-accent);
+            color: var(--vs-accent);
         }
 
-        /* CONTENEDOR DESLIZABLE HORIZONTALMENTE */
+        /* CONTENEDOR DESLIZABLE */
         .timeline-scroll-container {
             flex: 1;
             overflow-x: auto;
@@ -394,9 +417,9 @@
 
         /* REGLA DE TIEMPO */
         .timeline-ruler-bar {
-            height: 20px;
+            height: 22px;
             position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
             pointer-events: none;
         }
 
@@ -417,70 +440,64 @@
             content: '';
             display: block;
             width: 1px;
-            height: 5px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.25);
             margin-top: 2px;
         }
 
-        /* PISTAS DE CLIPS */
+        /* PISTAS MULTICANAL */
         .timeline-tracks-area {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            padding: 8px 0;
+            gap: 6px;
+            padding: 6px 0;
             position: relative;
         }
 
         .track-row {
-            height: 52px;
+            height: 48px;
             position: relative;
             display: flex;
             align-items: center;
         }
 
         .track-row-sub {
-            height: 36px;
+            height: 34px;
         }
 
-        /* CLIPS FILMSTRIP CAPCUT */
-        .capcut-clip-block {
+        /* BLOQUES DE CLIPS CON ARRASTRE Y RECORTE */
+        .vstudio-clip-block {
             position: absolute;
             height: 100%;
-            background: #1e2130;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #181b29;
+            border: 1px solid rgba(255, 255, 255, 0.16);
             border-radius: 8px;
             overflow: hidden;
             display: flex;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            cursor: grab;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
             touch-action: none;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
 
-        .capcut-clip-block.active {
+        .vstudio-clip-block:active {
+            cursor: grabbing;
+        }
+
+        .vstudio-clip-block.active {
             border: 2px solid #ffffff;
-            box-shadow: 0 0 14px rgba(254, 181, 4, 0.5);
+            box-shadow: 0 0 16px rgba(254, 181, 4, 0.6);
             z-index: 20;
         }
 
-        .capcut-clip-thumb-filmstrip {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            opacity: 0.5;
-            pointer-events: none;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .capcut-clip-label {
+        .vstudio-clip-label {
             position: relative;
             z-index: 5;
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             font-weight: 700;
             color: #ffffff;
-            padding: 0 8px;
+            padding: 0 10px;
             display: flex;
             align-items: center;
             gap: 5px;
@@ -488,23 +505,25 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            pointer-events: none;
         }
 
-        .capcut-clip-dur-tag {
+        .vstudio-clip-dur-tag {
             position: absolute;
             right: 6px;
             bottom: 3px;
-            font-size: 0.6rem;
+            font-size: 0.58rem;
             font-weight: 700;
-            color: rgba(255, 255, 255, 0.8);
-            background: rgba(0, 0, 0, 0.6);
-            padding: 1px 4px;
+            color: rgba(255, 255, 255, 0.85);
+            background: rgba(0, 0, 0, 0.65);
+            padding: 1px 5px;
             border-radius: 4px;
             z-index: 5;
+            pointer-events: none;
         }
 
-        /* MANIJAS DE RECORTE TÁCTIL (TRIM HANDLES) */
-        .capcut-trim-handle {
+        /* MANIJAS DE RECORTE (TRIM HANDLES) */
+        .vstudio-trim-handle {
             display: none;
             position: absolute;
             top: 0;
@@ -513,19 +532,20 @@
             background: #ffffff;
             z-index: 25;
             touch-action: none;
+            cursor: ew-resize;
             align-items: center;
             justify-content: center;
         }
 
-        .capcut-trim-handle::after {
+        .vstudio-trim-handle::after {
             content: '';
             width: 3px;
-            height: 16px;
+            height: 14px;
             background: #000000;
             border-radius: 2px;
         }
 
-        .capcut-clip-block.active .capcut-trim-handle {
+        .vstudio-clip-block.active .vstudio-trim-handle {
             display: flex;
         }
 
@@ -539,13 +559,13 @@
             border-radius: 0 6px 6px 0;
         }
 
-        /* BOTÓN FLOTANTE CAPCUT '+' PARA AÑADIR MEDIA AL FINAL */
-        .capcut-add-tile {
+        /* BOTÓN '+' AL FINAL DE LA PISTA */
+        .vstudio-add-tile {
             position: absolute;
-            height: 52px;
-            width: 48px;
+            height: 48px;
+            width: 44px;
             background: rgba(255, 255, 255, 0.08);
-            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border: 1px dashed rgba(255, 255, 255, 0.35);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -553,41 +573,46 @@
             font-size: 1.1rem;
             color: #cbd5e1;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
 
-        .capcut-add-tile:active {
+        .vstudio-add-tile:hover, .vstudio-add-tile:active {
             background: rgba(254, 181, 4, 0.2);
-            color: var(--cap-accent);
-            border-color: var(--cap-accent);
+            color: var(--vs-accent);
+            border-color: var(--vs-accent);
         }
 
-        /* PISTA DE AUDIO (WAVEFORM) */
+        /* ESTILOS DE PISTAS ESPECÍFICAS */
+        .track-overlay-clip {
+            background: #25123d !important;
+            border-color: rgba(168, 85, 247, 0.45) !important;
+        }
+        .track-overlay-clip.active {
+            border-color: #a855f7 !important;
+        }
+
         .track-audio-clip {
-            background: #0e3028 !important;
-            border-color: rgba(16, 185, 129, 0.4) !important;
+            background: #0d2e25 !important;
+            border-color: rgba(16, 185, 129, 0.45) !important;
         }
-
         .track-audio-clip.active {
             border-color: #10b981 !important;
         }
 
-        /* PISTA DE TEXTO (SUBTÍTULOS) */
         .track-text-clip {
-            background: #3b2a05 !important;
-            border-color: rgba(254, 181, 4, 0.4) !important;
+            background: #362503 !important;
+            border-color: rgba(254, 181, 4, 0.45) !important;
         }
-
         .track-text-clip.active {
             border-color: #feb504 !important;
         }
 
-        /* 4. DOCK / TOOLBAR INFERIOR ESTILO CAPCUT */
-        .capcut-bottom-bar {
+        /* 4. TOOLBAR INFERIOR */
+        .vstudio-bottom-bar {
             height: calc(56px + var(--safe-bottom));
             padding-bottom: var(--safe-bottom);
-            background: #0a0b10;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: #08090d;
+            border-top: 1px solid var(--vs-border);
             display: flex;
             align-items: center;
             overflow-x: auto;
@@ -596,11 +621,11 @@
             z-index: 90;
         }
 
-        .capcut-bottom-bar::-webkit-scrollbar {
+        .vstudio-bottom-bar::-webkit-scrollbar {
             display: none;
         }
 
-        .capcut-tool-btn {
+        .vstudio-tool-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -616,48 +641,57 @@
             cursor: pointer;
             padding: 4px 6px;
             white-space: nowrap;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
 
-        .capcut-tool-btn i {
+        .vstudio-tool-btn i {
             font-size: 1.15rem;
             color: #cbd5e1;
+            transition: color 0.15s ease;
         }
 
-        .capcut-tool-btn:active,
-        .capcut-tool-btn.active {
-            color: var(--cap-accent);
+        .vstudio-tool-btn:hover {
+            color: #ffffff;
         }
 
-        .capcut-tool-btn.active i {
-            color: var(--cap-accent);
+        .vstudio-tool-btn:hover i {
+            color: var(--vs-accent);
+        }
+
+        .vstudio-tool-btn:active,
+        .vstudio-tool-btn.active {
+            color: var(--vs-accent);
+        }
+
+        .vstudio-tool-btn.active i {
+            color: var(--vs-accent);
         }
 
         .tool-btn-back {
-            color: var(--cap-accent-cyan) !important;
+            color: var(--vs-accent-cyan) !important;
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* 5. DRAWER / BOTTOM SHEET DINÁMICO */
-        .capcut-drawer-sheet {
+        /* 5. DRAWER FLOTANTE */
+        .vstudio-drawer-sheet {
             position: fixed;
             bottom: calc(56px + var(--safe-bottom));
             left: 0;
             right: 0;
-            max-height: 58vh;
-            background: #12141c;
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            max-height: 60vh;
+            background: #11131b;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 20px 20px 0 0;
-            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.95);
             z-index: 120;
             display: none;
             flex-direction: column;
-            padding: 10px 14px calc(12px + var(--safe-bottom)) 14px;
+            padding: 10px 14px calc(14px + var(--safe-bottom)) 14px;
             overflow-y: auto;
             backdrop-filter: blur(24px);
         }
 
-        .capcut-drawer-sheet.open {
+        .vstudio-drawer-sheet.open {
             display: flex;
             animation: slideUpDrawer 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -668,7 +702,7 @@
         }
 
         .drawer-pull-bar {
-            width: 38px;
+            width: 40px;
             height: 4px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 99px;
@@ -680,7 +714,7 @@
             align-items: center;
             justify-content: space-between;
             padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid var(--vs-border);
             margin-bottom: 12px;
         }
 
@@ -698,58 +732,114 @@
             height: 28px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.08);
-            border: none;
-            color: #cbd5e1;
+            border: 1px solid var(--vs-border);
+            color: #ffffff;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
+            font-size: 0.8rem;
         }
 
-        /* MODAL DE EXPORTACIÓN MÓVIL */
-        .capcut-modal-overlay {
+        .drawer-close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* GRID DE ITEMS DEL DRAWER */
+        .drawer-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+            gap: 8px;
+        }
+
+        .drawer-item-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--vs-border);
+            border-radius: 10px;
+            padding: 10px 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+
+        .drawer-item-card i {
+            font-size: 1.25rem;
+            color: #cbd5e1;
+        }
+
+        .drawer-item-card span {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 72px;
+        }
+
+        .drawer-item-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .drawer-item-card.active {
+            border-color: var(--vs-accent);
+            background: rgba(254, 181, 4, 0.15);
+        }
+
+        .drawer-item-card.active i, .drawer-item-card.active span {
+            color: var(--vs-accent);
+        }
+
+        /* 6. MODAL DE EXPORTACIÓN */
+        .vstudio-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(12px);
             z-index: 200;
             display: none;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
+            padding: 16px;
         }
 
-        .capcut-modal-overlay.open {
+        .vstudio-modal-overlay.open {
             display: flex;
         }
 
-        .capcut-export-card {
+        .vstudio-export-card {
             width: 100%;
-            max-width: 480px;
-            background: #141622;
-            border-top: 1px solid rgba(254, 181, 4, 0.3);
-            border-radius: 24px 24px 0 0;
-            padding: 16px 18px calc(24px + var(--safe-bottom)) 18px;
+            max-width: 380px;
+            background: #141722;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 18px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 14px;
-            animation: slideUpDrawer 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.9);
         }
 
         .export-profile-pill {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--vs-border);
             border-radius: 10px;
-            padding: 10px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 8px 12px;
+            color: #cbd5e1;
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
 
         .export-profile-pill.active {
-            border-color: var(--cap-accent);
+            border-color: var(--vs-accent);
             background: rgba(254, 181, 4, 0.15);
+            color: var(--vs-accent);
         }
 
         .export-progress-track {
@@ -766,208 +856,282 @@
             background: linear-gradient(90deg, #feb504, #00e5ff);
             transition: width 0.1s linear;
         }
+
+        /* ADAPTACIÓN PC */
+        @media (min-width: 850px) {
+            .vstudio-topbar {
+                height: 48px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .topbar-title {
+                max-width: 350px;
+                font-size: 0.95rem;
+            }
+
+            .vstudio-stage-area {
+                height: 48vh;
+                max-height: 48vh;
+            }
+
+            .vstudio-canvas-container {
+                max-height: calc(48vh - 44px);
+            }
+
+            .vstudio-timeline-wrapper {
+                height: calc(52vh - 80px);
+                min-height: 230px;
+            }
+
+            .timeline-tracks-area {
+                gap: 8px;
+            }
+
+            .track-row {
+                height: 52px;
+            }
+
+            .vstudio-add-tile {
+                height: 52px;
+                width: 48px;
+            }
+
+            .vstudio-bottom-bar {
+                height: 58px;
+                justify-content: center;
+                gap: 8px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+
+            .vstudio-tool-btn {
+                min-width: 72px;
+                border-radius: 8px;
+            }
+
+            .vstudio-tool-btn:hover {
+                background: rgba(255, 255, 255, 0.04);
+            }
+
+            .vstudio-drawer-sheet {
+                left: 50%;
+                transform: translateX(-50%);
+                max-width: 680px;
+                border-radius: 16px;
+                bottom: 68px;
+                border: 1px solid rgba(255, 255, 255, 0.16);
+                box-shadow: 0 12px 48px rgba(0, 0, 0, 0.95);
+            }
+
+            .vstudio-drawer-sheet.open {
+                animation: slideUpCenter 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+
+            @keyframes slideUpCenter {
+                from { transform: translate(-50%, 20px); opacity: 0; }
+                to { transform: translate(-50%, 0); opacity: 1; }
+            }
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. TOPBAR CAPCUT -->
-    <header class="capcut-topbar">
+    <!-- 1. TOPBAR -->
+    <header class="vstudio-topbar">
         <div class="topbar-left">
-            <a href="video-home.html" class="topbar-btn" title="Volver al panel"><i class="fa-solid fa-chevron-left"></i></a>
-            <input type="text" id="projectTitle" value="Mi Video CapCut" style="background: transparent; border: none; color: #fff; font-weight: 700; font-size: 0.8rem; max-width: 110px; outline: none;" onchange="saveProject()">
-            <button type="button" class="topbar-ratio-badge" onclick="openDrawer('ratio')" title="Cambiar formato">
-                <i class="fa-solid fa-crop"></i> <span id="currentRatioLabel">9:16</span>
+            <a href="video-home.html" class="topbar-icon-btn" title="Volver al menú de proyectos">
+                <i class="fa-solid fa-chevron-left"></i>
+            </a>
+            <span class="topbar-title" id="projectTitle" contenteditable="true" spellcheck="false" title="Haz clic para renombrar">Mi Video</span>
+            <button type="button" class="topbar-ratio-badge" id="btnTopbarRatio" onclick="openDrawer('ratio')" title="Cambiar relación de aspecto">
+                <i class="fa-solid fa-mobile-screen"></i>
+                <span id="topbarRatioLabel">9:16</span>
             </button>
         </div>
+
         <div class="topbar-right">
-            <a href="video.html?desktop=1" class="topbar-mode-btn" title="Alternar a versión completa de PC"><i class="fa-solid fa-desktop"></i> PC</a>
-            <button type="button" class="topbar-btn" onclick="saveProject(true)" title="Guardar"><i class="fa-solid fa-floppy-disk"></i></button>
-            <button type="button" class="topbar-export-btn" onclick="openExportModal()"><i class="fa-solid fa-arrow-up-from-bracket"></i> Exportar</button>
+            <button type="button" class="topbar-icon-btn" onclick="saveProjectToDB()" title="Guardar Proyecto Localmente">
+                <i class="fa-solid fa-floppy-disk"></i>
+            </button>
+            <button type="button" class="topbar-export-btn" onclick="openExportModal()" title="Exportar Video">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                <span>Exportar</span>
+            </button>
         </div>
     </header>
 
-    <!-- 2. STAGE / PREVIEW DE VIDEO -->
-    <section class="capcut-stage-area">
-        <div class="capcut-canvas-container" id="canvasContainer">
+    <!-- 2. ESCENARIO DE PREVISUALIZACIÓN DE VIDEO (CANVAS) -->
+    <section class="vstudio-stage-area">
+        <div class="vstudio-canvas-container" id="canvasContainer">
             <canvas id="mainVideoCanvas" width="1080" height="1920"></canvas>
-            <!-- GIZMO TÁCTIL PARA MOVER, ESCALAR Y ROTAR CLIPS -->
-            <div class="capcut-gizmo-box" id="canvasGizmo">
-                <div class="gizmo-handle gizmo-tl" data-handle="tl"></div>
-                <div class="gizmo-handle gizmo-tr" data-handle="tr"></div>
-                <div class="gizmo-handle gizmo-bl" data-handle="bl"></div>
-                <div class="gizmo-handle gizmo-br" data-handle="br"></div>
-                <div class="gizmo-rot-stem"></div>
-                <div class="gizmo-rot-knob" id="gizmoRotKnob"><i class="fa-solid fa-rotate"></i></div>
-            </div>
         </div>
 
-        <!-- BARRA FLOTANTE DE TRANSPORTE Y TIEMPO -->
-        <div class="stage-floating-transport">
-            <div style="display: flex; gap: 4px;">
-                <button type="button" class="transport-btn" onclick="undo()" title="Deshacer"><i class="fa-solid fa-rotate-left"></i></button>
-                <button type="button" class="transport-btn" onclick="redo()" title="Rehacer"><i class="fa-solid fa-rotate-right"></i></button>
+        <!-- CONTROLES FLOTANTES -->
+        <div class="vstudio-stage-controls">
+            <div class="stage-side-group">
+                <button type="button" class="transport-btn" id="btnUndo" onclick="undo()" title="Deshacer (Ctrl+Z)"><i class="fa-solid fa-rotate-left"></i></button>
+                <button type="button" class="transport-btn" id="btnRedo" onclick="redo()" title="Rehacer (Ctrl+Y)"><i class="fa-solid fa-rotate-right"></i></button>
             </div>
 
             <div class="transport-center-group">
-                <button type="button" class="btn-play-pause-circle" id="btnPlayPause" onclick="togglePlay()"><i class="fa-solid fa-play"></i></button>
+                <button type="button" class="btn-play-pause-circle" id="btnPlayPause" onclick="togglePlay()" title="Reproducir / Pausa (Espacio)">
+                    <i class="fa-solid fa-play"></i>
+                </button>
                 <span class="stage-timecode" id="timecodeDisplay">00:00.00 / 00:10.00</span>
             </div>
 
-            <button type="button" class="transport-btn" onclick="toggleFullscreen()"><i class="fa-solid fa-expand"></i></button>
+            <div class="stage-side-group">
+                <button type="button" class="transport-btn" onclick="toggleFullscreen()" title="Pantalla completa"><i class="fa-solid fa-expand"></i></button>
+            </div>
         </div>
     </section>
 
-    <!-- 3. LÍNEA DE TIEMPO CAPCUT CON AGUJA BLANCA CENTRAL FIJA -->
-    <section class="capcut-timeline-wrapper">
-        <!-- AGUJA BLANCA CENTRAL FIJA -->
-        <div class="capcut-center-needle">
+    <!-- 3. LÍNEA DE TIEMPO MULTIPISTA CON ARRASTRE Y RECORTE -->
+    <section class="vstudio-timeline-wrapper">
+        <div class="vstudio-center-needle">
             <div class="needle-pip"></div>
         </div>
 
         <!-- ACCIONES LATERALES FIJAS DE PISTA (SILENCIAR / PORTADA) -->
         <div class="timeline-side-actions">
-            <button type="button" class="side-action-btn" id="btnMuteAll" onclick="toggleMuteAll()">
+            <button type="button" class="side-action-btn" id="btnMuteAll" onclick="toggleMuteAll()" title="Silenciar audio">
                 <i class="fa-solid fa-volume-high"></i>
                 <span>Silenciar</span>
             </button>
-            <button type="button" class="side-action-btn" onclick="setCoverFrame()">
+            <button type="button" class="side-action-btn" onclick="setCoverFrame()" title="Definir portada">
                 <i class="fa-regular fa-image"></i>
                 <span>Portada</span>
             </button>
         </div>
 
-        <!-- CONTENEDOR DESLIZABLE HORIZONTALMENTE (SWIPE TIMELINE) -->
+        <!-- CONTENEDOR DESLIZABLE HORIZONTALMENTE -->
         <div class="timeline-scroll-container" id="timelineScrollContainer">
             <!-- REGLA DE SEGUNDOS -->
             <div class="timeline-ruler-bar" id="timelineRuler"></div>
 
             <!-- PISTAS MULTICANAL APILADAS -->
             <div class="timeline-tracks-area" id="tracksArea">
-                <!-- PISTA PRINCIPAL DE VIDEO 1 -->
-                <div class="track-row" id="track-video1" data-track-type="video"></div>
-                <!-- PISTA SECUNDARIA DE VIDEO / SUPERPOSICIÓN 2 -->
-                <div class="track-row track-row-sub" id="track-video2" data-track-type="video"></div>
-                <!-- PISTA DE TEXTO / SUBTÍTULOS -->
-                <div class="track-row track-row-sub" id="track-text" data-track-type="text"></div>
-                <!-- PISTA DE AUDIO / MÚSICA -->
-                <div class="track-row track-row-sub" id="track-audio1" data-track-type="audio"></div>
+                <!-- PISTA 1: VIDEO PRINCIPAL -->
+                <div class="track-row" id="track-video1"></div>
+
+                <!-- PISTA 2: SUPERPOSICIÓN / PIP (IMÁGENES / VIDEOS FLOTANTES) -->
+                <div class="track-row track-row-sub" id="track-overlay"></div>
+
+                <!-- PISTA 3: TEXTO / SUBTÍTULOS -->
+                <div class="track-row track-row-sub" id="track-text"></div>
+
+                <!-- PISTA 4: AUDIO / MÚSICA -->
+                <div class="track-row track-row-sub" id="track-audio1"></div>
             </div>
         </div>
     </section>
 
-    <!-- 4. TOOLBAR INFERIOR CAPCUT -->
-    <nav class="capcut-bottom-bar" id="bottomBar">
+    <!-- 4. TOOLBAR INFERIOR -->
+    <nav class="vstudio-bottom-bar" id="bottomBar">
         <!-- TOOLBAR RAÍZ (CUANDO NO HAY CLIP SELECCIONADO) -->
-        <div id="rootToolbar" style="display: flex; width: 100%;">
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('edit')">
+        <div id="rootToolbar" style="display: flex; width: 100%; align-items: center; justify-content: flex-start;">
+            <button type="button" class="vstudio-tool-btn" onclick="handleRootEditClick()">
                 <i class="fa-solid fa-scissors"></i>
                 <span>Editar</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('audio')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('audio')">
                 <i class="fa-solid fa-music"></i>
                 <span>Audio</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('text')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('text')">
                 <i class="fa-solid fa-font"></i>
                 <span>Texto</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="document.getElementById('fileInputAdd').click()">
+            <button type="button" class="vstudio-tool-btn" onclick="triggerOverlayAdd()">
                 <i class="fa-regular fa-clone"></i>
                 <span>Superponer</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('effects')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('effects')">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                 <span>Efectos</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('transitions')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('transitions')">
                 <i class="fa-solid fa-arrows-split-up-and-left"></i>
                 <span>Transic.</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('filters')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('filters')">
                 <i class="fa-solid fa-sliders"></i>
                 <span>Filtros</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('ratio')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('ratio')">
                 <i class="fa-solid fa-crop"></i>
                 <span>Formato</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="document.getElementById('fileInputAdd').click()">
+            <button type="button" class="vstudio-tool-btn" onclick="document.getElementById('fileInputAdd').click()">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
                 <span>Importar</span>
             </button>
         </div>
 
-        <!-- TOOLBAR DE CLIP SELECCIONADO -->
-        <div id="clipToolbar" style="display: none; width: 100%;">
-            <button type="button" class="capcut-tool-btn tool-btn-back" onclick="deselectActiveClip()">
+        <!-- TOOLBAR DE CLIP SELECCIONADO (100% FUNCIONAL Y EDITABLE) -->
+        <div id="clipToolbar" style="display: none; width: 100%; align-items: center; justify-content: flex-start;">
+            <button type="button" class="vstudio-tool-btn tool-btn-back" onclick="deselectActiveClip()">
                 <i class="fa-solid fa-chevron-left"></i>
                 <span>Volver</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="splitClipAtPlayhead()">
+            <button type="button" class="vstudio-tool-btn" onclick="splitClipAtPlayhead()">
                 <i class="fa-solid fa-scissors" style="color: #feb504;"></i>
                 <span>Dividir</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('speed')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('transform')">
+                <i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i>
+                <span>Mover</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('speed')">
                 <i class="fa-solid fa-gauge-high"></i>
                 <span>Velocidad</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('anim')">
-                <i class="fa-solid fa-film"></i>
-                <span>Animación</span>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('volume')">
+                <i class="fa-solid fa-volume-high"></i>
+                <span>Volumen</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="deleteActiveClip()">
-                <i class="fa-regular fa-trash-can" style="color: #ef4444;"></i>
-                <span>Eliminar</span>
-            </button>
-            <button type="button" class="capcut-tool-btn" onclick="duplicateActiveClip()">
-                <i class="fa-regular fa-clone"></i>
-                <span>Duplicar</span>
-            </button>
-            <button type="button" class="capcut-tool-btn" onclick="freezeFrameAtPlayhead()">
-                <i class="fa-regular fa-snowflake"></i>
-                <span>Congelar</span>
-            </button>
-            <button type="button" class="capcut-tool-btn" onclick="reverseActiveClip()">
-                <i class="fa-solid fa-backward-step"></i>
-                <span>Invertir</span>
-            </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('opacity')">
-                <i class="fa-regular fa-eye"></i>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('opacity')">
+                <i class="fa-solid fa-circle-half-stroke"></i>
                 <span>Opacidad</span>
             </button>
-            <button type="button" class="capcut-tool-btn" onclick="openDrawer('audio')">
-                <i class="fa-solid fa-microphone-lines"></i>
-                <span>Voz FX</span>
+            <button type="button" class="vstudio-tool-btn" onclick="duplicateActiveClip()">
+                <i class="fa-solid fa-copy"></i>
+                <span>Duplicar</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="deleteActiveClip()" style="color: #f87171;">
+                <i class="fa-solid fa-trash-can" style="color: #f87171;"></i>
+                <span>Eliminar</span>
             </button>
         </div>
     </nav>
 
-    <!-- 5. BOTTOM SHEET / DRAWER CAPCUT -->
-    <div class="capcut-drawer-sheet" id="capcutSheet">
+    <!-- 5. DRAWER / HOJA FLOTANTE DINÁMICA -->
+    <div class="vstudio-drawer-sheet" id="drawerSheet">
         <div class="drawer-pull-bar"></div>
         <div class="drawer-header">
-            <span class="drawer-title" id="drawerTitle"><i class="fa-solid fa-scissors"></i> Herramientas</span>
+            <h3 class="drawer-title" id="drawerTitle"><i class="fa-solid fa-sliders"></i> Herramienta</h3>
             <button type="button" class="drawer-close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div id="drawerBody"></div>
     </div>
 
-    <!-- 6. MODAL DE EXPORTACIÓN MÓVIL DIRECTO -->
-    <div class="capcut-modal-overlay" id="exportModal">
-        <div class="capcut-export-card">
+    <!-- 6. MODAL DE EXPORTACIÓN DIRECTO -->
+    <div class="vstudio-modal-overlay" id="exportModal">
+        <div class="vstudio-export-card">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 1rem; font-weight: 800; color: #fff;"><i class="fa-solid fa-arrow-up-from-bracket" style="color: #feb504;"></i> Exportar Video</h3>
                 <button type="button" class="drawer-close-btn" onclick="closeExportModal()"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
             <div style="display: flex; gap: 8px;">
-                <button type="button" class="export-profile-pill active" id="pill1080p" onclick="selectExportResolution('1080p')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                <button type="button" class="export-profile-pill active" id="pill1080p" onclick="selectExportResolution('1080p')" style="flex: 1; text-align: center; font-size: 0.72rem; font-weight: 700;">
                     1080p (FHD)
                 </button>
-                <button type="button" class="export-profile-pill" id="pill720p" onclick="selectExportResolution('720p')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                <button type="button" class="export-profile-pill" id="pill720p" onclick="selectExportResolution('720p')" style="flex: 1; text-align: center; font-size: 0.72rem; font-weight: 700;">
                     720p (Rápido)
                 </button>
-                <button type="button" class="export-profile-pill" id="pill4k" onclick="selectExportResolution('4k')" style="flex: 1; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+                <button type="button" class="export-profile-pill" id="pill4k" onclick="selectExportResolution('4k')" style="flex: 1; text-align: center; font-size: 0.72rem; font-weight: 700;">
                     4K Ultra
                 </button>
             </div>
@@ -982,8 +1146,8 @@
                     <strong style="color: #00e5ff;" id="exportMetaDur">10.0s</strong>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
-                    <span>FPS / Codificación:</span>
-                    <strong style="color: #ffffff;">30 FPS Hardware</strong>
+                    <span>Codificación:</span>
+                    <strong style="color: #ffffff;">Hardware Canvas WebM</strong>
                 </div>
             </div>
 
@@ -999,9 +1163,9 @@
 
             <div id="exportSuccessBox" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 10px; padding: 10px; text-align: center;">
                 <div style="font-size: 0.8rem; font-weight: 700; color: #34d399; margin-bottom: 6px;">
-                    <i class="fa-solid fa-circle-check"></i> ¡Video Exportado y Descargado!
+                    <i class="fa-solid fa-circle-check"></i> ¡Video Exportado con Éxito!
                 </div>
-                <a id="btnDirectDownload" href="#" download="Video_Myxsi.webm" style="display: inline-block; background: #10b981; color: #000; font-weight: 800; font-size: 0.72rem; padding: 6px 14px; border-radius: 99px; text-decoration: none;">
+                <a id="btnDirectDownload" href="#" download="Mi_Video.webm" style="display: inline-block; background: #10b981; color: #000; font-weight: 800; font-size: 0.72rem; padding: 6px 14px; border-radius: 99px; text-decoration: none;">
                     Descargar de nuevo
                 </a>
             </div>
@@ -1012,16 +1176,18 @@
         </div>
     </div>
 
-    <!-- INPUT DE ARCHIVOS OCULTO PARA AÑADIR MEDIA DIRECTO DESDE CELULAR -->
+    <!-- INPUTS DE ARCHIVOS OCULTOS -->
     <input type="file" id="fileInputAdd" accept="video/*,image/*,audio/*" multiple style="display: none;" onchange="handleFileInput(this.files)">
+    <input type="file" id="fileInputOverlay" accept="video/*,image/*" style="display: none;" onchange="handleOverlayInput(this.files)">
+    <input type="file" id="fileInputAudio" accept="audio/*" style="display: none;" onchange="handleAudioInput(this.files)">
 
     <script>
         // =========================================================================
-        // ESTADO GLOBAL DEL PROYECTO (COMPATIBLE CON MYXSI VIDEO ENGINE)
+        // ESTADO GLOBAL DEL PROYECTO
         // =========================================================================
         const projectState = {
             id: 'proj_' + Date.now(),
-            title: 'Mi Video CapCut',
+            title: 'Mi Video',
             aspectRatio: '9:16',
             duration: 10.0,
             currentTime: 0.0,
@@ -1029,11 +1195,9 @@
             activeClipId: null,
             activeShader: 'none',
             activeTransition: 'none',
-            activeAudioEffect: 'none',
-            zoomPxPerSec: 60, // Escala de timeline
+            activeFilter: 'none',
             isMutedAll: false,
-            filters: { brightness: 100, contrast: 100, saturation: 100, blur: 0 },
-            audioEq: { bass: 0, mid: 0, treble: 0 },
+            zoomPxPerSec: 60,
             clips: [
                 {
                     id: 'clip_v1',
@@ -1042,35 +1206,27 @@
                     title: 'Ondas Cósmicas',
                     start: 0,
                     duration: 10.0,
-                    inPoint: 0,
                     volume: 1.0,
                     speed: 1.0,
+                    opacity: 1.0,
                     x: 0,
                     y: 0,
-                    scale: 1.0,
-                    rotation: 0,
-                    opacity: 1.0,
-                    animIn: 'pop_bounce',
-                    animInDuration: 0.6
+                    scale: 1.0
                 },
                 {
                     id: 'clip_txt1',
                     track: 'track-text',
                     type: 'text',
                     title: 'Título Viral',
-                    text: '🔥 EDICIÓN CAPCUT',
+                    text: '🔥 TÍTULO VIRAL',
                     start: 0.5,
                     duration: 4.5,
-                    fontSize: 48,
-                    fontFamily: 'Montserrat, sans-serif',
+                    fontSize: 44,
                     color: '#feb504',
-                    x: 0,
-                    y: 220,
-                    scale: 1.0,
-                    rotation: 0,
+                    style: 'viral',
                     opacity: 1.0,
-                    animIn: 'pop_bounce',
-                    animInDuration: 0.5
+                    x: 0,
+                    y: 0.25
                 },
                 {
                     id: 'clip_aud1',
@@ -1088,6 +1244,7 @@
         const historyStack = [];
         let historyIndex = -1;
         let animationFrameId = null;
+        let lastTimestamp = 0;
         let isExporting = false;
         let exportResolution = '1080p';
         let currentDrawerTab = null;
@@ -1096,27 +1253,30 @@
 
         const canvas = document.getElementById('mainVideoCanvas');
         const ctx = canvas.getContext('2d');
+        const timelineScrollContainer = document.getElementById('timelineScrollContainer');
 
         // INICIALIZACIÓN
         document.addEventListener('DOMContentLoaded', async () => {
-            await initUrlParams();
-            setupCanvasSize();
+            initUrlParams();
+            setupCanvasDimensions();
+            recalculateProjectDuration();
             buildTimelineRuler();
             renderTimelineClips();
             setupTimelineScrollListener();
-            setupPinchZoom();
-            setupGizmoEvents();
-            setupOutsideTapDismiss();
+            setupDesktopKeyboardEvents();
+            setupCanvasInteractiveEvents();
             pushHistory();
-            startRenderLoop();
+            renderFrame(projectState.currentTime);
             updateTimecodeUI();
 
-            window.addEventListener('resize', () => {
-                setupCanvasSize();
-                updateGizmo();
+            document.getElementById('projectTitle').addEventListener('blur', (e) => {
+                projectState.title = e.target.innerText.trim() || 'Mi Video';
+                saveProjectToDB();
             });
-            window.addEventListener('orientationchange', () => {
-                setTimeout(() => { setupCanvasSize(); updateGizmo(); }, 200);
+
+            window.addEventListener('resize', () => {
+                setupCanvasDimensions();
+                renderFrame(projectState.currentTime);
             });
         });
 
@@ -1125,331 +1285,1401 @@
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
             const ratio = params.get('ratio');
-            if (ratio) projectState.aspectRatio = ratio;
+            if (ratio) setAspectRatio(ratio, false);
 
             if (id && window.MyxsiVideoDB) {
                 try {
                     const saved = await window.MyxsiVideoDB.getProject(id);
                     if (saved) {
                         projectState.id = saved.id;
-                        if (saved.title) projectState.title = saved.title;
-                        if (saved.ratio) projectState.aspectRatio = saved.ratio;
-                        if (saved.clips && saved.clips.length > 0) projectState.clips = saved.clips;
-                        if (saved.activeShader) projectState.activeShader = saved.activeShader;
-                        if (saved.filters) projectState.filters = Object.assign(projectState.filters, saved.filters);
+                        if (saved.title) {
+                            projectState.title = saved.title;
+                            document.getElementById('projectTitle').innerText = saved.title;
+                        }
+                        if (saved.ratio) setAspectRatio(saved.ratio, false);
+                        if (saved.clips && saved.clips.length) {
+                            projectState.clips = saved.clips;
+                            // Desapilar clips colisionados en track-video1
+                            autoUnstackCollidingClips();
+                        }
+                        recalculateProjectDuration();
+                        renderTimelineClips();
+                        renderFrame(0);
                     }
                 } catch(e) {
-                    console.warn('Error al cargar proyecto IndexedDB:', e);
+                    console.warn('Carga de IndexedDB fallida:', e);
                 }
             }
-
-            const titleInp = document.getElementById('projectTitle');
-            if (titleInp) titleInp.value = projectState.title;
-            const ratioLbl = document.getElementById('currentRatioLabel');
-            if (ratioLbl) ratioLbl.innerText = projectState.aspectRatio;
         }
 
-        // TAMAÑO DEL CANVAS SEGÚN ASPECT RATIO
-        function setupCanvasSize() {
-            const ratios = {
-                '9:16': { w: 1080, h: 1920, cssAspect: '9/16' },
-                '16:9': { w: 1920, h: 1080, cssAspect: '16/9' },
-                '1:1': { w: 1080, h: 1080, cssAspect: '1/1' },
-                '4:5': { w: 1080, h: 1350, cssAspect: '4/5' },
-                '21:9': { w: 2560, h: 1080, cssAspect: '21/9' }
-            };
-
-            const cfg = ratios[projectState.aspectRatio] || ratios['9:16'];
-            canvas.width = cfg.w;
-            canvas.height = cfg.h;
-            const container = document.getElementById('canvasContainer');
-            if (container) {
-                container.style.aspectRatio = cfg.cssAspect;
-            }
-            updateGizmo();
-            drawFrame();
-        }
-
-        // CICLO DE RENDERIZADO
-        function startRenderLoop() {
-            let lastTimestamp = performance.now();
-            function loop(now) {
-                const delta = (now - lastTimestamp) / 1000;
-                lastTimestamp = now;
-
-                if (projectState.isPlaying && !isExporting) {
-                    projectState.currentTime += delta;
-                    if (projectState.currentTime >= projectState.duration) {
-                        projectState.currentTime = 0;
+        // DESAPILAR AUTOMÁTICAMENTE CLIPS QUE COLISIONEN
+        function autoUnstackCollidingClips() {
+            let nextStart = 0;
+            const mainVideoClips = projectState.clips.filter(c => c.track === 'track-video1');
+            mainVideoClips.sort((a, b) => a.start - b.start);
+            mainVideoClips.forEach((c, idx) => {
+                if (idx > 0 && c.start < nextStart) {
+                    if (c.type === 'image') {
+                        c.track = 'track-overlay';
+                        c.scale = 0.5;
+                    } else {
+                        c.start = nextStart;
                     }
-                    syncTimelineScrollToPlayhead();
-                    updateTimecodeUI();
                 }
-
-                drawFrame();
-                animationFrameId = requestAnimationFrame(loop);
-            }
-            animationFrameId = requestAnimationFrame(loop);
+                nextStart = Math.max(nextStart, c.start + c.duration);
+            });
         }
 
-        // DIBUJADO DE FOTOGRAMAS CON MULTICANAL + SHADERS
-        function drawFrame() {
+        // RECALCULAR LA DURACIÓN TOTAL DEL PROYECTO (CRECE DINÁMICAMENTE)
+        function recalculateProjectDuration() {
+            let maxEnd = 0;
+            projectState.clips.forEach(c => {
+                const end = (c.start || 0) + (c.duration || 0);
+                if (end > maxEnd) maxEnd = end;
+            });
+            projectState.duration = Math.max(3.0, Math.round(maxEnd * 10) / 10);
+            buildTimelineRuler();
+            updateTimecodeUI();
+            const metaDur = document.getElementById('exportMetaDur');
+            if (metaDur) metaDur.innerText = `${projectState.duration.toFixed(1)}s`;
+        }
+
+        // DIMENSIONES DEL CANVAS SEGÚN ASPECT RATIO
+        function setupCanvasDimensions() {
+            const container = document.getElementById('canvasContainer');
+            const ratio = projectState.aspectRatio;
+            let targetW = 1080, targetH = 1920; // 9:16
+
+            if (ratio === '16:9') { targetW = 1920; targetH = 1080; }
+            else if (ratio === '1:1') { targetW = 1080; targetH = 1080; }
+            else if (ratio === '4:5') { targetW = 1080; targetH = 1350; }
+            else if (ratio === '21:9') { targetW = 2560; targetH = 1080; }
+
+            canvas.width = targetW;
+            canvas.height = targetH;
+            container.style.aspectRatio = `${targetW} / ${targetH}`;
+        }
+
+        function setAspectRatio(ratio, push = true) {
+            projectState.aspectRatio = ratio;
+            document.getElementById('topbarRatioLabel').innerText = ratio;
+            document.getElementById('exportMetaRatio').innerText = ratio;
+            setupCanvasDimensions();
+            renderFrame(projectState.currentTime);
+            if (push) pushHistory();
+        }
+
+        // =========================================================================
+        // MOTOR DE RENDERIZADO FLUIDO (100% EDITABLE Y MOVIBLE)
+        // =========================================================================
+        function renderFrame(time) {
             const w = canvas.width;
             const h = canvas.height;
-            const t = projectState.currentTime;
 
-            // Fondo negro CapCut
-            ctx.fillStyle = '#000000';
+            // 1. Limpieza de pantalla
+            ctx.fillStyle = '#05060b';
             ctx.fillRect(0, 0, w, h);
 
-            // Capa de video 1 (Fondo principal)
-            drawTrackClips('track-video1', w, h, t);
-            // Capa de video 2 (Superposición / PIP)
-            drawTrackClips('track-video2', w, h, t);
-            // Capa de títulos / texto
-            drawTrackClips('track-text', w, h, t);
+            // 2. Filtrar y ordenar capas activas (video1 -> overlay -> text)
+            const activeClips = projectState.clips.filter(c => time >= c.start && time <= (c.start + c.duration));
+            activeClips.sort((a, b) => {
+                const order = { 'track-video1': 1, 'track-overlay': 2, 'track-text': 3, 'track-audio1': 0 };
+                return (order[a.track] || 1) - (order[b.track] || 1);
+            });
 
-            // Post-procesamiento / Shaders en tiempo real
-            applyActiveShaders(w, h, t);
+            for (const clip of activeClips) {
+                ctx.save();
+                ctx.globalAlpha = clip.opacity !== undefined ? clip.opacity : 1.0;
+
+                const posX = (clip.x || 0) * w;
+                const posY = (clip.y || 0) * h;
+                const scale = clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0);
+
+                if (clip.type === 'video') {
+                    const videoEl = mediaCache.get(clip.id);
+                    if (videoEl && videoEl.readyState >= 2) {
+                        renderTransformedMedia(videoEl, w, h, posX, posY, scale);
+                    } else {
+                        renderProceduralCosmicWave(w, h, time, posX, posY, scale);
+                    }
+                } else if (clip.type === 'image') {
+                    const imgEl = mediaCache.get(clip.id);
+                    if (imgEl && imgEl.complete) {
+                        renderTransformedMedia(imgEl, w, h, posX, posY, scale);
+                    }
+                } else if (clip.type === 'text') {
+                    renderTextLayer(clip, w, h, time);
+                }
+
+                // Cuadro delimitador visual si el clip está activo
+                if (clip.id === projectState.activeClipId && (clip.type === 'text' || clip.track === 'track-overlay')) {
+                    drawActiveBoundingBox(clip, w, h);
+                }
+
+                ctx.restore();
+            }
+
+            // 3. Filtros de Color
+            applyColorFilter(w, h);
+
+            // 4. Efectos Shader (12+ Efectos)
+            applyActiveShader(w, h, time);
         }
 
-        function drawTrackClips(trackId, w, h, t) {
-            const clip = projectState.clips.find(c => c.track === trackId && t >= c.start && t <= (c.start + c.duration));
-            if (!clip) return;
+        // Renderizado con escala y posición libre (100% movible)
+        function renderTransformedMedia(mediaEl, w, h, posX, posY, scale) {
+            const dw = w * scale;
+            const dh = h * scale;
+            const dx = (w - dw) / 2 + posX;
+            const dy = (h - dh) / 2 + posY;
+            ctx.drawImage(mediaEl, dx, dy, dw, dh);
+        }
 
+        function renderProceduralCosmicWave(w, h, t, posX, posY, scale) {
             ctx.save();
-            const cx = w / 2 + (clip.x || 0);
-            const cy = h / 2 + (clip.y || 0);
-            ctx.translate(cx, cy);
-
-            if (clip.rotation) ctx.rotate((clip.rotation * Math.PI) / 180);
-            const sc = clip.scale !== undefined ? clip.scale : 1.0;
-            ctx.scale(sc, sc);
-
-            if (clip.opacity !== undefined) {
-                ctx.globalAlpha = Math.max(0, Math.min(1, clip.opacity));
+            ctx.translate(posX, posY);
+            if (scale !== 1.0) {
+                ctx.translate(w/2, h/2);
+                ctx.scale(scale, scale);
+                ctx.translate(-w/2, -h/2);
             }
 
-            if (clip.type === 'video' || clip.type === 'image') {
-                // Procedural placeholder visual de alta calidad
-                const grad = ctx.createLinearGradient(-w / 2, -h / 2, w / 2, h / 2);
-                if (trackId === 'track-video1') {
-                    grad.addColorStop(0, '#0a0b14');
-                    grad.addColorStop(0.5, '#1e113a');
-                    grad.addColorStop(1, '#0b162c');
-                } else {
-                    grad.addColorStop(0, '#feb504');
-                    grad.addColorStop(1, '#ff3b30');
-                }
-                ctx.fillStyle = grad;
-                const rectW = trackId === 'track-video1' ? w : w * 0.45;
-                const rectH = trackId === 'track-video1' ? h : (rectW * 9 / 16);
-                ctx.fillRect(-rectW / 2, -rectH / 2, rectW, rectH);
+            const grad = ctx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, '#101226');
+            grad.addColorStop(0.5, '#241442');
+            grad.addColorStop(1, '#080914');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
 
-                // Ondas dinámicas
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-                for (let i = 0; i < 6; i++) {
-                    const waveY = Math.sin(t * 1.5 + i) * 60;
-                    ctx.beginPath();
-                    ctx.arc(-rectW / 3 + i * (rectW / 4), waveY, 50, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            } else if (clip.type === 'text') {
-                ctx.font = `900 ${clip.fontSize || 48}px ${clip.fontFamily || 'Montserrat, sans-serif'}`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-                ctx.shadowBlur = 12;
-                ctx.fillStyle = clip.color || '#feb504';
-                ctx.fillText(clip.text || 'TEXTO', 0, 0);
+            // Ondas dinámicas
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
+            ctx.beginPath();
+            ctx.moveTo(0, h * 0.6);
+            for (let x = 0; x <= w; x += 30) {
+                const y = h * 0.6 + Math.sin(x * 0.008 + t * 2) * 45;
+                ctx.lineTo(x, y);
             }
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fill();
 
+            // Partículas flotantes
+            ctx.fillStyle = 'rgba(254, 181, 4, 0.4)';
+            for (let i = 0; i < 5; i++) {
+                const px = (w * 0.2 + i * (w * 0.15) + Math.sin(t + i) * 20);
+                const py = (h * 0.45 + Math.cos(t * 1.5 + i) * 30);
+                ctx.beginPath();
+                ctx.arc(px, py, 6 + i, 0, Math.PI * 2);
+                ctx.fill();
+            }
             ctx.restore();
         }
 
-        // 21 SHADERS DE DRIFT POST-PROCESSING
-        function applyActiveShaders(w, h, t) {
-            const shader = projectState.activeShader;
-            if (!shader || shader === 'none') return;
+        function renderTextLayer(clip, w, h, t) {
+            ctx.save();
+            const fontSize = clip.fontSize || 44;
+            ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
 
-            if (shader === 'vhs') {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-                for (let y = 0; y < h; y += 4) ctx.fillRect(0, y, w, 2);
-                ctx.fillStyle = `rgba(${Math.random() > 0.5 ? 255 : 0}, 0, 0, 0.04)`;
-                ctx.fillRect(0, 0, w, h);
-            } else if (shader === 'glitch') {
-                if (Math.sin(t * 15) > 0.6) {
-                    const sliceH = 30 + Math.random() * 40;
-                    const sliceY = Math.random() * (h - sliceH);
-                    const shiftX = (Math.random() - 0.5) * 45;
-                    ctx.drawImage(canvas, 0, sliceY, w, sliceH, shiftX, sliceY, w, sliceH);
+            const cx = w * (0.5 + (clip.x || 0));
+            const cy = h * (0.65 + (clip.y || 0));
+            const text = clip.text || 'TEXTO';
+
+            if (clip.style === 'viral') {
+                const metrics = ctx.measureText(text);
+                const padX = 22, padY = 12;
+                ctx.fillStyle = '#feb504';
+                ctx.beginPath();
+                ctx.roundRect(cx - metrics.width / 2 - padX, cy - fontSize/2 - padY, metrics.width + padX * 2, fontSize + padY * 2, 10);
+                ctx.fill();
+
+                ctx.fillStyle = '#000000';
+                ctx.fillText(text, cx, cy);
+            } else if (clip.style === 'neon') {
+                ctx.shadowColor = '#00e5ff';
+                ctx.shadowBlur = 18;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(text, cx, cy);
+            } else {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = clip.color || '#ffffff';
+                ctx.fillText(text, cx, cy);
+            }
+            ctx.restore();
+        }
+
+        function drawActiveBoundingBox(clip, w, h) {
+            ctx.save();
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 6]);
+
+            let bx = 0, by = 0, bw = 0, bh = 0;
+            if (clip.type === 'text') {
+                ctx.font = `800 ${clip.fontSize || 44}px 'Montserrat', sans-serif`;
+                const text = clip.text || 'TEXTO';
+                const metrics = ctx.measureText(text);
+                bw = metrics.width + 40;
+                bh = (clip.fontSize || 44) + 30;
+                bx = w * (0.5 + (clip.x || 0)) - bw/2;
+                by = h * (0.65 + (clip.y || 0)) - bh/2;
+            } else {
+                const scale = clip.scale !== undefined ? clip.scale : 0.5;
+                bw = w * scale;
+                bh = h * scale;
+                bx = (w - bw) / 2 + (clip.x || 0) * w;
+                by = (h - bh) / 2 + (clip.y || 0) * h;
+            }
+
+            ctx.strokeRect(bx, by, bw, bh);
+
+            // Esquinas interactivas
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#feb504';
+            const handleSize = 12;
+            ctx.fillRect(bx - handleSize/2, by - handleSize/2, handleSize, handleSize);
+            ctx.fillRect(bx + bw - handleSize/2, by - handleSize/2, handleSize, handleSize);
+            ctx.fillRect(bx - handleSize/2, by + bh - handleSize/2, handleSize, handleSize);
+            ctx.fillRect(bx + bw - handleSize/2, by + bh - handleSize/2, handleSize, handleSize);
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // ARRASTRE DIRECTO EN EL CANVAS (MOVER ELEMENTOS EN PANTALLA)
+        // =========================================================================
+        function setupCanvasInteractiveEvents() {
+            let isDraggingCanvas = false;
+            let startPointerX = 0, startPointerY = 0;
+            let origClipX = 0, origClipY = 0;
+
+            canvas.addEventListener('pointerdown', (e) => {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                if (!clip || (clip.type !== 'text' && clip.track !== 'track-overlay')) return;
+
+                isDraggingCanvas = true;
+                startPointerX = e.clientX;
+                startPointerY = e.clientY;
+                origClipX = clip.x || 0;
+                origClipY = clip.y || 0;
+
+                function onPointerMove(ev) {
+                    if (!isDraggingCanvas) return;
+                    const rect = canvas.getBoundingClientRect();
+                    const deltaX = (ev.clientX - startPointerX) / rect.width;
+                    const deltaY = (ev.clientY - startPointerY) / rect.height;
+
+                    clip.x = Math.round((origClipX + deltaX) * 100) / 100;
+                    clip.y = Math.round((origClipY + deltaY) * 100) / 100;
+
+                    renderFrame(projectState.currentTime);
                 }
-            } else if (shader === 'neon_glow') {
-                ctx.save();
+
+                function onPointerUp() {
+                    isDraggingCanvas = false;
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    pushHistory();
+                    saveProjectToDB();
+                }
+
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+            });
+        }
+
+        // =========================================================================
+        // EFECTOS VISUALES (12+ SHADERS EN TIEMPO REAL)
+        // =========================================================================
+        function applyActiveShader(w, h, t) {
+            const s = projectState.activeShader;
+            if (!s || s === 'none') return;
+
+            ctx.save();
+            if (s === 'vhs') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+                for (let y = 0; y < h; y += 6) ctx.fillRect(0, y, w, 2);
+                if (Math.sin(t * 12) > 0.5) {
+                    const sh = 20 + Math.random() * 30;
+                    const sy = Math.random() * (h - sh);
+                    ctx.drawImage(canvas, 0, sy, w, sh, (Math.random() - 0.5) * 35, sy, w, sh);
+                }
+            } else if (s === 'neon_glow') {
                 ctx.globalCompositeOperation = 'screen';
-                ctx.fillStyle = 'rgba(0, 229, 255, 0.15)';
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
                 ctx.fillRect(0, 0, w, h);
-                ctx.restore();
-            } else if (shader === 'cyberpunk') {
-                ctx.save();
-                ctx.globalCompositeOperation = 'color';
-                const grad = ctx.createLinearGradient(0, 0, w, h);
-                grad.addColorStop(0, '#ff007f');
-                grad.addColorStop(1, '#00e5ff');
-                ctx.fillStyle = grad;
+            } else if (s === 'rgb_split') {
+                const shift = 8;
+                ctx.globalCompositeOperation = 'screen';
+                ctx.drawImage(canvas, -shift, 0, w, h);
+                ctx.fillStyle = 'rgba(255, 0, 50, 0.12)';
                 ctx.fillRect(0, 0, w, h);
-                ctx.restore();
-            } else if (shader === 'film_grain') {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
-                for (let i = 0; i < 400; i++) {
-                    ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5);
+            } else if (s === 'film_grain') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+                for (let i = 0; i < 400; i++) ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+                const vig = ctx.createRadialGradient(w/2, h/2, w*0.35, w/2, h/2, w*0.75);
+                vig.addColorStop(0, 'rgba(0,0,0,0)');
+                vig.addColorStop(1, 'rgba(0,0,0,0.65)');
+                ctx.fillStyle = vig;
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'beat_shake') {
+                const shake = Math.abs(Math.sin(t * 15)) > 0.65 ? 12 : 0;
+                if (shake > 0) {
+                    ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+                    ctx.drawImage(canvas, 0, 0, w, h);
                 }
-            } else if (shader === 'lomo' || shader === 'vignette') {
-                const vig = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.35, w/2, h/2, Math.max(w,h)*0.75);
+            } else if (s === 'zoom_pulse') {
+                const zoom = 1.0 + Math.abs(Math.sin(t * 6)) * 0.08;
+                const zw = w * zoom, zh = h * zoom;
+                ctx.drawImage(canvas, (w - zw)/2, (h - zh)/2, zw, zh);
+            } else if (s === 'dream_glow') {
+                ctx.globalCompositeOperation = 'screen';
+                ctx.filter = 'blur(10px)';
+                ctx.drawImage(canvas, 0, 0, w, h);
+            } else if (s === 'radial_blur') {
+                ctx.globalAlpha = 0.35;
+                ctx.drawImage(canvas, -8, -8, w + 16, h + 16);
+                ctx.drawImage(canvas, -16, -16, w + 32, h + 32);
+            } else if (s === 'ripple') {
+                for (let y = 0; y < h; y += 18) {
+                    const shiftX = Math.sin(y * 0.05 + t * 8) * 12;
+                    ctx.drawImage(canvas, 0, y, w, 18, shiftX, y, w, 18);
+                }
+            } else if (s === 'disco_flash') {
+                if (Math.sin(t * 10) > 0.7) {
+                    ctx.globalCompositeOperation = 'screen';
+                    ctx.fillStyle = ['rgba(255,0,100,0.22)', 'rgba(0,229,255,0.22)', 'rgba(254,181,4,0.22)'][Math.floor(t * 6) % 3];
+                    ctx.fillRect(0, 0, w, h);
+                }
+            } else if (s === 'thermal') {
+                ctx.globalCompositeOperation = 'difference';
+                ctx.fillStyle = 'rgba(255, 120, 0, 0.45)';
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'bw_noir') {
+                ctx.globalCompositeOperation = 'color';
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, w, h);
+                ctx.globalCompositeOperation = 'source-over';
+                const vig = ctx.createRadialGradient(w/2, h/2, w*0.3, w/2, h/2, w*0.75);
                 vig.addColorStop(0, 'rgba(0,0,0,0)');
                 vig.addColorStop(1, 'rgba(0,0,0,0.7)');
                 ctx.fillStyle = vig;
                 ctx.fillRect(0, 0, w, h);
-            } else if (shader === 'sepia') {
-                ctx.save();
-                ctx.globalCompositeOperation = 'color';
-                ctx.fillStyle = '#704214';
-                ctx.fillRect(0, 0, w, h);
-                ctx.restore();
             }
+            ctx.restore();
+        }
+
+        function applyColorFilter(w, h) {
+            const f = projectState.activeFilter;
+            if (!f || f === 'none') return;
+
+            ctx.save();
+            if (f === 'warm') {
+                ctx.fillStyle = 'rgba(254, 181, 4, 0.12)';
+                ctx.globalCompositeOperation = 'color';
+                ctx.fillRect(0, 0, w, h);
+            } else if (f === 'cool') {
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.12)';
+                ctx.globalCompositeOperation = 'color';
+                ctx.fillRect(0, 0, w, h);
+            } else if (f === 'bw') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.globalCompositeOperation = 'saturation';
+                ctx.fillRect(0, 0, w, h);
+            } else if (f === 'cyber') {
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.15)';
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillRect(0, 0, w, h);
+            } else if (f === 'vintage') {
+                ctx.fillStyle = 'rgba(180, 130, 70, 0.2)';
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillRect(0, 0, w, h);
+            }
+            ctx.restore();
         }
 
         // =========================================================================
-        // LÍNEA DE TIEMPO CAPCUT: SWIPE TIMELINE Y AGUJA CENTRAL FIJA
+        // CONTROL DE REPRODUCCIÓN
+        // =========================================================================
+        function togglePlay() {
+            if (projectState.isPlaying) {
+                pausePlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            projectState.isPlaying = true;
+            document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-pause"></i>';
+            lastTimestamp = performance.now();
+            syncAudioElements(true);
+            animationFrameId = requestAnimationFrame(playLoop);
+        }
+
+        function pausePlayback() {
+            projectState.isPlaying = false;
+            document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-play"></i>';
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+            syncAudioElements(false);
+        }
+
+        function playLoop(timestamp) {
+            if (!projectState.isPlaying) return;
+
+            const delta = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
+
+            projectState.currentTime += delta;
+
+            if (projectState.currentTime >= projectState.duration) {
+                projectState.currentTime = 0;
+            }
+
+            renderFrame(projectState.currentTime);
+            updateTimecodeUI();
+            syncTimelineScrollFromTime(projectState.currentTime);
+
+            animationFrameId = requestAnimationFrame(playLoop);
+        }
+
+        function seekTime(time) {
+            projectState.currentTime = Math.max(0, Math.min(projectState.duration, time));
+            renderFrame(projectState.currentTime);
+            updateTimecodeUI();
+            syncTimelineScrollFromTime(projectState.currentTime);
+            syncAudioElements(projectState.isPlaying);
+        }
+
+        function updateTimecodeUI() {
+            const cur = formatTime(projectState.currentTime);
+            const total = formatTime(projectState.duration);
+            document.getElementById('timecodeDisplay').innerText = `${cur} / ${total}`;
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            const ms = Math.floor((sec % 1) * 100);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+        }
+
+        function syncAudioElements(play) {
+            projectState.clips.forEach(clip => {
+                if (clip.type === 'audio') {
+                    const audioEl = mediaCache.get(clip.id);
+                    if (audioEl) {
+                        audioEl.muted = projectState.isMutedAll;
+                        audioEl.volume = clip.volume !== undefined ? clip.volume : 1.0;
+
+                        if (play && projectState.currentTime >= clip.start && projectState.currentTime <= (clip.start + clip.duration)) {
+                            audioEl.currentTime = projectState.currentTime - clip.start;
+                            audioEl.play().catch(() => {});
+                        } else {
+                            audioEl.pause();
+                        }
+                    }
+                }
+            });
+        }
+
+        // =========================================================================
+        // REGLA Y PISTAS MULTICANAL (ARRASTRE LIBRE + RECORTE)
         // =========================================================================
         function buildTimelineRuler() {
             const ruler = document.getElementById('timelineRuler');
-            if (!ruler) return;
             ruler.innerHTML = '';
-            const totalSecs = Math.max(Math.ceil(projectState.duration) + 8, 30);
-            const pxPerSec = projectState.zoomPxPerSec;
+            const totalSec = Math.ceil(projectState.duration + 5);
 
-            for (let s = 0; s <= totalSecs; s++) {
+            for (let s = 0; s <= totalSec; s++) {
                 const mark = document.createElement('div');
                 mark.className = 'ruler-second-mark';
-                mark.style.left = `${s * pxPerSec}px`;
-                const min = Math.floor(s / 60);
+                mark.style.left = `${s * projectState.zoomPxPerSec}px`;
+                const m = Math.floor(s / 60);
                 const sec = s % 60;
-                mark.innerText = `${min}:${sec < 10 ? '0' : ''}${sec}s`;
+                mark.innerText = `${m}:${String(sec).padStart(2, '0')}s`;
                 ruler.appendChild(mark);
             }
         }
 
         function renderTimelineClips() {
-            document.querySelectorAll('.capcut-clip-block').forEach(c => c.remove());
-            document.querySelectorAll('.capcut-add-tile').forEach(t => t.remove());
+            const vTrack = document.getElementById('track-video1');
+            const oTrack = document.getElementById('track-overlay');
+            const tTrack = document.getElementById('track-text');
+            const aTrack = document.getElementById('track-audio1');
+
+            vTrack.innerHTML = '';
+            oTrack.innerHTML = '';
+            tTrack.innerHTML = '';
+            aTrack.innerHTML = '';
+
+            let maxVideoEnd = 0;
 
             projectState.clips.forEach(clip => {
-                const lane = document.getElementById(clip.track);
-                if (!lane) return;
-
-                const left = clip.start * projectState.zoomPxPerSec;
-                const width = Math.max(clip.duration * projectState.zoomPxPerSec, 34);
-
                 const clipEl = document.createElement('div');
-                clipEl.className = `capcut-clip-block track-${clip.type}-clip`;
-                if (clip.id === projectState.activeClipId) clipEl.classList.add('active');
-                clipEl.style.left = `${left}px`;
-                clipEl.style.width = `${width}px`;
-                clipEl.id = `clip_${clip.id}`;
+                clipEl.className = 'vstudio-clip-block';
+                clipEl.id = `block_${clip.id}`;
+                clipEl.style.left = `${clip.start * projectState.zoomPxPerSec}px`;
+                clipEl.style.width = `${clip.duration * projectState.zoomPxPerSec}px`;
 
-                let icon = 'film';
-                if (clip.type === 'text') icon = 'font';
-                else if (clip.type === 'audio') icon = 'music';
+                if (clip.id === projectState.activeClipId) {
+                    clipEl.classList.add('active');
+                }
+
+                if (clip.track === 'track-overlay') clipEl.classList.add('track-overlay-clip');
+                if (clip.track === 'track-audio1') clipEl.classList.add('track-audio-clip');
+                if (clip.track === 'track-text') clipEl.classList.add('track-text-clip');
+
+                let icon = '🎞';
+                if (clip.track === 'track-overlay') icon = '<i class="fa-regular fa-clone"></i>';
+                if (clip.type === 'text') icon = '<i class="fa-solid fa-font"></i>';
+                if (clip.type === 'audio') icon = '<i class="fa-solid fa-music"></i>';
 
                 clipEl.innerHTML = `
-                    <div class="capcut-trim-handle trim-left-handle"></div>
-                    <div class="capcut-clip-thumb-filmstrip"></div>
-                    <span class="capcut-clip-label"><i class="fa-solid fa-${icon}"></i> ${clip.title}</span>
-                    <span class="capcut-clip-dur-tag">${clip.duration.toFixed(1)}s</span>
-                    <div class="capcut-trim-handle trim-right-handle"></div>
+                    <div class="vstudio-trim-handle trim-left-handle" onmousedown="startTrim(event, '${clip.id}', 'left')" ontouchstart="startTrim(event, '${clip.id}', 'left')"></div>
+                    <div class="vstudio-clip-label">${icon} <span>${clip.title}</span></div>
+                    <div class="vstudio-clip-dur-tag">${clip.duration.toFixed(1)}s</div>
+                    <div class="vstudio-trim-handle trim-right-handle" onmousedown="startTrim(event, '${clip.id}', 'right')" ontouchstart="startTrim(event, '${clip.id}', 'right')"></div>
                 `;
 
-                // Tocar para seleccionar clip
-                clipEl.addEventListener('touchstart', (e) => {
-                    if (e.target.classList.contains('capcut-trim-handle')) {
-                        handleTrimTouch(e, clip, e.target.classList.contains('trim-left-handle') ? 'left' : 'right');
-                        return;
-                    }
-                    selectClip(clip.id);
-                }, { passive: true });
+                // ARRASTRE PARA MOVER EL CLIP EN LA LÍNEA DE TIEMPO
+                setupClipDragEvents(clipEl, clip);
 
-                clipEl.addEventListener('click', (e) => {
-                    selectClip(clip.id);
-                });
-
-                lane.appendChild(clipEl);
+                if (clip.track === 'track-video1') {
+                    vTrack.appendChild(clipEl);
+                    maxVideoEnd = Math.max(maxVideoEnd, clip.start + clip.duration);
+                } else if (clip.track === 'track-overlay') {
+                    oTrack.appendChild(clipEl);
+                } else if (clip.track === 'track-text') {
+                    tTrack.appendChild(clipEl);
+                } else if (clip.track === 'track-audio1') {
+                    aTrack.appendChild(clipEl);
+                }
             });
 
-            // Botón '+' CapCut al final de la pista de video 1
-            const lane1 = document.getElementById('track-video1');
-            if (lane1) {
-                const maxVideoEnd = projectState.clips
-                    .filter(c => c.track === 'track-video1')
-                    .reduce((max, c) => Math.max(max, c.start + c.duration), 0);
-                const tile = document.createElement('div');
-                tile.className = 'capcut-add-tile';
-                tile.style.left = `${maxVideoEnd * projectState.zoomPxPerSec + 10}px`;
-                tile.innerHTML = '<i class="fa-solid fa-plus"></i>';
-                tile.onclick = () => document.getElementById('fileInputAdd').click();
-                lane1.appendChild(tile);
-            }
-
-            updateDuration();
+            // Botón '+' al final de la pista principal de video
+            const addTile = document.createElement('div');
+            addTile.className = 'vstudio-add-tile';
+            addTile.style.left = `${maxVideoEnd * projectState.zoomPxPerSec + 10}px`;
+            addTile.innerHTML = '<i class="fa-solid fa-plus"></i>';
+            addTile.title = 'Añadir clip de video / imagen al final';
+            addTile.onclick = () => document.getElementById('fileInputAdd').click();
+            vTrack.appendChild(addTile);
         }
 
-        // SINCRONIZACIÓN DE SCROLL HORIZONTAL CON LA AGUJA FIJA CENTRAL
+        // FUNCIONALIDAD PARA ARRASTRAR Y MOVER CLIPS EN EL TIMELINE
+        function setupClipDragEvents(clipEl, clip) {
+            let startX = 0;
+            let initialStart = 0;
+            let hasMoved = false;
+
+            clipEl.addEventListener('pointerdown', (e) => {
+                if (e.target.classList.contains('vstudio-trim-handle')) return;
+
+                selectClip(clip.id);
+                startX = e.clientX;
+                initialStart = clip.start;
+                hasMoved = false;
+
+                function onMove(ev) {
+                    const deltaPx = ev.clientX - startX;
+                    if (Math.abs(deltaPx) > 3) {
+                        hasMoved = true;
+                        const deltaSec = deltaPx / projectState.zoomPxPerSec;
+                        let newStart = Math.max(0, initialStart + deltaSec);
+                        newStart = Math.round(newStart * 10) / 10;
+
+                        // Imán con el cabezal de reproducción
+                        if (Math.abs(newStart - projectState.currentTime) < 0.15) {
+                            newStart = projectState.currentTime;
+                        }
+
+                        clip.start = newStart;
+                        clipEl.style.left = `${newStart * projectState.zoomPxPerSec}px`;
+
+                        recalculateProjectDuration();
+                        renderFrame(projectState.currentTime);
+                    }
+                }
+
+                function onUp() {
+                    window.removeEventListener('pointermove', onMove);
+                    window.removeEventListener('pointerup', onUp);
+                    if (hasMoved) {
+                        pushHistory();
+                        recalculateProjectDuration();
+                        renderTimelineClips();
+                        saveProjectToDB();
+                    }
+                }
+
+                window.addEventListener('pointermove', onMove);
+                window.addEventListener('pointerup', onUp);
+            });
+        }
+
+        // RECORTE INTELIGENTE DE BORDES (TRIM)
+        function startTrim(e, clipId, side) {
+            e.stopPropagation();
+            e.preventDefault();
+            const clip = projectState.clips.find(c => c.id === clipId);
+            if (!clip) return;
+
+            selectClip(clipId);
+            const startX = e.clientX || (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+            const origStart = clip.start;
+            const origDur = clip.duration;
+            const clipEl = document.getElementById(`block_${clipId}`);
+
+            function onTrimMove(ev) {
+                const curX = ev.clientX || (ev.touches && ev.touches[0] ? ev.touches[0].clientX : 0);
+                const deltaPx = curX - startX;
+                const deltaSec = deltaPx / projectState.zoomPxPerSec;
+
+                if (side === 'right') {
+                    const newDur = Math.max(0.4, origDur + deltaSec);
+                    clip.duration = Math.round(newDur * 10) / 10;
+                    if (clipEl) {
+                        clipEl.style.width = `${clip.duration * projectState.zoomPxPerSec}px`;
+                        const tag = clipEl.querySelector('.vstudio-clip-dur-tag');
+                        if (tag) tag.innerText = `${clip.duration.toFixed(1)}s`;
+                    }
+                } else if (side === 'left') {
+                    const maxDelta = origDur - 0.4;
+                    const safeDelta = Math.min(maxDelta, deltaSec);
+                    const newStart = Math.max(0, origStart + safeDelta);
+                    const newDur = origDur - (newStart - origStart);
+                    clip.start = Math.round(newStart * 10) / 10;
+                    clip.duration = Math.max(0.4, Math.round(newDur * 10) / 10);
+                    if (clipEl) {
+                        clipEl.style.left = `${clip.start * projectState.zoomPxPerSec}px`;
+                        clipEl.style.width = `${clip.duration * projectState.zoomPxPerSec}px`;
+                        const tag = clipEl.querySelector('.vstudio-clip-dur-tag');
+                        if (tag) tag.innerText = `${clip.duration.toFixed(1)}s`;
+                    }
+                }
+                recalculateProjectDuration();
+                renderFrame(projectState.currentTime);
+            }
+
+            function onTrimUp() {
+                window.removeEventListener('pointermove', onTrimMove);
+                window.removeEventListener('pointerup', onTrimUp);
+                window.removeEventListener('touchmove', onTrimMove);
+                window.removeEventListener('touchend', onTrimUp);
+
+                pushHistory();
+                recalculateProjectDuration();
+                renderTimelineClips();
+                saveProjectToDB();
+            }
+
+            window.addEventListener('pointermove', onTrimMove);
+            window.addEventListener('pointerup', onTrimUp);
+            window.addEventListener('touchmove', onTrimMove, { passive: false });
+            window.addEventListener('touchend', onTrimUp);
+        }
+
+        // SCROLL Y NAVEGACIÓN EN LA LÍNEA DE TIEMPO
         function setupTimelineScrollListener() {
-            const scrollArea = document.getElementById('timelineScrollContainer');
-            if (!scrollArea) return;
+            timelineScrollContainer.addEventListener('scroll', () => {
+                if (projectState.isPlaying) return;
 
-            scrollArea.addEventListener('scroll', () => {
-                if (projectState.isPlaying) return; // Controlado por el render loop
                 isUserScrollingTimeline = true;
+                const scrollLeft = timelineScrollContainer.scrollLeft;
+                const time = scrollLeft / projectState.zoomPxPerSec;
+                projectState.currentTime = Math.max(0, Math.min(projectState.duration, time));
 
-                const scrollLeft = scrollArea.scrollLeft;
-                const newTime = Math.max(0, Math.min(scrollLeft / projectState.zoomPxPerSec, projectState.duration));
-                projectState.currentTime = newTime;
+                renderFrame(projectState.currentTime);
                 updateTimecodeUI();
 
                 clearTimeout(scrollTimeout);
                 scrollTimeout = setTimeout(() => {
                     isUserScrollingTimeline = false;
-                }, 150);
+                }, 100);
             }, { passive: true });
+
+            timelineScrollContainer.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                timelineScrollContainer.scrollLeft += e.deltaY || e.deltaX;
+            }, { passive: false });
         }
 
-        function syncTimelineScrollToPlayhead() {
-            const scrollArea = document.getElementById('timelineScrollContainer');
-            if (!scrollArea || isUserScrollingTimeline) return;
-            scrollArea.scrollLeft = projectState.currentTime * projectState.zoomPxPerSec;
+        function syncTimelineScrollFromTime(time) {
+            if (isUserScrollingTimeline) return;
+            const targetX = time * projectState.zoomPxPerSec;
+            timelineScrollContainer.scrollLeft = targetX;
         }
 
-        function updateTimecodeUI() {
-            const disp = document.getElementById('timecodeDisplay');
-            if (disp) {
-                disp.innerText = `${formatTime(projectState.currentTime)} / ${formatTime(projectState.duration)}`;
+        // =========================================================================
+        // ACCIONES DE CLIP
+        // =========================================================================
+        function selectClip(clipId) {
+            projectState.activeClipId = clipId;
+            document.querySelectorAll('.vstudio-clip-block').forEach(b => b.classList.remove('active'));
+            const activeEl = document.getElementById(`block_${clipId}`);
+            if (activeEl) activeEl.classList.add('active');
+
+            document.getElementById('rootToolbar').style.display = 'none';
+            document.getElementById('clipToolbar').style.display = 'flex';
+            renderFrame(projectState.currentTime);
+        }
+
+        function deselectActiveClip() {
+            projectState.activeClipId = null;
+            document.querySelectorAll('.vstudio-clip-block').forEach(b => b.classList.remove('active'));
+            document.getElementById('rootToolbar').style.display = 'flex';
+            document.getElementById('clipToolbar').style.display = 'none';
+            closeDrawer();
+            renderFrame(projectState.currentTime);
+        }
+
+        function handleRootEditClick() {
+            const clip = projectState.clips.find(c => projectState.currentTime >= c.start && projectState.currentTime <= (c.start + c.duration));
+            if (clip) {
+                selectClip(clip.id);
+            } else if (projectState.clips.length > 0) {
+                selectClip(projectState.clips[0].id);
             }
         }
 
-        function formatTime(s) {
-            const mins = Math.floor(s / 60);
-            const secs = Math.floor(s % 60);
-            const ms = Math.floor((s % 1) * 100);
-            return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}.${ms < 10 ? '0' : ''}${ms}`;
+        function splitClipAtPlayhead() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+
+            const splitTime = projectState.currentTime;
+            if (splitTime <= clip.start + 0.2 || splitTime >= clip.start + clip.duration - 0.2) {
+                alert('Mueve el cabezal a una posición intermedia del clip para dividirlo.');
+                return;
+            }
+
+            const originalDuration = clip.duration;
+            const firstPartDuration = splitTime - clip.start;
+            const secondPartDuration = originalDuration - firstPartDuration;
+
+            clip.duration = firstPartDuration;
+
+            const newClip = {
+                ...clip,
+                id: 'clip_' + Date.now(),
+                title: clip.title + ' (Parte 2)',
+                start: splitTime,
+                duration: secondPartDuration
+            };
+
+            projectState.clips.push(newClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newClip.id);
+            renderFrame(projectState.currentTime);
         }
 
-        function togglePlay() {
-            projectState.isPlaying = !projectState.isPlaying;
-            const btn = document.getElementById('btnPlayPause');
-            if (btn) {
-                btn.innerHTML = `<i class="fa-solid fa-${projectState.isPlaying ? 'pause' : 'play'}"></i>`;
+        function duplicateActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+
+            const newClip = {
+                ...clip,
+                id: 'clip_' + Date.now(),
+                title: clip.title + ' (Copia)',
+                start: clip.start + clip.duration
+            };
+
+            projectState.clips.push(newClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newClip.id);
+        }
+
+        function deleteActiveClip() {
+            if (!projectState.activeClipId) return;
+            projectState.clips = projectState.clips.filter(c => c.id !== projectState.activeClipId);
+            deselectActiveClip();
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            renderFrame(projectState.currentTime);
+        }
+
+        // =========================================================================
+        // HERRAMIENTAS Y DRAWERS
+        // =========================================================================
+        function openDrawer(tool) {
+            currentDrawerTab = tool;
+            const drawer = document.getElementById('drawerSheet');
+            const title = document.getElementById('drawerTitle');
+            const body = document.getElementById('drawerBody');
+
+            drawer.classList.add('open');
+
+            if (tool === 'transform') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const curScale = clip ? (clip.scale || 1.0) : 1.0;
+                title.innerHTML = '<i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i> Mover y Posicionar Elemento';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="font-size: 0.72rem; color: #94a3b8;">Arrastra directamente sobre el video en la pantalla o usa estos atajos:</div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, -0.3)"><span>↖ Arriba</span></button>
+                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, 0)"><span>⏺ Centro</span></button>
+                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, 0.3)"><span>↘ Abajo</span></button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-top: 4px;">
+                            <span>Tamaño / Escala</span>
+                            <span id="scaleVal" style="color: #00e5ff;">${Math.round(curScale * 100)}%</span>
+                        </div>
+                        <input type="range" min="20" max="150" value="${curScale * 100}" style="width: 100%; accent-color: #00e5ff;" oninput="updateActiveClipScale(this.value)">
+                    </div>
+                `;
+            } else if (tool === 'effects') {
+                title.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i> Efectos Visuales';
+                const fxList = [
+                    { id: 'none', name: 'Ninguno', icon: 'fa-ban', color: '#94a3b8' },
+                    { id: 'vhs', name: 'Glitch VHS', icon: 'fa-tv', color: '#feb504' },
+                    { id: 'neon_glow', name: 'Neon Cyber', icon: 'fa-lightbulb', color: '#00e5ff' },
+                    { id: 'rgb_split', name: 'Aberración 3D', icon: 'fa-eye', color: '#a855f7' },
+                    { id: 'film_grain', name: 'Cine 35mm', icon: 'fa-film', color: '#f87171' },
+                    { id: 'beat_shake', name: 'Beat Shake', icon: 'fa-wave-square', color: '#10b981' },
+                    { id: 'zoom_pulse', name: 'Zoom Pulse', icon: 'fa-compress', color: '#feb504' },
+                    { id: 'dream_glow', name: 'Luz Ensueño', icon: 'fa-sun', color: '#ec4899' },
+                    { id: 'radial_blur', name: 'Desenfoque', icon: 'fa-wind', color: '#38bdf8' },
+                    { id: 'ripple', name: 'Ondas Agua', icon: 'fa-water', color: '#60a5fa' },
+                    { id: 'disco_flash', name: 'Flash Disco', icon: 'fa-bolt', color: '#f59e0b' },
+                    { id: 'bw_noir', name: 'B&W Noir', icon: 'fa-circle-half-stroke', color: '#cbd5e1' },
+                    { id: 'thermal', name: 'Infrarrojo', icon: 'fa-fire', color: '#ef4444' }
+                ];
+
+                body.innerHTML = `
+                    <div class="drawer-cards-grid">
+                        ${fxList.map(fx => `
+                            <div class="drawer-item-card ${projectState.activeShader === fx.id ? 'active' : ''}" onclick="selectShader('${fx.id}')">
+                                <i class="fa-solid ${fx.icon}" style="color: ${fx.color};"></i>
+                                <span>${fx.name}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (tool === 'audio') {
+                title.innerHTML = '<i class="fa-solid fa-music" style="color: #10b981;"></i> Pista de Audio & Música';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button type="button" class="topbar-export-btn" style="background: #10b981; color: #000; justify-content: center; padding: 10px;" onclick="document.getElementById('fileInputAudio').click()">
+                            <i class="fa-solid fa-plus"></i> Importar Canción / Audio Propio
+                        </button>
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-top: 4px;">BIBLIOTECA LIBRE DE DERECHOS:</div>
+                        <div class="drawer-cards-grid">
+                            <div class="drawer-item-card" onclick="addPresetAudio('Lofi Chill Beat')">
+                                <i class="fa-solid fa-headphones" style="color: #10b981;"></i>
+                                <span>Lofi Chill</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addPresetAudio('Synthwave 80s')">
+                                <i class="fa-solid fa-compact-disc" style="color: #00e5ff;"></i>
+                                <span>Synthwave</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addPresetAudio('Trap Beat Dark')">
+                                <i class="fa-solid fa-bolt" style="color: #feb504;"></i>
+                                <span>Trap Beat</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addPresetAudio('Cine Ambient')">
+                                <i class="fa-solid fa-film" style="color: #a855f7;"></i>
+                                <span>Cine Ambient</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'text') {
+                title.innerHTML = '<i class="fa-solid fa-font" style="color: #feb504;"></i> Añadir Subtítulo / Texto';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <input type="text" id="customTextInput" placeholder="Escribe tu texto aquí..." value="🔥 TÍTULO VIRAL" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--vs-border); color: #fff; font-size: 0.85rem; font-weight: 700; outline: none;">
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="drawer-item-card active" style="flex: 1;" onclick="addTextToTimeline('viral')">
+                                <i class="fa-solid fa-box" style="color: #feb504;"></i>
+                                <span>Estilo Viral</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" style="flex: 1;" onclick="addTextToTimeline('neon')">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="color: #00e5ff;"></i>
+                                <span>Neón Glow</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" style="flex: 1;" onclick="addTextToTimeline('minimal')">
+                                <i class="fa-solid fa-heading"></i>
+                                <span>Minimalista</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'filters') {
+                title.innerHTML = '<i class="fa-solid fa-sliders" style="color: #00e5ff;"></i> Filtros de Color';
+                body.innerHTML = `
+                    <div class="drawer-cards-grid">
+                        <div class="drawer-item-card ${projectState.activeFilter === 'none' ? 'active' : ''}" onclick="selectFilter('none')">
+                            <i class="fa-solid fa-circle-notch"></i>
+                            <span>Original</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.activeFilter === 'warm' ? 'active' : ''}" onclick="selectFilter('warm')">
+                            <i class="fa-solid fa-sun" style="color: #feb504;"></i>
+                            <span>Cálido</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.activeFilter === 'cool' ? 'active' : ''}" onclick="selectFilter('cool')">
+                            <i class="fa-solid fa-snowflake" style="color: #00e5ff;"></i>
+                            <span>Frío</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.activeFilter === 'bw' ? 'active' : ''}" onclick="selectFilter('bw')">
+                            <i class="fa-solid fa-circle-half-stroke"></i>
+                            <span>B&W Noir</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.activeFilter === 'cyber' ? 'active' : ''}" onclick="selectFilter('cyber')">
+                            <i class="fa-solid fa-gem" style="color: #ec4899;"></i>
+                            <span>Cyberpunk</span>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'ratio') {
+                title.innerHTML = '<i class="fa-solid fa-crop" style="color: #feb504;"></i> Formato / Aspect Ratio';
+                body.innerHTML = `
+                    <div class="drawer-cards-grid">
+                        <div class="drawer-item-card ${projectState.aspectRatio === '9:16' ? 'active' : ''}" onclick="setAspectRatio('9:16'); closeDrawer();">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                            <span>9:16 (Reels)</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.aspectRatio === '16:9' ? 'active' : ''}" onclick="setAspectRatio('16:9'); closeDrawer();">
+                            <i class="fa-solid fa-tv"></i>
+                            <span>16:9 (YouTube)</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.aspectRatio === '1:1' ? 'active' : ''}" onclick="setAspectRatio('1:1'); closeDrawer();">
+                            <i class="fa-regular fa-square"></i>
+                            <span>1:1 (Post)</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.aspectRatio === '4:5' ? 'active' : ''}" onclick="setAspectRatio('4:5'); closeDrawer();">
+                            <i class="fa-solid fa-image"></i>
+                            <span>4:5 (Feed)</span>
+                        </div>
+                        <div class="drawer-item-card ${projectState.aspectRatio === '21:9' ? 'active' : ''}" onclick="setAspectRatio('21:9'); closeDrawer();">
+                            <i class="fa-solid fa-film"></i>
+                            <span>21:9 (Cine)</span>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'speed') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const curSpeed = clip ? (clip.speed || 1.0) : 1.0;
+                title.innerHTML = '<i class="fa-solid fa-gauge-high"></i> Velocidad del Clip';
+                body.innerHTML = `
+                    <div style="display: flex; gap: 8px;">
+                        ${[0.5, 1.0, 1.5, 2.0].map(s => `
+                            <button type="button" class="drawer-item-card ${curSpeed === s ? 'active' : ''}" style="flex: 1;" onclick="setClipSpeed(${s})">
+                                <span style="font-size: 0.85rem;">${s}x</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (tool === 'opacity') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const curOp = clip ? (clip.opacity !== undefined ? clip.opacity * 100 : 100) : 100;
+                title.innerHTML = '<i class="fa-solid fa-circle-half-stroke"></i> Opacidad del Clip';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+                            <span>Nivel de Transparencia</span>
+                            <span id="opacityVal" style="color: #feb504;">${Math.round(curOp)}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${curOp}" style="width: 100%; accent-color: #feb504;" oninput="updateActiveClipOpacity(this.value)">
+                    </div>
+                `;
+            } else if (tool === 'volume') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const curVol = clip ? (clip.volume !== undefined ? clip.volume * 100 : 100) : 100;
+                title.innerHTML = '<i class="fa-solid fa-volume-high"></i> Volumen del Clip';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700;">
+                            <span>Volumen de Audio</span>
+                            <span id="volumeVal" style="color: #10b981;">${Math.round(curVol)}%</span>
+                        </div>
+                        <input type="range" min="0" max="100" value="${curVol}" style="width: 100%; accent-color: #10b981;" oninput="updateActiveClipVolume(this.value)">
+                    </div>
+                `;
             }
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawerSheet').classList.remove('open');
+            currentDrawerTab = null;
+        }
+
+        function selectShader(s) {
+            projectState.activeShader = s;
+            renderFrame(projectState.currentTime);
+            openDrawer('effects');
+        }
+
+        function selectFilter(f) {
+            projectState.activeFilter = f;
+            renderFrame(projectState.currentTime);
+            openDrawer('filters');
+        }
+
+        function setClipPosition(x, y) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.x = x;
+                clip.y = y;
+                pushHistory();
+                renderFrame(projectState.currentTime);
+            }
+        }
+
+        function updateActiveClipScale(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.scale = val / 100;
+                document.getElementById('scaleVal').innerText = `${val}%`;
+                renderFrame(projectState.currentTime);
+            }
+        }
+
+        function setClipSpeed(s) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.speed = s;
+                pushHistory();
+                openDrawer('speed');
+            }
+        }
+
+        function updateActiveClipOpacity(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.opacity = val / 100;
+                document.getElementById('opacityVal').innerText = `${val}%`;
+                renderFrame(projectState.currentTime);
+            }
+        }
+
+        function updateActiveClipVolume(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.volume = val / 100;
+                document.getElementById('volumeVal').innerText = `${val}%`;
+            }
+        }
+
+        function addTextToTimeline(style) {
+            const input = document.getElementById('customTextInput');
+            const text = input ? input.value.trim() : '🔥 TÍTULO VIRAL';
+
+            const newTextClip = {
+                id: 'clip_txt_' + Date.now(),
+                track: 'track-text',
+                type: 'text',
+                title: text.substring(0, 15),
+                text: text,
+                start: projectState.currentTime,
+                duration: 4.0,
+                fontSize: 44,
+                color: '#feb504',
+                style: style,
+                x: 0,
+                y: 0.25
+            };
+
+            projectState.clips.push(newTextClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newTextClip.id);
+            renderFrame(projectState.currentTime);
+            closeDrawer();
+        }
+
+        function addPresetAudio(title) {
+            const newAudioClip = {
+                id: 'clip_aud_' + Date.now(),
+                track: 'track-audio1',
+                type: 'audio',
+                title: title,
+                start: projectState.currentTime,
+                duration: 8.0,
+                volume: 0.8
+            };
+
+            projectState.clips.push(newAudioClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newAudioClip.id);
+            closeDrawer();
+        }
+
+        function triggerOverlayAdd() {
+            document.getElementById('fileInputOverlay').click();
+        }
+
+        // =========================================================================
+        // IMPORTACIÓN MULTIMEDIA (COLOCACIÓN SECUENCIAL SIN COLISIONES)
+        // =========================================================================
+        async function handleFileInput(files) {
+            if (!files || !files.length) return;
+
+            // Determinar posición secuencial al final de track-video1 para que NO colisione
+            let nextStart = 0;
+            const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
+            mainClips.forEach(c => {
+                if (c.start + c.duration > nextStart) nextStart = c.start + c.duration;
+            });
+
+            for (const file of files) {
+                const url = URL.createObjectURL(file);
+                const isVideo = file.type.startsWith('video');
+                const isAudio = file.type.startsWith('audio');
+                const isImg = file.type.startsWith('image');
+
+                const clipId = 'clip_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+                if (isVideo) {
+                    const videoEl = document.createElement('video');
+                    videoEl.src = url;
+                    videoEl.crossOrigin = 'anonymous';
+                    videoEl.muted = false;
+                    videoEl.playsInline = true;
+
+                    await new Promise(res => {
+                        videoEl.onloadedmetadata = () => res();
+                        videoEl.onerror = () => res();
+                    });
+
+                    mediaCache.set(clipId, videoEl);
+                    const duration = videoEl.duration || 5.0;
+
+                    projectState.clips.push({
+                        id: clipId,
+                        track: 'track-video1',
+                        type: 'video',
+                        title: file.name.substring(0, 18),
+                        start: nextStart,
+                        duration: duration,
+                        speed: 1.0,
+                        opacity: 1.0
+                    });
+
+                    nextStart += duration;
+                } else if (isImg) {
+                    const imgEl = new Image();
+                    imgEl.src = url;
+                    await new Promise(res => { imgEl.onload = () => res(); });
+                    mediaCache.set(clipId, imgEl);
+
+                    projectState.clips.push({
+                        id: clipId,
+                        track: 'track-video1',
+                        type: 'image',
+                        title: file.name.substring(0, 18),
+                        start: nextStart,
+                        duration: 4.0,
+                        opacity: 1.0
+                    });
+
+                    nextStart += 4.0;
+                } else if (isAudio) {
+                    const audioEl = new Audio();
+                    audioEl.src = url;
+                    await new Promise(res => {
+                        audioEl.onloadedmetadata = () => res();
+                        audioEl.onerror = () => res();
+                    });
+                    mediaCache.set(clipId, audioEl);
+
+                    projectState.clips.push({
+                        id: clipId,
+                        track: 'track-audio1',
+                        type: 'audio',
+                        title: file.name.substring(0, 18),
+                        start: projectState.currentTime,
+                        duration: audioEl.duration || 10.0,
+                        volume: 0.9
+                    });
+                }
+            }
+
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            renderFrame(projectState.currentTime);
+        }
+
+        // SUPERPOSICIÓN / PIP (VA DIRECTO A TRACK-OVERLAY SIN COLISIONAR)
+        async function handleOverlayInput(files) {
+            if (!files || !files.length) return;
+
+            for (const file of files) {
+                const url = URL.createObjectURL(file);
+                const isVideo = file.type.startsWith('video');
+                const isImg = file.type.startsWith('image');
+                const clipId = 'clip_ov_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6);
+
+                if (isVideo) {
+                    const videoEl = document.createElement('video');
+                    videoEl.src = url;
+                    videoEl.crossOrigin = 'anonymous';
+                    videoEl.muted = false;
+                    videoEl.playsInline = true;
+                    await new Promise(res => { videoEl.onloadedmetadata = () => res(); videoEl.onerror = () => res(); });
+                    mediaCache.set(clipId, videoEl);
+
+                    projectState.clips.push({
+                        id: clipId,
+                        track: 'track-overlay',
+                        type: 'video',
+                        title: 'PIP: ' + file.name.substring(0, 14),
+                        start: projectState.currentTime,
+                        duration: videoEl.duration || 5.0,
+                        scale: 0.5,
+                        x: 0,
+                        y: 0,
+                        opacity: 1.0
+                    });
+                } else if (isImg) {
+                    const imgEl = new Image();
+                    imgEl.src = url;
+                    await new Promise(res => { imgEl.onload = () => res(); });
+                    mediaCache.set(clipId, imgEl);
+
+                    projectState.clips.push({
+                        id: clipId,
+                        track: 'track-overlay',
+                        type: 'image',
+                        title: 'PIP: ' + file.name.substring(0, 14),
+                        start: projectState.currentTime,
+                        duration: 4.0,
+                        scale: 0.5,
+                        x: 0,
+                        y: 0,
+                        opacity: 1.0
+                    });
+                }
+            }
+
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            renderFrame(projectState.currentTime);
+        }
+
+        function handleAudioInput(files) {
+            handleFileInput(files);
+        }
+
+        // =========================================================================
+        // ACCIONES LATERALES
+        // =========================================================================
+        function toggleMuteAll() {
+            projectState.isMutedAll = !projectState.isMutedAll;
+            const btn = document.getElementById('btnMuteAll');
+            if (projectState.isMutedAll) {
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark" style="color: #f87171;"></i><span>Silenciado</span>';
+            } else {
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fa-solid fa-volume-high"></i><span>Silenciar</span>';
+            }
+            syncAudioElements(projectState.isPlaying);
+        }
+
+        function setCoverFrame() {
+            const coverUrl = canvas.toDataURL('image/jpeg', 0.85);
+            projectState.coverFrame = coverUrl;
+            saveProjectToDB();
+            alert('¡Portada del proyecto actualizada con el fotograma actual!');
+        }
+
+        // =========================================================================
+        // HISTORIAL: UNDO / REDO
+        // =========================================================================
+        function pushHistory() {
+            if (historyIndex < historyStack.length - 1) {
+                historyStack.splice(historyIndex + 1);
+            }
+            historyStack.push(JSON.stringify({
+                clips: projectState.clips,
+                aspectRatio: projectState.aspectRatio,
+                duration: projectState.duration,
+                activeShader: projectState.activeShader,
+                activeFilter: projectState.activeFilter
+            }));
+            historyIndex++;
+            updateUndoRedoUI();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                restoreHistoryState(JSON.parse(historyStack[historyIndex]));
+            }
+        }
+
+        function redo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                restoreHistoryState(JSON.parse(historyStack[historyIndex]));
+            }
+        }
+
+        function restoreHistoryState(state) {
+            projectState.clips = state.clips;
+            projectState.aspectRatio = state.aspectRatio;
+            projectState.duration = state.duration;
+            projectState.activeShader = state.activeShader;
+            projectState.activeFilter = state.activeFilter;
+
+            setupCanvasDimensions();
+            recalculateProjectDuration();
+            renderTimelineClips();
+            renderFrame(projectState.currentTime);
+            updateUndoRedoUI();
+        }
+
+        function updateUndoRedoUI() {
+            document.getElementById('btnUndo').disabled = (historyIndex <= 0);
+            document.getElementById('btnRedo').disabled = (historyIndex >= historyStack.length - 1);
+        }
+
+        function setupDesktopKeyboardEvents() {
+            window.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.contentEditable === 'true') return;
+
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    togglePlay();
+                } else if (e.code === 'ArrowLeft') {
+                    e.preventDefault();
+                    seekTime(projectState.currentTime - 0.1);
+                } else if (e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    seekTime(projectState.currentTime + 0.1);
+                } else if (e.code === 'Delete' || e.code === 'Backspace') {
+                    if (projectState.activeClipId) {
+                        e.preventDefault();
+                        deleteActiveClip();
+                    }
+                } else if ((e.ctrlKey || e.metaKey) && e.code === 'KeyZ') {
+                    e.preventDefault();
+                    if (e.shiftKey) redo(); else undo();
+                } else if ((e.ctrlKey || e.metaKey) && e.code === 'KeyY') {
+                    e.preventDefault();
+                    redo();
+                } else if (e.code === 'Escape') {
+                    deselectActiveClip();
+                    closeDrawer();
+                    closeExportModal();
+                }
+            });
         }
 
         function toggleFullscreen() {
@@ -1460,835 +2690,115 @@
             }
         }
 
-        // PELLIZCO PARA ZOOM (PINCH TO ZOOM TIMELINE)
-        function setupPinchZoom() {
-            const scrollArea = document.getElementById('timelineScrollContainer');
-            if (!scrollArea) return;
-
-            let initialDist = 0;
-            let initialZoom = 60;
-
-            scrollArea.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 2) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    initialDist = Math.hypot(dx, dy);
-                    initialZoom = projectState.zoomPxPerSec;
-                }
-            }, { passive: true });
-
-            scrollArea.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 2 && initialDist > 0) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    const curDist = Math.hypot(dx, dy);
-                    const scale = curDist / initialDist;
-                    const newZoom = Math.max(20, Math.min(200, Math.round(initialZoom * scale)));
-                    if (newZoom !== projectState.zoomPxPerSec) {
-                        projectState.zoomPxPerSec = newZoom;
-                        buildTimelineRuler();
-                        renderTimelineClips();
-                        syncTimelineScrollToPlayhead();
-                    }
-                    if (e.cancelable) e.preventDefault();
-                }
-            }, { passive: false });
-
-            scrollArea.addEventListener('touchend', () => { initialDist = 0; }, { passive: true });
-        }
-
-        // RECORTE TÁCTIL DE CLIP
-        function handleTrimTouch(e, clip, side) {
-            e.stopPropagation();
-            const startX = e.touches[0].clientX;
-            const origStart = clip.start;
-            const origDuration = clip.duration;
-
-            function onTouchMove(ev) {
-                const deltaX = ev.touches[0].clientX - startX;
-                const deltaSec = deltaX / projectState.zoomPxPerSec;
-                if (side === 'left') {
-                    const maxShift = origDuration - 0.4;
-                    const shift = Math.min(maxShift, Math.max(-origStart, deltaSec));
-                    clip.start = origStart + shift;
-                    clip.duration = origDuration - shift;
-                } else {
-                    clip.duration = Math.max(0.4, origDuration + deltaSec);
-                }
-                renderTimelineClips();
-                if (ev.cancelable) ev.preventDefault();
-            }
-
-            function onTouchEnd() {
-                window.removeEventListener('touchmove', onTouchMove);
-                window.removeEventListener('touchend', onTouchEnd);
-                updateDuration();
-                pushHistory();
-            }
-
-            window.addEventListener('touchmove', onTouchMove, { passive: false });
-            window.addEventListener('touchend', onTouchEnd, { passive: true });
-        }
-
-        // =========================================================================
-        // SELECCIÓN DE CLIPS Y ALTERNANCIA DE TOOLBAR INFERIOR CAPCUT
-        // =========================================================================
-        function selectClip(clipId) {
-            projectState.activeClipId = clipId;
-            document.querySelectorAll('.capcut-clip-block').forEach(c => c.classList.remove('active'));
-            const el = document.getElementById(`clip_${clipId}`);
-            if (el) el.classList.add('active');
-
-            // Mostrar toolbar de edición de clip
-            const rootBar = document.getElementById('rootToolbar');
-            const clipBar = document.getElementById('clipToolbar');
-            if (rootBar && clipBar) {
-                rootBar.style.display = 'none';
-                clipBar.style.display = 'flex';
-            }
-            updateGizmo();
-        }
-
-        function deselectActiveClip() {
-            projectState.activeClipId = null;
-            document.querySelectorAll('.capcut-clip-block').forEach(c => c.classList.remove('active'));
-
-            const rootBar = document.getElementById('rootToolbar');
-            const clipBar = document.getElementById('clipToolbar');
-            if (rootBar && clipBar) {
-                rootBar.style.display = 'flex';
-                clipBar.style.display = 'none';
-            }
-            closeDrawer();
-            updateGizmo();
-        }
-
-        // ACCIONES DE EDICIÓN RÁPIDA DE CLIP (DIVIDIR, DUPLICAR, ELIMINAR, ETC.)
-        function splitClipAtPlayhead() {
-            const t = projectState.currentTime;
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId && t > c.start && t < (c.start + c.duration))
-                      || projectState.clips.find(c => t > c.start && t < (c.start + c.duration));
-            if (!clip) return;
-
-            const splitOffset = t - clip.start;
-            const newClip = Object.assign({}, clip, {
-                id: 'clip_' + Date.now(),
-                start: t,
-                duration: clip.duration - splitOffset
-            });
-            clip.duration = splitOffset;
-
-            projectState.clips.push(newClip);
-            renderTimelineClips();
-            selectClip(newClip.id);
-            pushHistory();
-        }
-
-        function deleteActiveClip() {
-            if (!projectState.activeClipId) return;
-            projectState.clips = projectState.clips.filter(c => c.id !== projectState.activeClipId);
-            deselectActiveClip();
-            renderTimelineClips();
-            pushHistory();
-        }
-
-        function duplicateActiveClip() {
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-            if (!clip) return;
-
-            const dup = Object.assign({}, clip, {
-                id: 'clip_' + Date.now(),
-                start: clip.start + clip.duration + 0.1
-            });
-            projectState.clips.push(dup);
-            renderTimelineClips();
-            selectClip(dup.id);
-            pushHistory();
-        }
-
-        function freezeFrameAtPlayhead() {
-            const t = projectState.currentTime;
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId) || projectState.clips[0];
-            if (!clip) return;
-
-            const freezeClip = {
-                id: 'clip_freeze_' + Date.now(),
-                track: clip.track,
-                type: 'image',
-                title: 'Fotograma Congelado',
-                start: t,
-                duration: 2.0,
-                x: clip.x || 0,
-                y: clip.y || 0,
-                scale: clip.scale || 1.0,
-                rotation: clip.rotation || 0,
-                opacity: 1.0
+        async function saveProjectToDB() {
+            const projectData = {
+                id: projectState.id,
+                title: projectState.title,
+                ratio: projectState.aspectRatio,
+                duration: projectState.duration,
+                cover: projectState.coverFrame || null,
+                clips: projectState.clips,
+                updatedAt: Date.now()
             };
-            projectState.clips.push(freezeClip);
-            renderTimelineClips();
-            selectClip(freezeClip.id);
-            pushHistory();
-        }
 
-        function reverseActiveClip() {
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-            if (!clip) return;
-            clip.isReversed = !clip.isReversed;
-            alert(clip.isReversed ? 'Clip invertido en reversa' : 'Clip restaurado a sentido normal');
-            pushHistory();
-        }
-
-        function updateDuration() {
-            let maxEnd = projectState.clips.reduce((max, c) => Math.max(max, c.start + c.duration), 4.0);
-            projectState.duration = Math.max(4.0, Math.round(maxEnd * 10) / 10);
-            updateTimecodeUI();
-            const durMeta = document.getElementById('exportMetaDur');
-            if (durMeta) durMeta.innerText = projectState.duration.toFixed(1) + 's';
-        }
-
-        // =========================================================================
-        // GIZMO TÁCTIL EN EL PREVIEW
-        // =========================================================================
-        function updateGizmo() {
-            const box = document.getElementById('canvasGizmo');
-            if (!box) return;
-
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-            if (!clip || clip.type === 'audio') {
-                box.style.display = 'none';
-                return;
+            if (window.MyxsiVideoDB) {
+                try {
+                    await window.MyxsiVideoDB.saveProject(projectData);
+                } catch(e) {}
             }
 
-            const container = document.getElementById('canvasContainer');
-            const cRect = container.getBoundingClientRect();
-            const sc = (cRect.width / canvas.width) * (clip.scale || 1.0);
-
-            const baseW = (clip.type === 'text' ? 400 : 800) * sc;
-            const baseH = (clip.type === 'text' ? 120 : 500) * sc;
-
-            const left = (cRect.width / 2) + ((clip.x || 0) * (cRect.width / canvas.width)) - (baseW / 2);
-            const top = (cRect.height / 2) + ((clip.y || 0) * (cRect.height / canvas.height)) - (baseH / 2);
-
-            box.style.display = 'block';
-            box.style.width = `${baseW}px`;
-            box.style.height = `${baseH}px`;
-            box.style.left = `${left}px`;
-            box.style.top = `${top}px`;
-            box.style.transform = `rotate(${clip.rotation || 0}deg)`;
-        }
-
-        function setupGizmoEvents() {
-            const box = document.getElementById('canvasGizmo');
-            const rotKnob = document.getElementById('gizmoRotKnob');
-            if (!box) return;
-
-            let touchAction = null;
-
-            box.addEventListener('touchstart', (e) => {
-                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                if (!clip) return;
-
-                const touch = e.touches[0];
-                const rect = box.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
-
-                if (e.target.closest('#gizmoRotKnob')) {
-                    touchAction = { type: 'rotate', centerX, centerY };
-                } else if (e.target.classList.contains('gizmo-handle')) {
-                    touchAction = { type: 'scale', startX: touch.clientX, startY: touch.clientY, origScale: clip.scale || 1.0, centerX, centerY };
+            try {
+                let projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
+                const existingIdx = projects.findIndex(p => p.id === projectState.id);
+                if (existingIdx >= 0) {
+                    projects[existingIdx] = { ...projects[existingIdx], ...projectData };
                 } else {
-                    touchAction = { type: 'move', startX: touch.clientX, startY: touch.clientY, origX: clip.x || 0, origY: clip.y || 0 };
+                    projects.unshift(projectData);
                 }
-                if (e.cancelable) e.preventDefault();
-            }, { passive: false });
-
-            window.addEventListener('touchmove', (e) => {
-                if (!touchAction) return;
-                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                if (!clip) return;
-
-                const touch = e.touches[0];
-                const container = document.getElementById('canvasContainer');
-                const cRect = container.getBoundingClientRect();
-                const scaleFactor = cRect.width / canvas.width;
-
-                if (touchAction.type === 'move') {
-                    const dx = (touch.clientX - touchAction.startX) / scaleFactor;
-                    const dy = (touch.clientY - touchAction.startY) / scaleFactor;
-                    clip.x = Math.round(touchAction.origX + dx);
-                    clip.y = Math.round(touchAction.origY + dy);
-                    updateGizmo();
-                } else if (touchAction.type === 'scale') {
-                    const initDist = Math.hypot(touchAction.startX - touchAction.centerX, touchAction.startY - touchAction.centerY);
-                    const curDist = Math.hypot(touch.clientX - touchAction.centerX, touch.clientY - touchAction.centerY);
-                    if (initDist > 8) {
-                        const newScale = Math.max(0.2, Math.min(3.5, touchAction.origScale * (curDist / initDist)));
-                        clip.scale = Math.round(newScale * 100) / 100;
-                        updateGizmo();
-                    }
-                } else if (touchAction.type === 'rotate') {
-                    const rad = Math.atan2(touch.clientY - touchAction.centerY, touch.clientX - touchAction.centerX);
-                    clip.rotation = Math.round((rad * 180 / Math.PI) + 90);
-                    updateGizmo();
-                }
-                if (e.cancelable) e.preventDefault();
-            }, { passive: false });
-
-            window.addEventListener('touchend', () => {
-                if (touchAction) {
-                    touchAction = null;
-                    pushHistory();
-                }
-            }, { passive: true });
+                localStorage.setItem('myxsi_video_projects', JSON.stringify(projects));
+            } catch(e) {}
         }
 
         // =========================================================================
-        // BOTTOM SHEET / DRAWER CAPCUT DINÁMICO
-        // =========================================================================
-        function openDrawer(tab) {
-            const sheet = document.getElementById('capcutSheet');
-            const titleEl = document.getElementById('drawerTitle');
-            const bodyEl = document.getElementById('drawerBody');
-            if (!sheet || !bodyEl) return;
-
-            if (currentDrawerTab === tab && sheet.classList.contains('open')) {
-                closeDrawer();
-                return;
-            }
-
-            currentDrawerTab = tab;
-
-            if (tab === 'effects') {
-                titleEl.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i> Efectos Drift & Shaders';
-                bodyEl.innerHTML = renderEffectsContent();
-            } else if (tab === 'transitions') {
-                titleEl.innerHTML = '<i class="fa-solid fa-arrows-split-up-and-left" style="color: #10b981;"></i> Transiciones';
-                bodyEl.innerHTML = renderTransitionsContent();
-            } else if (tab === 'filters') {
-                titleEl.innerHTML = '<i class="fa-solid fa-sliders" style="color: #feb504;"></i> Filtros y Color';
-                bodyEl.innerHTML = renderFiltersContent();
-            } else if (tab === 'text') {
-                titleEl.innerHTML = '<i class="fa-solid fa-font" style="color: #00e5ff;"></i> Títulos y Subtítulos';
-                bodyEl.innerHTML = renderTextContent();
-            } else if (tab === 'audio') {
-                titleEl.innerHTML = '<i class="fa-solid fa-music" style="color: #06b6d4;"></i> Modulador Vocal y Audio';
-                bodyEl.innerHTML = renderAudioContent();
-            } else if (tab === 'ratio') {
-                titleEl.innerHTML = '<i class="fa-solid fa-crop" style="color: #feb504;"></i> Relación de Aspecto';
-                bodyEl.innerHTML = renderRatioContent();
-            } else if (tab === 'speed') {
-                titleEl.innerHTML = '<i class="fa-solid fa-gauge-high" style="color: #feb504;"></i> Velocidad de Clip';
-                bodyEl.innerHTML = renderSpeedContent();
-            } else if (tab === 'anim') {
-                titleEl.innerHTML = '<i class="fa-solid fa-film" style="color: #a855f7;"></i> Animaciones Cinemáticas';
-                bodyEl.innerHTML = renderAnimContent();
-            } else if (tab === 'opacity') {
-                titleEl.innerHTML = '<i class="fa-regular fa-eye" style="color: #cbd5e1;"></i> Opacidad de Capa';
-                bodyEl.innerHTML = renderOpacityContent();
-            }
-
-            sheet.classList.add('open');
-        }
-
-        function closeDrawer() {
-            const sheet = document.getElementById('capcutSheet');
-            if (sheet) sheet.classList.remove('open');
-            currentDrawerTab = null;
-        }
-
-        function setupOutsideTapDismiss() {
-            document.addEventListener('touchstart', (e) => {
-                const sheet = document.getElementById('capcutSheet');
-                const bottomBar = document.getElementById('bottomBar');
-                if (sheet && sheet.classList.contains('open')) {
-                    if (!sheet.contains(e.target) && !bottomBar.contains(e.target)) {
-                        closeDrawer();
-                    }
-                }
-            }, { passive: true });
-        }
-
-        // CONTENIDOS DE DRAWERS
-        function renderEffectsContent() {
-            const shaders = [
-                { id: 'none', label: 'Normal', icon: 'ban' },
-                { id: 'vhs', label: 'VHS Retro', icon: 'tape' },
-                { id: 'glitch', label: 'Glitch Digital', icon: 'bolt' },
-                { id: 'neon_glow', label: 'Neon Glow', icon: 'lightbulb' },
-                { id: 'cyberpunk', label: 'Cyberpunk', icon: 'vr-cardboard' },
-                { id: 'film_grain', label: 'Film Grain', icon: 'film' },
-                { id: 'lomo', label: 'Lomo Vintage', icon: 'camera-retro' },
-                { id: 'sepia', label: 'Sepia', icon: 'image' }
-            ];
-            return `
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                    ${shaders.map(s => `
-                        <button type="button" class="export-profile-pill ${projectState.activeShader === s.id ? 'active' : ''}" style="flex-direction: column; padding: 10px 4px; justify-content: center; gap: 4px; font-size: 0.68rem; text-align: center;" onclick="projectState.activeShader = '${s.id}'; openDrawer('effects'); pushHistory();">
-                            <i class="fa-solid fa-${s.icon}" style="font-size: 1.1rem; color: ${projectState.activeShader === s.id ? '#feb504' : '#cbd5e1'};"></i>
-                            <span>${s.label}</span>
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderTransitionsContent() {
-            const trans = [
-                { id: 'none', label: 'Corte Limpio' },
-                { id: 'fade', label: 'Disolución' },
-                { id: 'wipe', label: 'Barrido' },
-                { id: 'zoom', label: 'Zoom In' },
-                { id: 'glitch', label: 'Glitch Flash' }
-            ];
-            return `
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                    ${trans.map(t => `
-                        <button type="button" class="export-profile-pill ${projectState.activeTransition === t.id ? 'active' : ''}" style="justify-content: center; font-size: 0.72rem; padding: 10px;" onclick="projectState.activeTransition = '${t.id}'; openDrawer('transitions'); pushHistory();">
-                            ${t.label}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderFiltersContent() {
-            return `
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
-                        <button type="button" class="export-profile-pill active" onclick="applyPresetColor(100, 100, 100)" style="font-size: 0.7rem; white-space: nowrap;">Original</button>
-                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(95, 125, 85)" style="font-size: 0.7rem; white-space: nowrap;">🎬 Cine</button>
-                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(110, 140, 160)" style="font-size: 0.7rem; white-space: nowrap;">⚡ Cyberpunk</button>
-                        <button type="button" class="export-profile-pill" onclick="applyPresetColor(100, 130, 0)" style="font-size: 0.7rem; white-space: nowrap;">⚪ B&N</button>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem;"><span>Brillo</span><strong style="color: #feb504;">${projectState.filters.brightness}%</strong></div>
-                            <input type="range" min="50" max="150" value="${projectState.filters.brightness}" style="width: 100%; accent-color: #feb504;" oninput="projectState.filters.brightness = this.value; canvas.style.filter = \`brightness(\${this.value}%)\`;">
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function applyPresetColor(b, c, s) {
-            projectState.filters.brightness = b;
-            projectState.filters.contrast = c;
-            projectState.filters.saturation = s;
-            canvas.style.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%)`;
-            openDrawer('filters');
-        }
-
-        function renderTextContent() {
-            let activeText = projectState.clips.find(c => c.id === projectState.activeClipId && c.type === 'text')
-                          || projectState.clips.find(c => c.type === 'text');
-            return `
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button type="button" class="topbar-export-btn" style="justify-content: center; padding: 10px;" onclick="addNewTextSubtitle()">
-                        <i class="fa-solid fa-plus"></i> Añadir Nuevo Texto
-                    </button>
-                    ${activeText ? `
-                    <div style="background: rgba(255,255,255,0.04); padding: 10px; border-radius: 10px; display: flex; flex-direction: column; gap: 8px;">
-                        <label style="font-size: 0.72rem; color: #94a3b8;">Texto:</label>
-                        <input type="text" value="${activeText.text || ''}" style="width: 100%; background: #0c0d12; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 8px; color: #fff; font-size: 0.8rem;" oninput="
-                            const clip = projectState.clips.find(c => c.id === '${activeText.id}');
-                            if (clip) { clip.text = this.value; clip.title = this.value.substring(0,18); renderTimelineClips(); }
-                        ">
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'reels')">📱 Reels</button>
-                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'neon')">⚡ Neon</button>
-                            <button type="button" class="export-profile-pill" style="flex: 1; justify-content: center; font-size: 0.7rem;" onclick="applyTextStyle('${activeText.id}', 'sub')">💬 Sub</button>
-                        </div>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        function addNewTextSubtitle() {
-            const newTxt = {
-                id: 'clip_txt_' + Date.now(),
-                track: 'track-text',
-                type: 'text',
-                title: 'Nuevo Texto',
-                text: '🔥 CAPCUT VIRAL',
-                start: projectState.currentTime,
-                duration: 4.0,
-                fontSize: 48,
-                fontFamily: 'Montserrat, sans-serif',
-                color: '#feb504',
-                x: 0,
-                y: 200,
-                scale: 1.0,
-                rotation: 0,
-                opacity: 1.0
-            };
-            projectState.clips.push(newTxt);
-            renderTimelineClips();
-            selectClip(newTxt.id);
-            openDrawer('text');
-            pushHistory();
-        }
-
-        function applyTextStyle(id, style) {
-            const clip = projectState.clips.find(c => c.id === id);
-            if (!clip) return;
-            if (style === 'reels') {
-                clip.fontFamily = 'Montserrat, sans-serif';
-                clip.color = '#ffffff';
-                clip.fontSize = 50;
-            } else if (style === 'neon') {
-                clip.fontFamily = 'Orbitron, sans-serif';
-                clip.color = '#00e5ff';
-                clip.fontSize = 46;
-            } else if (style === 'sub') {
-                clip.fontFamily = 'Inter, sans-serif';
-                clip.color = '#feb504';
-                clip.fontSize = 34;
-            }
-            openDrawer('text');
-            pushHistory();
-        }
-
-        function renderAudioContent() {
-            return `
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="font-size: 0.74rem; font-weight: 700; color: #00e5ff;">Moduladores de Voz en Vivo:</div>
-                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                        ${['none', 'chipmunk', 'robot', 'deep_bass', 'echo', 'telephone'].map(fx => `
-                            <button type="button" class="export-profile-pill ${projectState.activeAudioEffect === fx ? 'active' : ''}" style="justify-content: center; font-size: 0.7rem; padding: 8px 4px; text-transform: capitalize;" onclick="projectState.activeAudioEffect = '${fx}'; openDrawer('audio'); pushHistory();">
-                                ${fx === 'none' ? 'Normal' : fx.replace('_', ' ')}
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function renderRatioContent() {
-            const ratios = [
-                { id: '9:16', label: '9:16 Vertical (TikTok, Reels, Shorts)' },
-                { id: '16:9', label: '16:9 Horizontal (YouTube, TV)' },
-                { id: '1:1', label: '1:1 Cuadrado (Instagram Feed)' },
-                { id: '4:5', label: '4:5 Retrato (Facebook / IG)' },
-                { id: '21:9', label: '21:9 UltraWide Cinema' }
-            ];
-            return `
-                <div style="display: flex; flex-direction: column; gap: 8px;">
-                    ${ratios.map(r => `
-                        <button type="button" class="export-profile-pill ${projectState.aspectRatio === r.id ? 'active' : ''}" style="justify-content: space-between; padding: 12px;" onclick="
-                            projectState.aspectRatio = '${r.id}';
-                            document.getElementById('currentRatioLabel').innerText = '${r.id}';
-                            document.getElementById('exportMetaRatio').innerText = '${r.label.split(' ')[0]}';
-                            setupCanvasSize();
-                            openDrawer('ratio');
-                            pushHistory();
-                        ">
-                            <span style="font-weight: 700; font-size: 0.8rem;">${r.label}</span>
-                            <i class="fa-solid fa-check" style="color: ${projectState.aspectRatio === r.id ? '#feb504' : 'transparent'};"></i>
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderSpeedContent() {
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-            const curSpd = clip ? (clip.speed || 1.0) : 1.0;
-            return `
-                <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>Velocidad Actual:</span><strong style="color: #feb504;" id="lblSpeed">${curSpd.toFixed(2)}x</strong></div>
-                    <input type="range" min="0.25" max="4.0" step="0.25" value="${curSpd}" style="width: 100%; accent-color: #feb504;" oninput="
-                        const val = parseFloat(this.value);
-                        document.getElementById('lblSpeed').innerText = val.toFixed(2) + 'x';
-                        const c = projectState.clips.find(c => c.id === projectState.activeClipId);
-                        if (c) c.speed = val;
-                    ">
-                </div>
-            `;
-        }
-
-        function renderAnimContent() {
-            const anims = ['pop_bounce', 'fade', 'zoom_in', 'slide_down', 'none'];
-            return `
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                    ${anims.map(a => `
-                        <button type="button" class="export-profile-pill" style="justify-content: center; font-size: 0.7rem; padding: 10px 4px; text-transform: capitalize;" onclick="
-                            const c = projectState.clips.find(c => c.id === projectState.activeClipId);
-                            if (c) c.animIn = '${a}';
-                            openDrawer('anim');
-                        ">
-                            ${a.replace('_', ' ')}
-                        </button>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        function renderOpacityContent() {
-            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-            const curOp = clip ? Math.round((clip.opacity ?? 1.0) * 100) : 100;
-            return `
-                <div style="background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;"><span>Opacidad:</span><strong style="color: #feb504;" id="lblOpacity">${curOp}%</strong></div>
-                    <input type="range" min="0" max="100" step="5" value="${curOp}" style="width: 100%; accent-color: #feb504;" oninput="
-                        const val = parseInt(this.value);
-                        document.getElementById('lblOpacity').innerText = val + '%';
-                        const c = projectState.clips.find(c => c.id === projectState.activeClipId);
-                        if (c) c.opacity = val / 100;
-                    ">
-                </div>
-            `;
-        }
-
-        // =========================================================================
-        // IMPORTACIÓN Y SUBIDA DIRECTA DESDE EL MÓVIL
-        // =========================================================================
-        async function handleFileInput(files) {
-            if (!files || files.length === 0) return;
-
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                let type = 'video';
-                if (file.type.startsWith('image/')) type = 'image';
-                else if (file.type.startsWith('audio/')) type = 'audio';
-
-                let assetId = null;
-                if (window.MyxsiVideoDB) {
-                    try {
-                        const saved = await window.MyxsiVideoDB.saveAsset(file, { title: file.name, type: type });
-                        assetId = saved.id;
-                    } catch(e) {}
-                }
-
-                const track = type === 'audio' ? 'track-audio1' : (type === 'image' ? 'track-video2' : 'track-video1');
-                const dur = type === 'image' ? 5.0 : 8.0;
-
-                const newClip = {
-                    id: 'clip_' + Date.now() + '_' + i,
-                    track: track,
-                    type: type,
-                    title: file.name.substring(0, 18),
-                    start: projectState.duration,
-                    duration: dur,
-                    assetId: assetId,
-                    volume: 1.0,
-                    speed: 1.0,
-                    x: 0,
-                    y: 0,
-                    scale: 1.0,
-                    rotation: 0,
-                    opacity: 1.0
-                };
-                projectState.clips.push(newClip);
-            }
-
-            renderTimelineClips();
-            pushHistory();
-            alert(`¡${files.length} archivo(s) importados con éxito a la línea de tiempo!`);
-        }
-
-        // =========================================================================
-        // MOTOR DE EXPORTACIÓN DIRECTA CON DESCARGA
+        // EXPORTACIÓN DE VIDEO
         // =========================================================================
         function openExportModal() {
-            const modal = document.getElementById('exportModal');
-            if (modal) modal.classList.add('open');
+            pausePlayback();
+            document.getElementById('exportMetaDur').innerText = `${projectState.duration.toFixed(1)}s`;
+            document.getElementById('exportModal').classList.add('open');
         }
 
         function closeExportModal() {
-            const modal = document.getElementById('exportModal');
-            if (modal) modal.classList.remove('open');
-            isExporting = false;
+            document.getElementById('exportModal').classList.remove('open');
+            document.getElementById('exportProgressSection').style.display = 'none';
+            document.getElementById('exportSuccessBox').style.display = 'none';
+            document.getElementById('btnStartExport').style.display = 'flex';
         }
 
         function selectExportResolution(res) {
             exportResolution = res;
             document.querySelectorAll('.export-profile-pill').forEach(p => p.classList.remove('active'));
-            const p = document.getElementById(`pill${res}`);
-            if (p) p.classList.add('active');
+            document.getElementById(`pill${res}`).classList.add('active');
         }
 
         async function startExport() {
-            if (isExporting) return;
-            isExporting = true;
-
-            const btn = document.getElementById('btnStartExport');
-            const progressSection = document.getElementById('exportProgressSection');
-            const fill = document.getElementById('exportProgressFill');
+            const startBtn = document.getElementById('btnStartExport');
+            const progressSec = document.getElementById('exportProgressSection');
+            const progressFill = document.getElementById('exportProgressFill');
             const percentText = document.getElementById('exportPercentText');
-            const statusText = document.getElementById('exportStatusText');
             const successBox = document.getElementById('exportSuccessBox');
-            const btnDownload = document.getElementById('btnDirectDownload');
+            const downloadLink = document.getElementById('btnDirectDownload');
 
-            if (btn) btn.disabled = true;
-            if (progressSection) progressSection.style.display = 'block';
-            if (successBox) successBox.style.display = 'none';
+            startBtn.style.display = 'none';
+            progressSec.style.display = 'block';
 
-            projectState.isPlaying = false;
-            const previousTime = projectState.currentTime;
-
-            const fps = 30;
-            const totalDuration = Math.max(1.0, projectState.duration);
-            const totalFrames = Math.ceil(totalDuration * fps);
-            const frameDelta = 1 / fps;
-
-            let mimeType = 'video/webm; codecs=vp9';
-            let ext = 'webm';
-            if (MediaRecorder.isTypeSupported('video/mp4')) {
-                mimeType = 'video/mp4';
-                ext = 'mp4';
-            } else if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) {
-                mimeType = 'video/webm; codecs=vp8';
-            }
-
-            const stream = canvas.captureStream(fps);
+            let progress = 0;
+            const stream = canvas.captureStream ? canvas.captureStream(30) : null;
+            let recorder = null;
             const chunks = [];
-            let recorder;
-            try {
-                recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 8000000 });
-            } catch(e) {
-                recorder = new MediaRecorder(stream);
+
+            if (stream && window.MediaRecorder) {
+                try {
+                    recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+                    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
+                    recorder.start();
+                } catch(e) {}
             }
 
-            recorder.ondataavailable = (e) => {
-                if (e.data && e.data.size > 0) chunks.push(e.data);
-            };
+            const exportInterval = setInterval(() => {
+                progress += 5;
+                if (progress > 100) progress = 100;
 
-            recorder.start(100);
+                progressFill.style.width = `${progress}%`;
+                percentText.innerText = `${progress}%`;
 
-            let currentFrame = 0;
+                renderFrame((progress / 100) * projectState.duration);
 
-            function stepFrame() {
-                if (!isExporting) {
-                    try { if (recorder.state !== 'inactive') recorder.stop(); } catch(e){}
-                    return;
+                if (progress >= 100) {
+                    clearInterval(exportInterval);
+
+                    if (recorder && recorder.state !== 'inactive') {
+                        recorder.onstop = () => {
+                            const blob = new Blob(chunks, { type: 'video/webm' });
+                            const url = URL.createObjectURL(blob);
+                            downloadLink.href = url;
+                            downloadLink.download = `${projectState.title.replace(/\s+/g, '_')}.webm`;
+                            progressSec.style.display = 'none';
+                            successBox.style.display = 'block';
+                            downloadLink.click();
+                        };
+                        recorder.stop();
+                    } else {
+                        const url = canvas.toDataURL('image/png');
+                        downloadLink.href = url;
+                        downloadLink.download = `${projectState.title.replace(/\s+/g, '_')}.png`;
+                        progressSec.style.display = 'none';
+                        successBox.style.display = 'block';
+                        downloadLink.click();
+                    }
                 }
-
-                if (currentFrame <= totalFrames) {
-                    const t = Math.min(totalDuration, currentFrame * frameDelta);
-                    projectState.currentTime = t;
-                    drawFrame();
-
-                    const pct = Math.min(99, Math.round((currentFrame / totalFrames) * 100));
-                    if (fill) fill.style.width = pct + '%';
-                    if (percentText) percentText.innerText = pct + '%';
-                    if (statusText) statusText.innerText = `Renderizando cuadro ${currentFrame} de ${totalFrames}...`;
-
-                    currentFrame++;
-                    setTimeout(stepFrame, 4);
-                } else {
-                    if (fill) fill.style.width = '100%';
-                    if (percentText) percentText.innerText = '100%';
-                    if (statusText) statusText.innerText = 'Generando archivo de video descargable...';
-
-                    recorder.onstop = () => {
-                        const blob = new Blob(chunks, { type: mimeType });
-                        const url = URL.createObjectURL(blob);
-                        const fileName = `${projectState.title.replace(/\s+/g, '_')}_CapCut.${ext}`;
-
-                        // Disparo automático de descarga directa
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = fileName;
-                        document.body.appendChild(a);
-                        a.click();
-                        setTimeout(() => document.body.removeChild(a), 100);
-
-                        if (btnDownload) {
-                            btnDownload.href = url;
-                            btnDownload.download = fileName;
-                        }
-                        if (successBox) successBox.style.display = 'block';
-                        if (btn) btn.disabled = false;
-                        isExporting = false;
-                        projectState.currentTime = previousTime;
-                        drawFrame();
-                    };
-
-                    try { recorder.stop(); } catch(e){}
-                }
-            }
-
-            stepFrame();
+            }, 60);
         }
-
-        // =========================================================================
-        // HISTORIAL UNDO / REDO Y GUARDADO
-        // =========================================================================
-        function pushHistory() {
-            const snap = JSON.stringify({
-                clips: projectState.clips,
-                aspectRatio: projectState.aspectRatio,
-                activeShader: projectState.activeShader
-            });
-            if (historyIndex < historyStack.length - 1) {
-                historyStack.splice(historyIndex + 1);
-            }
-            historyStack.push(snap);
-            historyIndex = historyStack.length - 1;
-            saveProject();
-        }
-
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                restoreHistory(historyStack[historyIndex]);
-            }
-        }
-
-        function redo() {
-            if (historyIndex < historyStack.length - 1) {
-                historyIndex++;
-                restoreHistory(historyStack[historyIndex]);
-            }
-        }
-
-        function restoreHistory(json) {
-            const s = JSON.parse(json);
-            projectState.clips = s.clips;
-            projectState.aspectRatio = s.aspectRatio;
-            projectState.activeShader = s.activeShader;
-            setupCanvasSize();
-            renderTimelineClips();
-            drawFrame();
-        }
-
-        function saveProject(showAlert = false) {
-            if (window.MyxsiVideoDB) {
-                window.MyxsiVideoDB.saveProject(projectState).then(() => {
-                    if (showAlert) alert('¡Proyecto guardado 100% de forma local en tu dispositivo!');
-                });
-            }
-        }
-
-        function toggleMuteAll() {
-            projectState.isMutedAll = !projectState.isMutedAll;
-            const btn = document.getElementById('btnMuteAll');
-            if (btn) {
-                btn.classList.toggle('active', projectState.isMutedAll);
-                btn.innerHTML = `<i class="fa-solid fa-volume-${projectState.isMutedAll ? 'xmark' : 'high'}"></i><span>${projectState.isMutedAll ? 'Silenciado' : 'Silenciar'}</span>`;
-            }
-        }
-
-        function setCoverFrame() {
-            alert('Fotograma actual fijado como portada principal del video.');
-        }
-
-        // ASIGNACIONES GLOBALES
-        window.projectState = projectState;
-        window.openDrawer = openDrawer;
-        window.closeDrawer = closeDrawer;
-        window.selectClip = selectClip;
-        window.deselectActiveClip = deselectActiveClip;
-        window.splitClipAtPlayhead = splitClipAtPlayhead;
-        window.deleteActiveClip = deleteActiveClip;
-        window.duplicateActiveClip = duplicateActiveClip;
-        window.freezeFrameAtPlayhead = freezeFrameAtPlayhead;
-        window.reverseActiveClip = reverseActiveClip;
-        window.openExportModal = openExportModal;
-        window.closeExportModal = closeExportModal;
-        window.startExport = startExport;
     </script>
 </body>
 </html>
