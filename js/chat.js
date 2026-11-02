@@ -2329,7 +2329,32 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
             // Si no contiene alternativas, renderizar normalmente usando marked.parse
             let cleanedTextNormal = textToFormat.replace(/^[=\-]{4,}\s*$/gm, '<hr class="msg-divider">');
-            return thinkHTML + safeMarkedParse(cleanedTextNormal);
+            let outputHtml = thinkHTML + safeMarkedParse(cleanedTextNormal);
+
+            // Reemplazo interactivo de tarjetas de Documentos creados en Myxsi Docs Studio
+            outputHtml = outputHtml.replace(/\[DOC_CARD:([^:]+):([^:]+)(?::([^\]]*))?\]/g, (_, docId, docTitle, snippet) => {
+                const cleanTitle = (docTitle || 'Documento sin título').trim();
+                const descSnippet = (snippet || 'Listo en tu editor para escribir, dar formato o exportar a PDF').trim();
+                return `
+                    <div class="myxsi-doc-preview-card" style="margin: 14px 0; background: linear-gradient(135deg, rgba(37,99,235,0.09) 0%, rgba(124,58,237,0.09) 100%); border: 1px solid rgba(96,165,250,0.3); border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
+                        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(59,130,246,0.18); border: 1px solid rgba(96,165,250,0.35); display: flex; align-items: center; justify-content: center; color: #60a5fa; font-size: 1.25rem; flex-shrink: 0;">
+                                <i class="fa-solid fa-file-lines"></i>
+                            </div>
+                            <div style="min-width: 0;">
+                                <div style="font-size: 0.72rem; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.5px;">Myxsi Docs Studio</div>
+                                <div style="font-size: 0.95rem; font-weight: 700; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${cleanTitle}</div>
+                                <div style="font-size: 0.76rem; color: rgba(255,255,255,0.5);">${descSnippet}</div>
+                            </div>
+                        </div>
+                        <a href="docs.html?docId=${docId}" class="btn-open-doc-direct" style="background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 8px 16px; border-radius: 9px; font-size: 0.82rem; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-shrink: 0; box-shadow: 0 4px 14px rgba(37,99,235,0.35); transition: all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Abrir en Docs
+                        </a>
+                    </div>
+                `;
+            });
+
+            return outputHtml;
         }
 
 
@@ -2388,27 +2413,34 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                     div.style.setProperty('max-width', '760px', 'important');
                 }
 
-                // Detección inteligente de documento / informe para mostrar tarjeta de descarga PDF
+                // Detección inteligente de documento / informe para mostrar tarjeta de descarga PDF y apertura en Docs
                 const isDocOrPdf = /^(#|##)\s+/m.test(content) || /\|.+\|[\r\n]+\|[-:| ]+\|/m.test(content) || /\b(pdf|informe|documento|reporte|ensayo|resumen ejecutivo)\b/i.test(content);
                 const pdfCardHtml = isDocOrPdf ? `
-                    <div class="pdf-download-card" onclick="window.exportMessageToPDF(this)" title="Descargar este documento en PDF">
+                    <div class="pdf-download-card" onclick="window.exportMessageToPDF(this)" title="Descargar este documento en PDF o abrir en Docs">
                         <div class="pdf-card-icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                         </div>
                         <div class="pdf-card-info">
-                            <div class="pdf-card-title">Documento listo para descargar</div>
-                            <div class="pdf-card-desc">Haz clic para generar y descargar este documento en PDF con formato oficial de Myxsi</div>
+                            <div class="pdf-card-title">Documento listo para descargar o editar</div>
+                            <div class="pdf-card-desc">Descarga el PDF formal o ábrelo directamente en Myxsi Docs Studio</div>
                         </div>
-                        <button class="pdf-card-btn" type="button">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            <span>Descargar PDF</span>
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <button class="pdf-card-btn" type="button" onclick="event.stopPropagation(); window.exportMessageToPDF(this);">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Descargar PDF</span>
+                            </button>
+                            <button class="pdf-card-btn" type="button" onclick="event.stopPropagation(); window.openMessageInDocs(this);" style="background: rgba(59,130,246,0.18); border: 1px solid rgba(96,165,250,0.35); color: #60a5fa;" title="Abrir y editar en Myxsi Docs Studio">
+                                <i class="fa-solid fa-file-pen" style="font-size: 13px;"></i>
+                                <span>Abrir en Docs</span>
+                            </button>
+                        </div>
                     </div>` : '';
 
                 div.innerHTML = `<div class="message-content" style="max-width:100% !important; width:100% !important; display:block !important;">${formatted}${pdfCardHtml}
                     <div class="msg-action-group">
                         <span class="message-time" style="font-size: 0.72rem; margin-right: 4px; opacity: 0.6; font-family: inherit;">${time}</span>
                         <button class="msg-action-btn copy-btn" onclick="copyMessageText(this)" title="Copiar respuesta" aria-label="Copiar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                        <button class="msg-action-btn msg-docs-btn" onclick="window.openMessageInDocs(this)" title="Abrir en Docs Studio" aria-label="Abrir en Docs Studio"><i class="fa-solid fa-file-pen" style="font-size: 12px; color: #60a5fa;"></i></button>
                         <button class="msg-action-btn msg-pdf-btn" onclick="window.exportMessageToPDF(this)" title="Descargar como PDF" aria-label="Descargar PDF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></button>
                         <button class="msg-action-btn msg-speaker-btn" title="Leer en voz alta" aria-label="Escuchar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></button>
                         <button class="msg-action-btn feedback-good-btn" onclick="window.rateMessage(this, 'up')" title="Buena respuesta" aria-label="Me gusta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg></button>
@@ -2481,21 +2513,21 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
             if (!isCurrentlyInChatView) {
                 switchChatView('chat');
-            } else {
-                const container = document.getElementById('chatWin');
-                const typing = document.getElementById('typingIndicator');
-                const newMsgEl = createMessageEl(role, content, chatHistory.length - 1);
-                container.insertBefore(newMsgEl, typing);
-                if (typeof Prism !== 'undefined') {
-                    Prism.highlightAllUnder(newMsgEl);
-                }
-                if (window.mermaid) {
-                    setTimeout(() => {
-                        try { mermaid.run({ querySelector: '.mermaid' }); } catch (e) { }
-                    }, 150);
-                }
-                container.scrollTop = container.scrollHeight;
             }
+
+            const container = document.getElementById('chatWin');
+            const typing = document.getElementById('typingIndicator');
+            const newMsgEl = createMessageEl(role, content, chatHistory.length - 1);
+            container.insertBefore(newMsgEl, typing);
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAllUnder(newMsgEl);
+            }
+            if (window.mermaid) {
+                setTimeout(() => {
+                    try { mermaid.run({ querySelector: '.mermaid' }); } catch (e) { }
+                }, 150);
+            }
+            container.scrollTop = container.scrollHeight;
         }
 
         async function sendMessage() {
@@ -2540,6 +2572,85 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             window.removeAttachedImage();
 
             input.value = ''; input.style.height = 'auto'; const wrapper = input.closest('.input-wrapper'); if (wrapper) wrapper.classList.remove('has-text'); input.disabled = true; isSending = true;
+
+            // Interceptor de comandos de ayuda de documentos
+            const trimmedMsg = (message || '').trim();
+            const isHelpDocs = /^\/(?:comandos|ayuda-docs|help-docs|docs-help)\b/i.test(trimmedMsg);
+            if (isHelpDocs) {
+                if (!currentChatId) {
+                    currentChatId = 'local_' + Date.now();
+                    saveLocalChatHeader(currentChatId, 'Ayuda de Documentos');
+                    addChatTab(currentChatId);
+                }
+                switchChatView('chat');
+                updateActiveChatTab();
+
+                const userMsgEl = createMessageEl('user', message, chatHistory.length);
+                const container = document.getElementById('chatWin');
+                const typing = document.getElementById('typingIndicator');
+                container.insertBefore(userMsgEl, typing);
+                chatHistory.push({ role: 'user', content: message });
+                saveLocalChatHistory(currentChatId, chatHistory);
+
+                const helpText = `📚 **Comandos y Creación de Documentos en Myxsi:**\n\n• \`/doc [título]\` — Crea un documento en blanco y te entrega el botón para abrirlo al instante.\n• \`/doc [título]: [instrucción]\` — Crea el documento, redacta el contenido con IA y lo deja listo en tu editor.\n• \`/documento [título]\` — Alias para crear documentos.\n• \`/nuevo-doc [título]\` — Genera un borrador limpio.\n• *O en lenguaje natural:* «*Crea un documento sobre el plan de negocios 2026*».\n\nTambién puedes abrir el menú **\`+\`** y pulsar **Crear Documento**.`;
+                addMessage('assistant', helpText);
+                input.disabled = false; input.focus(); isSending = false;
+                return;
+            }
+
+            // Interceptor de comandos de creación de documento
+            const docCmdMatch = trimmedMsg.match(/^\/(?:doc|documento|docs|nuevo-doc)\b(?:\s+(.*))?$/i);
+            let pendingDocCreation = null;
+
+            if (docCmdMatch) {
+                const rest = (docCmdMatch[1] || '').trim();
+                let docTitle = 'Documento sin título';
+                let docPrompt = '';
+
+                if (rest.includes(':')) {
+                    const colonIdx = rest.indexOf(':');
+                    docTitle = rest.substring(0, colonIdx).trim() || 'Documento sin título';
+                    docPrompt = rest.substring(colonIdx + 1).trim();
+                } else if (rest) {
+                    docTitle = rest;
+                }
+
+                const docRecord = window.createDocumentFromChat(docTitle, '', false);
+
+                if (!docPrompt) {
+                    if (!currentChatId) {
+                        currentChatId = 'local_' + Date.now();
+                        saveLocalChatHeader(currentChatId, docRecord.title);
+                        addChatTab(currentChatId);
+                    }
+                    switchChatView('chat');
+                    updateActiveChatTab();
+
+                    // Creación inmediata en blanco
+                    const userMsgEl = createMessageEl('user', message, chatHistory.length);
+                    const container = document.getElementById('chatWin');
+                    const typing = document.getElementById('typingIndicator');
+                    container.insertBefore(userMsgEl, typing);
+                    chatHistory.push({ role: 'user', content: message });
+                    saveLocalChatHistory(currentChatId, chatHistory);
+
+                    const reply = `📄 He creado tu documento **${docRecord.title}** en Myxsi Docs Studio.\n\n[DOC_CARD:${docRecord.docId}:${docRecord.title}:Listo en tu editor para escribir, dar formato o exportar a PDF]`;
+                    addMessage('assistant', reply);
+                    input.disabled = false; input.focus(); isSending = false;
+                    return;
+                } else {
+                    pendingDocCreation = { docId: docRecord.docId, title: docRecord.title };
+                }
+            } else {
+                // Detección en lenguaje natural (ej. "crea un documento de...", "hazme un informe de...")
+                const naturalMatch = trimmedMsg.match(/^(?:crea(?:r)?|haz(?:me)?|redacta(?:r)?|generar?|abre|abrir)\s+(?:un\s+)?(?:nuevo\s+)?(?:documento|doc|informe|ensayo)\s+(?:sobre|de|titulado|llamado)?\s*(.+)$/i);
+                if (naturalMatch && naturalMatch[1]) {
+                    const topic = naturalMatch[1].trim().replace(/^[:"']+|[:"']+$/g, '');
+                    const inferredTitle = topic.charAt(0).toUpperCase() + topic.slice(1);
+                    const docRecord = window.createDocumentFromChat(inferredTitle, '', false);
+                    pendingDocCreation = { docId: docRecord.docId, title: inferredTitle };
+                }
+            }
 
             // ─── Construir mensajes (display y api) ──────────────────────────
             let displayMessage, apiMessage;
@@ -2690,7 +2801,15 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
                 document.getElementById('typingIndicator').style.display = 'none';
 
-                const finalAiResponse = (result && result.response) ? result.response : "Estoy a tu completa disposición. ¿Qué proyecto, consulta o tema deseas que desarrollemos?";
+                let finalAiResponse = (result && result.response) ? result.response : "Estoy a tu completa disposición. ¿Qué proyecto, consulta o tema deseas que desarrollemos?";
+                
+                if (pendingDocCreation) {
+                    const parsedHtml = typeof safeMarkedParse === 'function' ? safeMarkedParse(finalAiResponse) : finalAiResponse;
+                    localStorage.setItem('smart_doc_content_' + pendingDocCreation.docId, `<h1>${pendingDocCreation.title}</h1>` + parsedHtml);
+                    localStorage.setItem('smart_doc_content', `<h1>${pendingDocCreation.title}</h1>` + parsedHtml);
+                    finalAiResponse += `\n\n[DOC_CARD:${pendingDocCreation.docId}:${pendingDocCreation.title}:Documento generado con IA listo para editar, ajustar y exportar a PDF]`;
+                }
+
                 addMessage('assistant', finalAiResponse);
 
                 // Guardar la respuesta de la IA en D1 de forma no bloqueante
@@ -2721,12 +2840,20 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                 document.getElementById('typingIndicator').style.display = 'none';
                 try {
                     const fallbackResult = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
-                    addMessage('assistant', fallbackResult.response);
+                    let fallbackText = fallbackResult.response;
+                    if (pendingDocCreation) {
+                        const parsedHtml = typeof safeMarkedParse === 'function' ? safeMarkedParse(fallbackText) : fallbackText;
+                        localStorage.setItem('smart_doc_content_' + pendingDocCreation.docId, `<h1>${pendingDocCreation.title}</h1>` + parsedHtml);
+                        localStorage.setItem('smart_doc_content', `<h1>${pendingDocCreation.title}</h1>` + parsedHtml);
+                        fallbackText += `\n\n[DOC_CARD:${pendingDocCreation.docId}:${pendingDocCreation.title}:Documento listo para editar en Myxsi Docs]`;
+                    }
+                    addMessage('assistant', fallbackText);
                 } catch (fallbackErr) {
                     addMessage('assistant', "¡Hola! Estoy procesando tus respuestas sin interrupciones. ¿Qué ejercicio o duda deseas revisar ahora?");
                 }
             } finally { input.disabled = false; input.focus(); isSending = false; }
         }
+        window.sendMessage = sendMessage;
 
         // ============================================
         // 3. MOTOR COMPLETO DE LA ACADEMIA PAES
@@ -3755,6 +3882,69 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
             }).catch(err => {
                 console.error('Error al copiar texto: ', err);
             });
+        };
+
+        // --- GESTIÓN DIRECTA DE DOCUMENTOS EN MYXSI DOCS STUDIO ---
+        window.createDocumentFromChat = function(title = 'Documento sin título', initialContent = '', autoOpen = false) {
+            const docId = 'doc_' + Date.now();
+            const cleanTitle = (title || 'Documento sin título').trim();
+            
+            let cleanContent = initialContent;
+            if (!cleanContent) {
+                cleanContent = `<h1>${cleanTitle}</h1><p>Comienza a redactar tu documento aquí...</p>`;
+            } else if (!cleanContent.includes('<') && !cleanContent.includes('>')) {
+                cleanContent = `<h1>${cleanTitle}</h1>` + cleanContent.split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+            }
+
+            localStorage.setItem('smart_doc_title_' + docId, cleanTitle);
+            localStorage.setItem('smart_doc_content_' + docId, cleanContent);
+            localStorage.setItem('smart_doc_title', cleanTitle);
+            localStorage.setItem('smart_doc_content', cleanContent);
+
+            try {
+                let localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                localFiles.unshift({
+                    id: docId,
+                    name: cleanTitle,
+                    mimeType: 'application/vnd.google-apps.document',
+                    size: cleanContent.length,
+                    updatedAt: Date.now(),
+                    isLocal: true,
+                    isDoc: true
+                });
+                localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+            } catch (e) {
+                console.warn('Error al guardar en myxsi_local_files:', e);
+            }
+
+            if (autoOpen) {
+                window.location.href = `docs.html?docId=${docId}`;
+            }
+
+            return { docId, title: cleanTitle, content: cleanContent };
+        };
+
+        window.promptCreateDocFromChat = function() {
+            const docTitle = prompt('Introduce el título de tu nuevo documento:', 'Nuevo Documento');
+            if (docTitle === null) return;
+            const finalTitle = docTitle.trim() || 'Nuevo Documento';
+            window.createDocumentFromChat(finalTitle, '', true);
+        };
+
+        window.openMessageInDocs = function(btnOrEl) {
+            const messageEl = btnOrEl.closest('.message');
+            if (!messageEl) return;
+            let rawContent = messageEl.getAttribute('data-raw-content') || '';
+            rawContent = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+            let docTitle = 'Documento Myxsi';
+            const headingMatch = rawContent.match(/^#+\s*(.+)$/m);
+            if (headingMatch && headingMatch[1].trim()) {
+                docTitle = headingMatch[1].trim().slice(0, 60).replace(/[^\w\sáéíóúÁÉÍÓÚñÑüÜ\-]/g, '');
+            }
+
+            const bodyHtml = typeof safeMarkedParse === 'function' ? safeMarkedParse(rawContent) : (typeof marked !== 'undefined' ? marked.parse(rawContent) : rawContent);
+            window.createDocumentFromChat(docTitle, bodyHtml, true);
         };
 
         window.exportMessageToPDF = async function (btnOrEl) {
