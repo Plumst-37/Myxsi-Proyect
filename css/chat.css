@@ -7,19 +7,20 @@
 @import "index.css";
 
 :root {
-  --mx-bg: #ffffff;
-  --mx-bg-soft: #f8fafc;
-  --mx-surface: #ffffff;
-  --mx-surface-2: #f1f5f9;
-  --mx-border: #e2e8f0;
-  --mx-border-strong: #cbd5e1;
+  --mx-bg: #0b0716;
+  --mx-bg-soft: #110a20;
+  --mx-surface: #170f2c;
+  --mx-surface-2: #231742;
+  --mx-border: rgba(167, 139, 250, 0.16);
+  --mx-border-strong: rgba(167, 139, 250, 0.3);
   --mx-purple: #7c3aed;
   --mx-purple-soft: #a78bfa;
   --mx-purple-deep: #6d28d9;
-  --mx-magenta: #3b82f6;
-  --mx-text: #0f172a;
-  --mx-text-dim: #475569;
-  --mx-text-mute: #94a3b8;
+  --mx-blue: #3b82f6;
+  --mx-magenta: #a78bfa;
+  --mx-text: #f1f5f9;
+  --mx-text-dim: #cbd5e1;
+  --mx-text-mute: #8b81a8;
   --mx-radius-xl: 24px;
   --mx-font: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --mx-font-mono: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
@@ -28,11 +29,11 @@
 * { box-sizing: border-box; }
 html {
   height: 100%;
-  background-color: var(--mx-bg);
+  background-color: #0b0716 !important;
 }
 body {
-  background: var(--mx-bg);
-  color: var(--mx-text);
+  background: #0b0716 !important;
+  color: #f1f5f9 !important;
   font-family: var(--mx-font);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
@@ -1471,7 +1472,6 @@ button {
   max-width: 160px !important;
   margin: 0 auto !important;
   object-fit: contain !important;
-  display: block !important;
   filter: drop-shadow(0 2px 10px rgba(124, 58, 237, 0.25)) !important;
 }
 
@@ -3520,7 +3520,7 @@ button {
    WELCOME DASHBOARD GLOW ORB & BACKGROUND SYNCHRONIZATION
    ======================================================= */
 .mx-stage.welcome-active {
-  background: radial-gradient(circle at 50% 25%, rgba(196, 181, 253, 0.25) 0%, rgba(248, 250, 252, 0.95) 75%), #f8fafc !important;
+  background: radial-gradient(circle at 50% 25%, rgba(167, 139, 250, 0.12) 0%, rgba(11, 7, 22, 0.95) 75%), #0b0716 !important;
   position: relative !important;
 }
 
@@ -4118,6 +4118,9 @@ body.dark .mx-actions #btnToggleDetailsPanel {
         top: 68px !important;
         right: 16px !important;
         left: auto !important;
+    }
+}
+
     /* ==========================================================================
    OFFICIAL ANIMATED MYXSI CENTRAL LOGO FROM LOGO/LOGO CHAT/INDEX.HTML
    ========================================================================== */
@@ -4396,7 +4399,6 @@ body.dark .mx-actions #btnToggleDetailsPanel {
     color: #c4d1ff;
     font-size: 20px;
     animation-delay: 1.8s, 4.0s;
-}.0s;
 }
 
 
@@ -4405,19 +4407,19 @@ body.dark .mx-actions #btnToggleDetailsPanel {
            REDISENO LUMINOSO FIEL A LA MAQUETA (CHAT.HTML)
            ========================================== */
         :root {
-            --mx-bg: #f5f7fa;
-            --mx-bg-soft: #edf1f7;
-            --mx-surface: #ffffff;
-            --mx-surface-2: #f8fafc;
-            --mx-border: #e2e8f0;
-            --mx-border-strong: #cbd5e1;
+            --mx-bg: #0b0716;
+            --mx-bg-soft: #110a20;
+            --mx-surface: #170f2c;
+            --mx-surface-2: #231742;
+            --mx-border: rgba(167, 139, 250, 0.16);
+            --mx-border-strong: rgba(167, 139, 250, 0.3);
             --mx-purple: #7c3aed;
             --mx-purple-soft: #a78bfa;
             --mx-purple-deep: #6d28d9;
             --mx-blue: #3b82f6;
-            --mx-text: #1e293b;
-            --mx-text-dim: #475569;
-            --mx-text-mute: #94a3b8;
+            --mx-text: #f1f5f9;
+            --mx-text-dim: #cbd5e1;
+            --mx-text-mute: #8b81a8;
             --mx-radius-xl: 24px;
         }
 
@@ -4431,20 +4433,17 @@ body.dark .mx-actions #btnToggleDetailsPanel {
         body, html {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
             letter-spacing: -0.01em;
+            background-color: #0b0716 !important;
+            color: #f1f5f9 !important;
         }
 
-        /* TEMA CLARO SUAVE Y CÓMODO A LA VISTA (SOFT PORCELAIN SILK) */
-        :root:not([data-theme="dark"]):not(.dark) html:not(.dark), 
-        :root:not([data-theme="dark"]):not(.dark) body:not(.dark), 
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) .mx-app,
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) .mx-main,
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) .mx-stage,
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) .chat-container,
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) #mainChatArea,
-        html:not(.dark):not([data-theme="dark"]) body:not(.dark) #welcomeDashboard {
-            background-color: #f5f7fa !important;
-            background: #f5f7fa !important;
-            color: #1e293b !important;
+        /* TEMA OSCURO CÓSMICO INSIGNIA (MYXSI DARK OBSIDIAN) */
+        :root, html, body, 
+        .mx-app, .mx-main, .mx-stage,
+        .chat-container, #mainChatArea, #welcomeDashboard {
+            background-color: #0b0716 !important;
+            background: #0b0716 !important;
+            color: #f1f5f9 !important;
         }
 
         /* TEMA OSCURO SLEEK DARK MODE (MORADO OSCURO ELEGANTE Y CÓMODO) */
@@ -4475,24 +4474,14 @@ body.dark .mx-actions #btnToggleDetailsPanel {
             color: #f1f5f9 !important;
         }
 
-        :root:not([data-theme="dark"]) .sidebar, html:not(.dark) .sidebar, body:not(.dark) .sidebar {
-            background: #ffffff !important;
-            color: #0f172a !important;
-            border-right: 1px solid #e2e8f0 !important;
-        }
-
+        .sidebar,
         :root[data-theme="dark"] .sidebar, html.dark .sidebar, body.dark .sidebar {
             background: #0f091f !important;
             color: #f1f5f9 !important;
             border-right: 1px solid rgba(167, 139, 250, 0.16) !important;
         }
 
-        .chat-item, .history-item {
-            background: #ffffff !important;
-            color: #1e293b !important;
-            border: 1px solid #e2e8f0 !important;
-        }
-
+        .chat-item, .history-item,
         body.dark .chat-item, html.dark .chat-item, :root[data-theme="dark"] .chat-item,
         body.dark .history-item, html.dark .history-item, :root[data-theme="dark"] .history-item {
             background: #170f2c !important;
@@ -4831,10 +4820,10 @@ body.dark .mx-actions #btnToggleDetailsPanel {
         }
 
         .mx-composer-card {
-            background: #ffffff !important;
-            border: 1.5px solid rgba(124, 58, 237, 0.18) !important;
+            background: #170f2c !important;
+            border: 1.5px solid rgba(167, 139, 250, 0.25) !important;
             border-radius: 9999px !important;
-            box-shadow: 0 12px 32px rgba(124, 58, 237, 0.07), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(167, 139, 250, 0.08) !important;
             padding: 8px 12px 8px 16px !important;
             display: flex !important;
             flex-direction: column !important;
@@ -4843,8 +4832,8 @@ body.dark .mx-actions #btnToggleDetailsPanel {
         }
 
         .mx-composer-card:focus-within {
-            border-color: #7c3aed !important;
-            box-shadow: 0 14px 40px rgba(124, 58, 237, 0.16), 0 0 0 3px rgba(124, 58, 237, 0.12) !important;
+            border-color: #a78bfa !important;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 0 3px rgba(167, 139, 250, 0.2) !important;
         }
 
         #inputWrapper {
@@ -4886,7 +4875,7 @@ body.dark .mx-actions #btnToggleDetailsPanel {
 
         .mx-composer-input, #userInput, .chat-input-area textarea, .mx-composer-textarea {
             flex: 1 !important;
-            color: #0f172a !important;
+            color: #f8fafc !important;
             background: transparent !important;
             border: none !important;
             outline: none !important;
@@ -4894,7 +4883,7 @@ body.dark .mx-actions #btnToggleDetailsPanel {
             font-size: 15.5px !important;
             font-weight: 500 !important;
             line-height: 1.5 !important;
-            caret-color: #7c3aed !important;
+            caret-color: #a78bfa !important;
             min-height: 24px !important;
             max-height: 160px !important;
             padding: 6px 8px !important;
@@ -4904,7 +4893,7 @@ body.dark .mx-actions #btnToggleDetailsPanel {
         }
 
         .mx-composer-input::placeholder, #userInput::placeholder, .chat-input-area textarea::placeholder {
-            color: #94a3b8 !important;
+            color: #a1a1aa !important;
             font-weight: 400 !important;
         }
 
@@ -5052,9 +5041,9 @@ body.dark .mx-actions #btnToggleDetailsPanel {
 
         /* BARRA LATERAL IZQUIERDA - SCROLL UNIFICADO */
         .sidebar {
-            background: rgba(255, 255, 255, 0.98) !important;
-            border-right: 1px solid rgba(226, 232, 240, 0.85) !important;
-            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.02) !important;
+            background: #0f091f !important;
+            border-right: 1px solid rgba(167, 139, 250, 0.16) !important;
+            box-shadow: 4px 0 25px rgba(0, 0, 0, 0.3) !important;
             backdrop-filter: blur(20px) !important;
             display: flex !important;
             flex-direction: column !important;
@@ -5664,19 +5653,19 @@ body.dark .mx-actions #btnToggleDetailsPanel {
 
         /* COMPOSER DE PREGUNTA FLOATING CARD */
         .mx-composer-card {
-            background: #ffffff !important;
-            border: 1.5px solid rgba(124, 58, 237, 0.18) !important;
+            background: #170f2c !important;
+            border: 1.5px solid rgba(167, 139, 250, 0.25) !important;
             border-radius: 9999px !important;
-            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(167, 139, 250, 0.08) !important;
             padding: 8px 12px 8px 16px !important;
         }
 
         .mx-composer-textarea {
-            color: #0f172a !important;
+            color: #f8fafc !important;
         }
 
         .mx-composer-textarea::placeholder {
-            color: #94a3b8 !important;
+            color: #a1a1aa !important;
         }
 
         .btn-send-message {
@@ -8684,34 +8673,33 @@ body.dark .mx-actions #btnToggleDetailsPanel {
                 #mainChatArea.welcome-active .mx-mode-tabs {
                     display: none !important;
                 }
-            }
 
-            /* Compositor e inputs en móvil */
-            .chat-input-area {
-                padding: 0 10px 10px 10px !important;
-            }
+                /* Compositor e inputs en móvil */
+                .chat-input-area {
+                    padding: 0 10px 10px 10px !important;
+                }
 
-            .mx-composer-card {
-                padding: 6px 10px 6px 12px !important;
-                border-radius: 28px !important;
-            }
+                .mx-composer-card {
+                    padding: 6px 10px 6px 12px !important;
+                    border-radius: 28px !important;
+                }
 
-            #inputWrapper {
-                gap: 6px !important;
-            }
+                #inputWrapper {
+                    gap: 6px !important;
+                }
 
-            #userInput, .mx-composer-input {
-                font-size: 14px !important;
-                padding: 4px 6px !important;
-            }
+                #userInput, .mx-composer-input {
+                    font-size: 14px !important;
+                    padding: 4px 6px !important;
+                }
 
-            #chatClipBtn, #micBtn, #sendBtn, .send-btn-pill {
-                width: 34px !important;
-                height: 34px !important;
-                min-width: 34px !important;
-                min-height: 34px !important;
+                #chatClipBtn, #micBtn, #sendBtn, .send-btn-pill {
+                    width: 34px !important;
+                    height: 34px !important;
+                    min-width: 34px !important;
+                    min-height: 34px !important;
+                }
             }
-        }
 
         /* Ajuste del composer de bienvenida */
         #mainChatArea.welcome-active .mx-composer-wrap {
@@ -8930,8 +8918,6 @@ body.dark .mx-actions #btnToggleDetailsPanel {
             from { opacity: 0; transform: translateY(-8px) scale(0.96); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-    </style>
-
 
 /* 3. LOGO ANIMADO Y EFECTOS VISUALES DECORATIVOS */
                             #welcomeDashboard .background-glow {
@@ -9285,7 +9271,4 @@ body.dark .mx-actions #btnToggleDetailsPanel {
                                 font-size: 18px !important;
                                 animation-delay: 1.8s, 4.0s !important;
                             }
-                                animation-delay: 1.8s, 4.0s !important;
-                            }
-                        </style>
 

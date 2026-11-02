@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="dark" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -30,22 +30,16 @@
     <!-- Detección y aplicación inmediata de Modo Oscuro (Por defecto y sincronizado con navegador) -->
     <script>
       (function() {
-        // Asegurar que Myxsi siempre inicie en MODO OSCURO (insignia de la plataforma)
-        if (localStorage.getItem('myxsi_theme_v2') !== 'set') {
-          localStorage.setItem('myxsi_theme', 'dark');
-          localStorage.setItem('myxsi_theme_v2', 'set');
-        }
+        // Asegurar que Myxsi siempre inicie en MODO OSCURO (insignia cósmica de la plataforma)
+        localStorage.setItem('myxsi_theme', 'dark');
+        localStorage.setItem('myxsi_theme_v2', 'dark_enforced');
 
         function applyTheme(isDark) {
-          if (isDark) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-            document.documentElement.classList.add('dark');
-            if (document.body) document.body.classList.add('dark');
-          } else {
-            document.documentElement.removeAttribute('data-theme');
-            document.documentElement.classList.remove('dark');
-            if (document.body) document.body.classList.remove('dark');
-          }
+          // Forzar modo oscuro premium de Myxsi
+          document.documentElement.setAttribute('data-theme', 'dark');
+          document.documentElement.classList.add('dark');
+          if (document.body) document.body.classList.add('dark');
+          
           const icon = document.getElementById('themeToggleIcon');
           if (icon) {
             icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
@@ -55,22 +49,7 @@
         }
 
         function syncBrowserTheme(e) {
-          const saved = localStorage.getItem('myxsi_theme');
-          // Por defecto MODO OSCURO
-          let isDark = true;
-          if (saved === 'light') {
-            // Si el navegador reporta dark mode, priorizar dark mode
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-              isDark = true;
-              localStorage.setItem('myxsi_theme', 'dark');
-            } else {
-              isDark = false;
-            }
-          } else {
-            isDark = true;
-            localStorage.setItem('myxsi_theme', 'dark');
-          }
-          applyTheme(isDark);
+          applyTheme(true);
         }
 
         window.toggleTheme = function() {
@@ -124,7 +103,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 </head>
 
-<body>
+<body class="dark">
 
     <!-- PANTALLA DE CARGA (GLASSMORPHIC) -->
     <div class="loading-screen" id="loadingScreen"><script>setTimeout(()=>{const ls=document.getElementById("loadingScreen");if(ls)ls.classList.add("hidden");},300);</script>
