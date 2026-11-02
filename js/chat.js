@@ -1624,6 +1624,62 @@
             throw new Error("No se pudo obtener la descripción visual de la imagen.");
         }
 
+        function getMyxsiSystemPrompt() {
+            const userMemoryContext = window.MyxsiUserMemory ? window.MyxsiUserMemory.buildSystemMemoryContext(currentUser) : '';
+            let basePrompt = `Eres Myxsi, una inteligencia artificial de vanguardia creada por Inoxway. Tu objetivo primordial es dar respuestas DIRECTAS, ALTAMENTE INTELIGENTES, CLARAS Y DE MÁXIMO VALOR, entregando exactamente lo que el usuario necesita sin rodeos ni relleno.
+
+DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PERFECTAMENTE ESTRUCTURADAS):
+
+1. DIRECTITUD TOTAL (VE DIRECTO AL GRANO):
+   - Prohibido el relleno, introducciones vacías y preámbulos cliché (NUNCA comiences con "¡Claro!", "Con gusto te ayudo", "Es una gran pregunta", "Como inteligencia artificial...", "Por supuesto").
+   - Comienza inmediatamente con la respuesta, solución o explicación desde la primera línea.
+   - Da al usuario exactamente lo que pide:
+     * Si pide código: entrega directamente el código limpio, completo, tipado y funcional en su bloque de lenguaje (ej. \`\`\`javascript, \`\`\`python). No dejes código a medias ni uses comentarios tipo "// escribe aquí tu lógica".
+     * Si pide una explicación o concepto: explícalo con claridad, profundidad técnica y síntesis magistral.
+     * Si pide comparar cosas: utiliza tablas Markdown (| Elemento | Característica |) estructuradas para visualización rápida.
+     * Si pide pasos o instrucciones: usa listas numeradas secuenciales, precisas y accionables.
+     * Si pide un cálculo o ejercicio: entrega el resultado exacto con el procedimiento paso a paso.
+
+2. ESTRUCTURA VISUAL IMPECABLE (MARKDOWN PURO):
+   - Jerarquía clara: Usa encabezados (##, ###) para organizar lógicamente las ideas principales y secundarias.
+   - Escaneo visual rápido: Destaca con **negritas** los conceptos clave, términos técnicos y conclusiones esenciales.
+   - Tablas comparativas: Siempre que compares herramientas, enfoques, ventajas/desventajas o datos numéricos, usa tablas Markdown (| Columna 1 | Columna 2 |).
+   - Listas dinámicas: Emplea listas numeradas para procesos secuenciales o algoritmos, y viñetas para características o argumentos.
+   - Fórmulas matemáticas: usa KaTeX/LaTeX estándar ($...$ o $$...$$).
+
+3. NO MODIFIQUES NI DISTORSIONES LA PETICIÓN DEL USUARIO:
+   - Responde fielmente a la intención exacta del usuario sin desviarte a temas no solicitados ni cambiar el sentido de su pregunta.
+
+4. GENERACIÓN DE DIAGRAMAS (MERMAID):
+   - Si el usuario solicita un diagrama de flujo, mapa conceptual o esquema de arquitectura/procesos:
+     * Escribe el diagrama en un bloque de código \`\`\`mermaid válido (ej: flowchart TD o graph TD).
+     * REGLA ESTRICTA DE SINTAXIS MERMAID: En todos los nodos con espacios, acentos o paréntesis, encierra SIEMPRE el texto entre comillas dobles dentro de corchetes: A["Inicio"] --> B["Seleccionar Opción"].
+
+5. CREACIÓN DE DOCUMENTOS FORMALES Y PDF:
+   - SÍ TIENES CAPACIDAD DE GENERAR PDF: Tu plataforma Myxsi cuenta con un motor automático integrado que convierte tus documentos directamente en archivos PDF oficiales descargables con un solo clic. NUNCA digas que no puedes generar archivos PDF.
+   - Si el usuario te pide crear un documento, informe, reporte técnico o ensayo:
+     * Desarrolla el documento formal completo (# Título del Documento, ## Secciones, tablas Markdown).
+     * Finaliza indicando brevemente que el documento puede ser descargado directamente como archivo PDF oficial en el chat.
+
+6. APLICACIONES WEB Y PROTOTIPOS INTERACTIVOS:
+   - Si el usuario te pide crear una página web, componente, juego o widget interactivo en HTML/CSS/JS:
+     * Entrega el código completo y listo para funcionar en un único bloque \`\`\`html (incluyendo estilos CSS en <style> y lógica JS en <script>).
+     * La interfaz de Myxsi mostrará automáticamente el botón interactivo 'Ejecutar / Vista Previa'.
+
+7. GENERACIÓN DE IMÁGENES:
+   - Si el usuario solicita explícitamente generar, dibujar o crear una imagen, responde con la etiqueta Markdown de Pollinations AI en inglés:
+     ![Descripción en inglés](https://image.pollinations.ai/prompt/{descripcion_detallada_en_ingles_con_+}?nologo=true&private=true&enhance=false)
+     Traduce la idea al inglés con máximo detalle visual y no agregues texto conversacional adicional.
+
+8. SOBRE TU CREADOR:
+   - Si te preguntan ESPECÍFICAMENTE quién te creó o quién es tu fundador/desarrollador, responde que fuiste creado por Reinaldo José Liendo Espinoza, un apasionado desarrollador de software venezolano que reside en Chile. Si el usuario se presenta como Reinaldo, trátalo con cercanía como tu amigo y enfócate en asistirlo con máxima excelencia.`;
+
+            if (userMemoryContext) {
+                basePrompt += `\n\n${userMemoryContext}`;
+            }
+            return basePrompt;
+        }
+
         async function callGroqDirectly(apiMessage, attachedImage, apiHistory) {
             const customApiKey = localStorage.getItem('myxsi_custom_groq_key');
 
@@ -1633,7 +1689,8 @@
                     const backendResult = await callAPI('chat', {
                         message: apiMessage,
                         image: attachedImage,
-                        history: apiHistory
+                        history: apiHistory,
+                        systemPrompt: getMyxsiSystemPrompt()
                     });
                     if (backendResult && backendResult.response) {
                         return {
@@ -1658,57 +1715,7 @@
                 ? ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']
                 : ['openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
 
-            const userMemoryContext = window.MyxsiUserMemory ? window.MyxsiUserMemory.buildSystemMemoryContext(currentUser) : '';
-
-            let systemPromptText = `Eres Myxsi, una inteligencia artificial de vanguardia creada por Inoxway. Eres el referente absoluto de excelencia intelectual: combinas la capacidad analítica, rigor y elocuencia de los modelos más avanzados (en la línea de Claude 3.5 Sonnet y DeepSeek V3), con una comunicación clara, serena, empática y de máxima utilidad.
-
-DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENTES Y PERFECTAMENTE ESTRUCTURADAS):
-
-1. ESTRUCTURACIÓN VISUAL IMPECABLE (MARKDOWN PURO):
-   - Jerarquía clara: Usa encabezados (##, ###) para organizar lógicamente las ideas principales y secundarias.
-   - Escaneo visual rápido: Destaca con **negritas** los conceptos clave, términos técnicos y conclusiones esenciales.
-   - Tablas comparativas: Siempre que compares herramientas, enfoques, ventajas/desventajas o datos numéricos, usa tablas Markdown (| Columna 1 | Columna 2 |).
-   - Listas dinámicas: Emplea listas numeradas para procesos secuenciales o algoritmos, y viñetas para características o argumentos.
-   - Bloques de código de nivel Senior: Todo código debe tener el lenguaje especificado (ej. \`\`\`python, \`\`\`javascript), comentarios concisos en líneas críticas, buenas prácticas, tipado y manejo de errores.
-
-2. PROFUNDIDAD CONCEPTUAL Y MAESTRÍA ANALÍTICA:
-   - Ve directo al grano: Elimina introducciones vacías ("¡Excelente pregunta!", "Como modelo de IA..."). Abre directamente con la solución o el concepto fundamental.
-   - Rigor pedagógico y técnico: Explica el 'por qué' y el 'cómo', no solo el 'qué'. Ofrece analogías intuitivas para conceptos complejos y profundiza en detalles técnicos cuando el tema lo amerite.
-   - Cobertura exhaustiva pero sin relleno: No dejes respuestas a medias. Cubre consideraciones clave, casos de uso prácticos y posibles riesgos o trampas comunes.
-
-3. TONO CÁLIDO, SEGURO Y PROFESIONAL:
-   - Amigable, respetuoso y brillante. Habla de tú, con aplomo y cercanía natural.
-   - Cero exageraciones ni falsas lisonjas ("eres un crack", felicitaciones vacías). El valor está en la sustancia de la respuesta.
-   - Conclusión constructiva: Cierra con una recomendación práctica o una pregunta orientada a la acción que ayude a avanzar.
-
-4. SOBRE TU CREADOR:
-   - Si te preguntan ESPECÍFICAMENTE quién te creó o quién es tu fundador/desarrollador, responde con orgullo y cordialidad que fuiste creado por Reinaldo José Liendo Espinoza, un apasionado desarrollador de software venezolano que reside en Chile. Si el usuario se presenta como Reinaldo, trátalo a él directamente como tu amigo y enfócate en asistirle.
-
-5. GENERACIÓN DE IMÁGENES:
-   - Si el usuario te pide crear, generar o dibujar una imagen, responde ÚNICAMENTE con la etiqueta Markdown de Pollinations AI en inglés: ![Descripción](https://image.pollinations.ai/prompt/{descripcion_detallada_en_ingles_separada_por_+})?nologo=true&private=true&enhance=false. Traduce la idea al inglés con máximo detalle visual y no añadas texto conversacional adicional.
-
-6. CREACIÓN DE DOCUMENTOS FORMALES Y PDF:
-   - SÍ TIENES CAPACIDAD DE GENERAR PDF: Tu plataforma Myxsi cuenta con un motor automático integrado que convierte tus documentos directamente en archivos PDF oficiales descargables con un solo clic. NUNCA digas que no puedes generar archivos PDF ni sugieras copiar y pegar a editores externos.
-   - Si el usuario te pide crear, generar o redactar un documento, informe, reporte técnico, resumen ejecutivo, contrato modelo, ensayo o PDF:
-     - Desarrolla el documento formal completo, riguroso y de alto nivel profesional con título principal claro (# Título del Documento).
-     - Organiza las secciones con subtítulos (## Resumen Ejecutivo, ## Metodología / Análisis, ## Desarrollo y Comparativas con tablas Markdown, ## Conclusiones y Próximos Pasos).
-     - Usa negritas en conceptos clave y tablas comparativas siempre que aplique.
-     - Finaliza indicando cordialmente que el documento está listo y puede ser descargado directamente como archivo PDF oficial haciendo clic en la tarjeta o botón de descarga interactivo adjunto a tu mensaje.
-
-7. GENERACIÓN DE DIAGRAMAS VISUALES Y ARQUITECTURA (MERMAID):
-   - Si el usuario te pide crear un diagrama de flujo, mapa conceptual, esquema de arquitectura o proceso:
-     - Escribe el diagrama en un bloque de código \`\`\`mermaid válido (por ejemplo: flowchart TD o graph TD).
-     - REGLA ESTRICTA DE SINTAXIS MERMAID: En todos los nodos que contengan texto con espacios, acentos o paréntesis, encierra SIEMPRE el texto entre comillas dobles dentro de corchetes, por ejemplo: A["Inicio del Proceso"] --> B["Seleccionar Producto (Online)"] --> C{"¿Stock disponible?"}. Nunca dejes texto sin entrecomillar si contiene paréntesis.
-     - La interfaz de Myxsi lo compilará y renderizará automáticamente como un diagrama visual interactivo SVG en el chat.
-
-8. CREACIÓN DE APLICACIONES WEB, WIDGETS Y PROTOTIPOS (VISTA PREVIA EN VIVO):
-   - Si el usuario te pide crear una página web, componente, juego, calculadora o prototipo interactivo en HTML/CSS/JS:
-     - Entrega el código completo y listo para funcionar en un único bloque \`\`\`html (incluyendo estilos CSS en <style> y lógica JS en <script>).
-     - La interfaz de Myxsi mostrará automáticamente un botón interactivo 'Ejecutar / Vista Previa' que permite al usuario probar y usar la aplicación directamente en el chat.`;
-
-            if (userMemoryContext) {
-                systemPromptText += `\n\n${userMemoryContext}`;
-            }
+            let systemPromptText = getMyxsiSystemPrompt();
 
             let messages = [
                 { role: 'system', content: systemPromptText }
@@ -2206,9 +2213,13 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
         }
 
         // Formatea markdown a HTML de forma profesional e intercepta cuestionarios interactivos
-        function formatContent(text) {
+        function formatContent(text, isUser = false) {
             if (text === null || text === undefined) {
                 text = "";
+            }
+            if (isUser) {
+                // Para el mensaje del usuario: presentar su contenido fielmente sin modificarlo, sin parseo de quizzes ni bloques de pensamiento de IA
+                return safeMarkedParse(String(text));
             }
             // Decodificar empaquetados de sistema/OCR para presentación visual limpia en el chat
             let displayableText = String(text);
@@ -2329,7 +2340,7 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
             if (idx !== undefined) {
                 div.setAttribute('data-msg-idx', idx);
             }
-            const formatted = formatContent(content);
+            const formatted = formatContent(content, role === 'user');
             const time = new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' });
             
             const isMobile = window.innerWidth <= 1024;
@@ -2546,7 +2557,7 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
                 }
 
                 try {
-                    // Obtener la descripción visual detallada en el background
+                    // Obtener la descripción visual detallada en el background si se requiere
                     cachedVisualDescription = await getVisualDescription(attachedImage);
                 } catch (visionErr) {
                     console.warn("Failed to get visual description:", visionErr);
@@ -2557,8 +2568,7 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
                     statusEl.innerHTML = `<div class="status-dot"></div> Conectado`;
                 }
 
-                // apiMessage contendrá el prompt descriptivo completo para que la IA posea memoria visual infinita
-                apiMessage = `[IMAGEN DETECTADA: El usuario ha compartido una foto. Análisis visual de alta fidelidad realizado por Myxsi Vision AI: "${cachedVisualDescription}"]\n\nPregunta o instrucción del usuario sobre esta imagen: ${message || "Analiza esta imagen y describe detalladamente qué ves en ella."}`;
+                apiMessage = message ? `[Imagen adjunta: ${attachedImage.name}. Análisis visual: ${cachedVisualDescription}]\n${message}` : `[Imagen adjunta: ${attachedImage.name}. Análisis visual: ${cachedVisualDescription}]\nDescribe detalladamente qué ves en esta imagen.`;
             } else if (attachedFile) {
                 displayMessage = `📎 **${attachedFile.name}**\n\n${message}`;
                 apiMessage = `[Archivo adjunto por el usuario: ${attachedFile.name}]\n---\n${attachedFile.content}\n---\nPregunta del usuario: ${message}`;
@@ -2577,8 +2587,8 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
             }
             container.scrollTop = container.scrollHeight;
 
-            // Guardar el mensaje descriptivo en el historial lógico para preservar la visión en multi-turno
-            chatHistory.push({ role: 'user', content: apiMessage });
+            // Guardar el mensaje limpio del usuario en el historial lógico (sin alterar el texto del usuario)
+            chatHistory.push({ role: 'user', content: displayMessage });
             document.getElementById('typingIndicator').style.display = 'flex';
 
             try {
@@ -2632,204 +2642,80 @@ DIRECTRICES DE INTELIGENCIA Y FORMATEO DE ÉLITE (RESPUESTAS MEJORES, INTELIGENT
                     }
                 }
                 
-                // Guardar localmente el historial que ahora incluye el mensaje del usuario
+                // Guardar localmente el historial que ahora incluye el mensaje limpio del usuario
                 saveLocalChatHistory(currentChatId, chatHistory);
-                // Guardar el mensaje descriptivo del usuario en D1
+                // Guardar el mensaje limpio del usuario en D1 sin modificarlo
                 await callAPI('saveMessage', {
                     chatId: currentChatId,
-                    message: { role: 'user', content: apiMessage, timestamp: Date.now() }
+                    message: { role: 'user', content: displayMessage, timestamp: Date.now() }
                 }).catch(e => console.warn('saveMessage user:', e));
 
-                // Enviar mensaje a la IA (historial sin el último mensaje ya añadido - aumentado a 30 para súper retención)
+                // Enviar mensaje a la IA con historial de contexto (sin alterar el mensaje del usuario)
                 const apiHistory = chatHistory.slice(-31, -1);
                 let result;
 
-                const isEditImageRequest = (/(edita|modifica|cambia|agrega|agregale|agrégale|coloca|colocale|colócale|pon|ponle|quita|quitale|quítale|borra|elimina|dibuja|dibujale|dibújale|hazle|cámbiale|cambiale|modifícala|modificala)/i.test(message) && attachedImage) ||
-                    /(edita|modifica|cambia|agrega|agregale|agrégale|coloca|colocale|colócale|pon|ponle|quita|quitale|quítale|borra|elimina|dibuja|dibujale|dibújale|hazle|cámbiale|cambiale|modifícala|modificala)[\s\S]*?(imagen|foto|dibujo|ilustracion|ilustración|pintura|prompt|diseño|diseno|fondo)/i.test(message) ||
-                    /edita la imagen anterior/i.test(message);
-                const isImageRequest = /(crea(r)?|genera(r)?|dibuja(r)?|haz(er)?|quiero|muestrame|ilustra(r)?|hacer|crear|generar|dibujar|ilustrar|hazme|dibújame|dibujame)[\s\S]*?(imagen|dibujo|foto|ilustracion|ilustración|pintura|diseño|diseno|grafico|gráfico)/i.test(message) ||
-                    /dibujame|dibuja|hazme un dibujo|hazme una imagen|creame un dibujo/i.test(message) ||
-                    isEditImageRequest;
-
-                if (isImageRequest) {
+                try {
+                    // Priorizar motor directo de superinteligencia 120B con respuestas directas
+                    result = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
+                } catch (groqError) {
+                    console.warn("Direct Groq failed, falling back to backend API:", groqError);
                     try {
-                        let systemPrompt = "";
-                        let userPrompt = "";
-
-                        if (isEditImageRequest) {
-                            let origPrompt = '';
-                            const match = message.match(/edita la imagen anterior de\s+'([^']+)'\s+y\s+(agregale|agrégale|cambiale|cámbiale|hazle|modificala|modifícala):?\s*([\s\S]*)/i);
-                            if (match) {
-                                origPrompt = match[1];
-                            } else {
-                                // Buscar de forma dinámica la última imagen en el historial
-                                for (let idx = chatHistory.length - 1; idx >= 0; idx--) {
-                                    const content = chatHistory[idx].content;
-                                    const imgMatch = content.match(/!\[([\s\S]*?)\]\s*\((.*?)\)/);
-                                    if (imgMatch) {
-                                        origPrompt = imgMatch[1];
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if (!origPrompt && attachedImage) {
-                                origPrompt = cachedVisualDescription || await getVisualDescription(attachedImage);
-                            }
-
-                            const mods = match ? match[3] : message;
-                            systemPrompt = "You are Myxsi, an elite AI artist. The user wants to edit an existing image prompt. You will receive the original prompt and the requested modifications. You must merge them into a single, highly detailed, beautiful new image description in English. Output ONLY a single raw Pollinations AI markdown image tag, strictly in this format: ![Description](https://image.pollinations.ai/prompt/{detailed_prompt_separated_by_plus_signs_+}?nologo=true&private=true&enhance=false). Do NOT write any conversational text, code blocks, or explanations.";
-                            userPrompt = `Original Prompt: "${origPrompt}"\nRequested Modifications: "${mods}"`;
-                        } else {
-                            systemPrompt = "You are Myxsi, an elite AI assistant. The user wants to generate an image. You must ONLY output a single markdown image tag using Pollinations AI, translated to English, in this exact format: ![Description](https://image.pollinations.ai/prompt/{detailed_prompt_separated_by_plus_signs_+}?nologo=true&private=true&enhance=false). Do NOT write any introduction, explanation, markdown blocks, code blocks, or conversational text. ONLY the raw markdown image tag. Example: ![A beautiful cute dog playing in the garden](https://image.pollinations.ai/prompt/A+beautiful+cute+dog+playing+in+the+garden?nologo=true&private=true&enhance=false)";
-                            userPrompt = `Generate the image markdown for: ${message}`;
-                        }
-
-                        const customApiKey = localStorage.getItem('myxsi_custom_groq_key');
-                        if (customApiKey && customApiKey.startsWith('gsk_')) {
-                            const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${customApiKey}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    model: 'openai/gpt-oss-20b',
-                                    messages: [
-                                        { role: 'system', content: systemPrompt },
-                                        { role: 'user', content: userPrompt }
-                                    ],
-                                    max_tokens: 256,
-                                    temperature: 0.5
-                                })
-                            });
-                            if (response.ok) {
-                                const resData = await response.json();
-                                result = {
-                                    success: true,
-                                    response: resData.choices[0].message.content.trim(),
-                                    tier: isEditImageRequest ? 'Editor de Arte IA' : 'Creador de Arte IA'
-                                };
-                            } else {
-                                throw new Error("Custom Groq Image prompt failed");
-                            }
-                        } else {
-                            // Enrutamiento seguro por defecto mediante el backend Cloudflare Worker
-                            const beData = await callAPI('chat', {
-                                message: userPrompt,
-                                systemPrompt: systemPrompt
-                            });
-                            if (beData && beData.response) {
-                                result = {
-                                    success: true,
-                                    response: beData.response.trim(),
-                                    tier: isEditImageRequest ? 'Editor de Arte IA' : 'Creador de Arte IA'
-                                };
-                            } else {
-                                throw new Error("Backend image prompt failed");
-                            }
-                        }
-                    } catch (e) {
-                        console.warn("Direct image generation prompt failed, falling back to local construction:", e);
-                        let cleanPrompt = message;
-                        if (isEditImageRequest) {
-                            let origPrompt = '';
-                            const match = message.match(/edita la imagen anterior de\s+'([^']+)'\s+y\s+(agregale|agrégale|cambiale|cámbiale|hazle|modificala|modifícala):?\s*([\s\S]*)/i);
-                            if (match) {
-                                origPrompt = match[1];
-                            } else {
-                                for (let idx = chatHistory.length - 1; idx >= 0; idx--) {
-                                    const content = chatHistory[idx].content;
-                                    const imgMatch = content.match(/!\[([\s\S]*?)\]\s*\((.*?)\)/);
-                                    if (imgMatch) {
-                                        origPrompt = imgMatch[1];
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!origPrompt && attachedImage) {
-                                try {
-                                    origPrompt = cachedVisualDescription || await getVisualDescription(attachedImage);
-                                } catch (vErr) {
-                                    origPrompt = attachedImage.extractedText || attachedImage.name;
-                                }
-                            }
-                            const mods = match ? match[3] : message;
-                            cleanPrompt = origPrompt ? `${origPrompt} with ${mods}` : message;
-                        } else {
-                            cleanPrompt = message.replace(/crea(r)? una imagen de|genera(r)? una imagen de|dibujame|dibuja|haz un dibujo de|generate an image of|create an image of/i, '').trim();
-                        }
-                        const formattedPrompt = encodeURIComponent(cleanPrompt).replace(/%20/g, '+');
-                        const response = `![${cleanPrompt}](https://image.pollinations.ai/prompt/${formattedPrompt}?nologo=true&private=true&enhance=false)`;
-                        addMessage('assistant', response);
-                        await callAPI('saveMessage', {
+                        result = await callAPI('chat', {
+                            message: apiMessage,
                             chatId: currentChatId,
-                            message: { role: 'assistant', content: response, timestamp: Date.now() }
+                            history: apiHistory,
+                            image: attachedImage,
+                            systemPrompt: getMyxsiSystemPrompt(),
+                            userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
                         });
+                    } catch (backendError) {
+                        console.error("Both AI providers failed:", backendError);
                     }
-                } else {
-                    let result;
-                    try {
-                        // Priorizar motor directo de superinteligencia 120B con formateo de élite y soporte oficial PDF
-                        result = await callGroqDirectly(apiMessage, attachedImage, apiHistory);
-                    } catch (groqError) {
-                        console.warn("Direct Groq failed, falling back to backend API:", groqError);
-                        try {
-                            result = await callAPI('chat', {
-                                message: apiMessage,
-                                chatId: currentChatId,
-                                history: apiHistory,
-                                image: null,
-                                userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
-                            });
-                        } catch (backendError) {
-                            console.error("Both AI providers failed:", backendError);
-                        }
-                    }
-
-                    if (!result || !result.success || !result.response) {
-                        try {
-                            result = await callAPI('chat', {
-                                message: apiMessage,
-                                chatId: currentChatId,
-                                history: apiHistory,
-                                image: null,
-                                userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
-                            });
-                        } catch (e) {
-                            console.warn("Backup backend call also failed:", e);
-                        }
-                    }
-
-                    document.getElementById('typingIndicator').style.display = 'none';
-
-                    const finalAiResponse = (result && result.response) ? result.response : "Estoy a tu completa disposición. ¿Qué proyecto, consulta o tema deseas que desarrollemos?";
-                    addMessage('assistant', finalAiResponse);
-
-                    // Guardar la respuesta de la IA en D1 de forma no bloqueante
-                    callAPI('saveMessage', {
-                        chatId: currentChatId,
-                        message: { role: 'assistant', content: finalAiResponse, timestamp: Date.now() }
-                    }).catch(e => console.warn('saveMessage assistant:', e));
-
-                    const autoSpeak = localStorage.getItem('myxsi_auto_speak') === 'true';
-                    if (window.lastMessageWasVoice || autoSpeak) {
-                        window.speakText(finalAiResponse);
-                        window.lastMessageWasVoice = false;
-                    }
-
-                    // Mostrar dinámicamente qué cerebro de IA resolvió el mensaje
-                    const tierName = (result && result.tier) ? result.tier : 'Asistente Myxsi';
-                    const statusEl = document.getElementById('headerStatus');
-                    if (statusEl) {
-                        statusEl.innerHTML = `<div class="status-dot" style="background-color: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></div> ${tierName}`;
-                        setTimeout(() => {
-                            statusEl.innerHTML = `<div class="status-dot"></div> Conectado`;
-                        }, 4000);
-                    }
-
-                    await loadChats().catch(e => console.warn('loadChats error:', e));
                 }
+
+                if (!result || !result.success || !result.response) {
+                    try {
+                        result = await callAPI('chat', {
+                            message: apiMessage,
+                            chatId: currentChatId,
+                            history: apiHistory,
+                            image: attachedImage,
+                            systemPrompt: getMyxsiSystemPrompt(),
+                            userMemory: window.MyxsiUserMemory ? window.MyxsiUserMemory.getMemory() : null
+                        });
+                    } catch (e) {
+                        console.warn("Backup backend call also failed:", e);
+                    }
+                }
+
+                document.getElementById('typingIndicator').style.display = 'none';
+
+                const finalAiResponse = (result && result.response) ? result.response : "Estoy a tu completa disposición. ¿Qué proyecto, consulta o tema deseas que desarrollemos?";
+                addMessage('assistant', finalAiResponse);
+
+                // Guardar la respuesta de la IA en D1 de forma no bloqueante
+                callAPI('saveMessage', {
+                    chatId: currentChatId,
+                    message: { role: 'assistant', content: finalAiResponse, timestamp: Date.now() }
+                }).catch(e => console.warn('saveMessage assistant:', e));
+
+                const autoSpeak = localStorage.getItem('myxsi_auto_speak') === 'true';
+                if (window.lastMessageWasVoice || autoSpeak) {
+                    window.speakText(finalAiResponse);
+                    window.lastMessageWasVoice = false;
+                }
+
+                // Mostrar dinámicamente qué cerebro de IA resolvió el mensaje
+                const tierName = (result && result.tier) ? result.tier : 'Superinteligencia Myxsi';
+                const statusEl = document.getElementById('headerStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = `<div class="status-dot" style="background-color: #a78bfa; box-shadow: 0 0 8px #a78bfa;"></div> ${tierName}`;
+                    setTimeout(() => {
+                        statusEl.innerHTML = `<div class="status-dot"></div> Conectado`;
+                    }, 4000);
+                }
+
+                await loadChats().catch(e => console.warn('loadChats error:', e));
             } catch (error) {
                 console.error("Error en procesamiento de chat, recuperando con fallback directo:", error);
                 document.getElementById('typingIndicator').style.display = 'none';
