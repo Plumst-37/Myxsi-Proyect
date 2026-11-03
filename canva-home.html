@@ -922,6 +922,9 @@
                 if (typeof window.updateDriveStatusUI === 'function') {
                     window.updateDriveStatusUI();
                 }
+                if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                    window.syncStreakAndProfileWithCloud();
+                }
                 const streak = localStorage.getItem('myxsi_duo_streak') || '0';
                 const sNum = document.getElementById('sidebarRachaNum');
                 const hNum = document.getElementById('headerStreakCount');

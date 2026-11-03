@@ -305,10 +305,126 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
         const streak = localStorage.getItem('myxsi_duo_streak') || '0';
         const headerStreak = document.getElementById('headerStreakCount');
         const sidebarStreak = document.getElementById('sidebarRachaNum');
+        const rachaDaysCount = document.querySelector('.racha-days-count span:first-child');
         if (headerStreak) headerStreak.textContent = streak;
         if (sidebarStreak) sidebarStreak.textContent = streak;
+        if (rachaDaysCount) rachaDaysCount.textContent = streak;
     }
     window.renderUserProfile = renderUserProfile;
+
+    // -------------------------------------------------------------
+    // 4.1 SINCRONIZACIÓN DE RACHA Y PERFIL EN LA NUBE (GOOGLE DRIVE & D1)
+    // -------------------------------------------------------------
+    let _isSyncingCloudProfile = false;
+    async function syncStreakAndProfileWithCloud() {
+        if (_isSyncingCloudProfile) return;
+        _isSyncingCloudProfile = true;
+
+        try {
+            let token = localStorage.getItem('gdrive_access_token');
+            if (!token && typeof window.ensureValidToken === 'function') {
+                token = await window.ensureValidToken(false);
+            }
+
+            const localStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
+            const localXP = parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10);
+            const localLevel = parseInt(localStorage.getItem('myxsi_duo_level') || '1', 10);
+            const localLastDate = localStorage.getItem('myxsi_duo_last_date') || new Date().toISOString().split('T')[0];
+
+            if (token) {
+                const folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                    ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', token)
+                    : null;
+
+                const q = `name = '.myxsi_profile.json' and trashed = false` + (folderId ? ` and '${folderId}' in parents` : '');
+                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,appProperties)&pageSize=1`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    const existingFile = data.files && data.files[0];
+
+                    if (existingFile && existingFile.id) {
+                        const props = existingFile.appProperties || {};
+                        const cloudStreak = parseInt(props.duoStreak || '0', 10);
+                        const cloudXP = parseInt(props.duoXP || '0', 10);
+                        const cloudLevel = parseInt(props.duoLevel || '1', 10);
+                        const cloudLastDate = props.duoLastDate || null;
+
+                        // Si la nube tiene racha mayor (o si este navegador nuevo tiene 0 pero la nube tiene racha)
+                        if (cloudStreak > localStreak || (cloudStreak > 0 && localStreak === 0)) {
+                            localStorage.setItem('myxsi_duo_streak', cloudStreak.toString());
+                            localStorage.setItem('myxsi_duo_xp', cloudXP.toString());
+                            localStorage.setItem('myxsi_duo_level', cloudLevel.toString());
+                            if (cloudLastDate) localStorage.setItem('myxsi_duo_last_date', cloudLastDate);
+                            renderUserProfile();
+                        } else if (localStreak > cloudStreak) {
+                            // Subir racha local más avanzada a la nube
+                            await fetch(`https://www.googleapis.com/drive/v3/files/${existingFile.id}`, {
+                                method: 'PATCH',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    appProperties: {
+                                        duoStreak: localStreak.toString(),
+                                        duoXP: localXP.toString(),
+                                        duoLevel: localLevel.toString(),
+                                        duoLastDate: localLastDate,
+                                        updatedAt: Date.now().toString()
+                                    }
+                                })
+                            });
+                        }
+                    } else if (folderId) {
+                        // Crear archivo de perfil oculto en Drive para sincronizar entre navegadores
+                        await fetch('https://www.googleapis.com/drive/v3/files', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                name: '.myxsi_profile.json',
+                                parents: [folderId],
+                                mimeType: 'application/json',
+                                appProperties: {
+                                    duoStreak: localStreak.toString(),
+                                    duoXP: localXP.toString(),
+                                    duoLevel: localLevel.toString(),
+                                    duoLastDate: localLastDate,
+                                    updatedAt: Date.now().toString()
+                                }
+                            })
+                        });
+                    }
+                }
+            }
+
+            // También sincronizar con backend Cloudflare D1 si hay sesión de usuario
+            const user = getStoredUser();
+            if (user && user.email) {
+                const apiBase = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                const sRes = await fetch(`${apiBase}/api/getUserData`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: user.email })
+                });
+                if (sRes.ok) {
+                    const sData = await sRes.json();
+                    if (sData && sData.userData) {
+                        const serverStreak = parseInt(sData.userData.duoStreak || '0', 10);
+                        const curStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
+                        if (serverStreak > curStreak) {
+                            localStorage.setItem('myxsi_duo_streak', serverStreak.toString());
+                            renderUserProfile();
+                        }
+                    }
+                }
+            }
+        } catch(err) {
+            console.warn("Cloud streak sync notice:", err);
+        } finally {
+            _isSyncingCloudProfile = false;
+        }
+    }
+    window.syncStreakAndProfileWithCloud = syncStreakAndProfileWithCloud;
 
     // -------------------------------------------------------------
     // 5. ACTUALIZAR BADGE DE ESTADO DE GOOGLE DRIVE EN TODA LA UI
@@ -840,6 +956,7 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
         ensureUserDetailsModal();
         renderUserProfile();
         updateDriveStatusUI();
+        syncStreakAndProfileWithCloud();
 
         // Enlazar el botón de perfil si ya existe en el DOM
         const btn = document.getElementById('btnUserDetails');
@@ -879,6 +996,7 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
         if (document.visibilityState === 'visible') {
             renderUserProfile();
             updateDriveStatusUI();
+            syncStreakAndProfileWithCloud();
             if (typeof window.loadCurrentFolder === 'function') {
                 window.loadCurrentFolder(window.currentFolderId || 'root');
             }

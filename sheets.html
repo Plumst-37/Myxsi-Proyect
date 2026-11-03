@@ -1291,10 +1291,11 @@
                 if (!token) return;
 
                 try {
-                    // Obtener nombre del archivo
-                    const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}?fields=id,name,mimeType`, {
+                    // Obtener nombre y metadatos del archivo
+                    const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}?fields=id,name,mimeType,appProperties`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
+                    let cloudAppData = null;
                     if (metaRes.ok) {
                         const meta = await metaRes.json();
                         if (meta.name && !window._userHasModifiedSheetTitle && document.activeElement !== document.getElementById('sheetBookTitle')) {
@@ -1302,9 +1303,24 @@
                             document.title = meta.name + ' — Myxsi Sheets';
                             localStorage.setItem('sheets_studio_title_' + effectiveId, meta.name);
                         }
+                        if (meta.appProperties && meta.appProperties.myxsi_sheet_data) {
+                            try {
+                                cloudAppData = JSON.parse(decodeURIComponent(meta.appProperties.myxsi_sheet_data));
+                            } catch(e){}
+                        }
                     }
 
-                    // Exportar contenido CSV oficial de Google Sheets
+                    if (cloudAppData && Object.keys(cloudAppData).length > 0) {
+                        gridData = cloudAppData;
+                        renderGrid();
+                        localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+                        if (typeof window.showMyxsiToast === 'function') {
+                            window.showMyxsiToast("Libro sincronizado desde Google Drive", "success");
+                        }
+                        return;
+                    }
+
+                    // Exportar contenido CSV oficial de Google Sheets si no vino en appProperties
                     const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}/export?mimeType=text/csv`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1488,11 +1504,23 @@
             }
 
             if (sheetId) {
-                // 1. Actualizar Nombre de la hoja en Drive
+                // 1. Actualizar Nombre de la hoja y appProperties en Drive
+                const safeGridData = JSON.stringify(gridData);
+                const patchBody = {
+                    name: title,
+                    appProperties: {
+                        myxsi_sheet_title: encodeURIComponent(title),
+                        myxsi_updated_at: Date.now().toString()
+                    }
+                };
+                if (safeGridData.length < 25000) {
+                    patchBody.appProperties.myxsi_sheet_data = encodeURIComponent(safeGridData);
+                }
+
                 let patchRes = await fetch(`https://www.googleapis.com/drive/v3/files/${sheetId}`, {
                     method: 'PATCH',
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: title })
+                    body: JSON.stringify(patchBody)
                 });
                 if (patchRes.status === 401 || patchRes.status === 403) {
                     const freshToken = await window.ensureValidToken(true);
@@ -1501,7 +1529,7 @@
                         await fetch(`https://www.googleapis.com/drive/v3/files/${sheetId}`, {
                             method: 'PATCH',
                             headers: { 'Authorization': `Bearer ${freshToken}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: title })
+                            body: JSON.stringify(patchBody)
                         });
                     }
                 }
@@ -1635,8 +1663,29 @@
             } else if (statusEl) {
                 statusEl.innerHTML = `<i class="fa-solid fa-hard-drive" style="color: #a78bfa;"></i> <span>Guardado local</span>`;
             }
-        }, 1200);
+        }, 500);
     };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            if (sheetAutosaveTimeout) {
+                clearTimeout(sheetAutosaveTimeout);
+                sheetAutosaveTimeout = null;
+            }
+            window.exportSheetToGoogleDriveSilent();
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        const effectiveId = window.activeGoogleSheetId || new URLSearchParams(window.location.search).get('sheetId');
+        if (effectiveId) {
+            saveSheetData();
+            localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+            const title = (document.getElementById('sheetBookTitle')?.value || '').trim() || 'Libro de cálculo Myxsi';
+            localStorage.setItem('sheets_studio_title_' + effectiveId, title);
+        }
+        window.exportSheetToGoogleDriveSilent();
+    });
 
     function exportToJSON() {
         const blob = new Blob([JSON.stringify(gridData, null, 2)], { type: 'application/json' });

@@ -1645,6 +1645,9 @@
 
         // Streak Sync
         function syncStreakData(userData) {
+            if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                window.syncStreakAndProfileWithCloud();
+            }
             const streak = parseInt(userData?.duoStreak || localStorage.getItem('myxsi_duo_streak') || '0', 10);
             localStorage.setItem('myxsi_duo_streak', streak.toString());
 

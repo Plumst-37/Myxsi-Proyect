@@ -218,7 +218,105 @@
             max-height: 100%;
             object-fit: contain;
             border-radius: 12px;
-            cursor: crosshair;
+            cursor: default;
+            touch-action: none;
+            user-select: none;
+        }
+
+        /* BARRA FLOTANTE DE TRANSFORMACIÓN Y AJUSTE DE CLIP */
+        .canvas-transform-hud {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: rgba(11, 14, 28, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1.5px solid rgba(0, 229, 255, 0.45);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75), 0 0 20px rgba(0, 229, 255, 0.25);
+            border-radius: 40px;
+            padding: 5px 8px;
+            z-index: 25;
+            pointer-events: auto;
+            animation: hudPopIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 95%;
+        }
+
+        @keyframes hudPopIn {
+            from { opacity: 0; transform: translate(-50%, -10px) scale(0.95); }
+            to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+        }
+
+        .transform-hud-chip {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #00e5ff;
+            padding: 4px 10px;
+            background: rgba(0, 229, 255, 0.15);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            border-radius: 20px;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .transform-hud-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .hud-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            border-radius: 16px;
+            padding: 5px 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .hud-btn:hover, .hud-btn:active {
+            background: rgba(0, 229, 255, 0.25);
+            border-color: #00e5ff;
+            color: #00e5ff;
+            transform: scale(1.06);
+        }
+
+        .hud-btn-center {
+            background: rgba(254, 181, 4, 0.18);
+            border-color: rgba(254, 181, 4, 0.5);
+            color: #feb504;
+        }
+
+        .hud-btn-center:hover, .hud-btn-center:active {
+            background: rgba(254, 181, 4, 0.35);
+            border-color: #feb504;
+            color: #ffffff;
+        }
+
+        .hud-btn-close {
+            background: transparent;
+            border-color: transparent;
+            color: #94a3b8;
+            padding: 5px 6px;
+            font-size: 0.78rem;
+        }
+
+        .hud-btn-close:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.18);
         }
 
         /* CONTROLES FLOTANTES DEL REPRODUCTOR */
@@ -1328,6 +1426,101 @@
             color: #ffffff;
         }
 
+        /* Botones de acción interactiva y micro-chips dentro del chat */
+        .ai-action-btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .ai-action-pill-btn {
+            background: rgba(168, 85, 247, 0.16);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #d8b4fe;
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 4px 9px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ai-action-pill-btn:hover {
+            background: rgba(168, 85, 247, 0.35);
+            border-color: #a855f7;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .ai-action-pill-btn.pill-gold {
+            background: rgba(254, 181, 4, 0.16);
+            border-color: rgba(254, 181, 4, 0.45);
+            color: #fde047;
+        }
+        .ai-action-pill-btn.pill-gold:hover {
+            background: rgba(254, 181, 4, 0.35);
+            border-color: #feb504;
+            color: #ffffff;
+        }
+
+        .ai-action-pill-btn.pill-cyan {
+            background: rgba(0, 229, 255, 0.14);
+            border-color: rgba(0, 229, 255, 0.4);
+            color: #67e8f9;
+        }
+        .ai-action-pill-btn.pill-cyan:hover {
+            background: rgba(0, 229, 255, 0.32);
+            border-color: #00e5ff;
+            color: #ffffff;
+        }
+
+        /* Tarjeta de escucha de voz para subtítulos en vivo */
+        .ai-voice-listening-card {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.18), rgba(245, 158, 11, 0.18));
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin: 8px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: aiPulseBorder 1.5s infinite alternate;
+        }
+
+        @keyframes aiPulseBorder {
+            0% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 8px rgba(239, 68, 68, 0.12); }
+            100% { border-color: rgba(245, 158, 11, 0.7); box-shadow: 0 0 16px rgba(245, 158, 11, 0.28); }
+        }
+
+        .ai-voice-wave-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            height: 28px;
+        }
+
+        .ai-voice-wave-bar {
+            width: 4px;
+            background: #ef4444;
+            border-radius: 3px;
+            animation: waveAnim 0.7s ease-in-out infinite alternate;
+        }
+        .ai-voice-wave-bar:nth-child(1) { height: 10px; animation-delay: 0.1s; background: #feb504; }
+        .ai-voice-wave-bar:nth-child(2) { height: 22px; animation-delay: 0.25s; background: #ef4444; }
+        .ai-voice-wave-bar:nth-child(3) { height: 28px; animation-delay: 0.4s; background: #f43f5e; }
+        .ai-voice-wave-bar:nth-child(4) { height: 18px; animation-delay: 0.15s; background: #ef4444; }
+        .ai-voice-wave-bar:nth-child(5) { height: 12px; animation-delay: 0.3s; background: #feb504; }
+
+        @keyframes waveAnim {
+            0% { transform: scaleY(0.35); }
+            100% { transform: scaleY(1.25); }
+        }
+
         /* Indicador de escribiendo */
         .ai-typing-dots {
             display: none;
@@ -1585,22 +1778,30 @@
 
         <!-- Chips de Acciones Rápidas -->
         <div class="ai-quick-chips-wrapper">
+            <button type="button" class="ai-chip-btn" onclick="startVoiceSubtitleRecording()" style="background:rgba(239,68,68,0.22);border-color:rgba(239,68,68,0.5);color:#fca5a5;" title="Escuchar voz del usuario y crear subtítulo sincronizado">🎙️ Subtítulo con Voz</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SCALE image +0.25')" style="background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.5);color:#e9d5ff;" title="Agrandar imagen de forma perfecta">➕ Agrandar Imagen (+25%)</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SCALE image -0.25')" style="background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.5);color:#e9d5ff;" title="Desagrandar / achicar imagen de forma perfecta">➖ Desagrandar Imagen (-25%)</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('✂️ Cortar el video en el playhead')">✂️ Cortar aquí</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('⚡ Acelerar este clip a 1.5x')">⚡ Acelerar 1.5x</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🎨 Ponle filtro cinematográfico vintage')">🎨 Filtro Vintage</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔄 Mueve este clip hacia la derecha')">🔄 Mover ▶</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔤 Añadir título viral que diga Bienvenido')">🔤 Título Viral</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔍 Haz zoom al 125%')">🔍 Zoom 125%</button>
-            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔇 Silenciar todo el audio')">🔇 Silenciar</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🎯 Centrar el encuadre del video')">🎯 Centrar</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔊 Activa el sonido del video')" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);color:#6ee7b7;">🔊 Activar Sonido</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔇 Silenciar todo el audio')">🔇 Silenciar</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('⏪ Regresa al inicio del video')">⏪ Ir a 0:00</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!HELP')" style="background:rgba(0,229,255,0.15);border-color:rgba(0,229,255,0.4);color:#67e8f9;">📋 Comandos IA</button>
         </div>
 
         <!-- Área de Conversación -->
         <div class="ai-chat-messages-area" id="aiChatMessages">
             <div class="ai-msg-bubble ai-msg-assistant">
-                <p>👋 <strong>¡Hola! Soy Myxsi edit, tu asistente de video inteligente.</strong></p>
-                <p>Puedo editar tu video en tiempo real: cortar, mover clips, aplicar filtros, cambiar velocidad, añadir textos o ajustar encuadres profesionales. Dime qué deseas hacer o pulsa una sugerencia rápida.</p>
+                <p>👋 <strong>¡Hola! Soy Myxsi edit, tu asistente de edición ultra-eficiente.</strong></p>
+                <p>Cuento con un motor de comandos internos exclusivos y reconocimiento de voz sincronizado:</p>
+                <p>• 🎙️ <strong>Subtítulos por voz:</strong> Di <em>"agrega subtítulo que se escuche la voz"</em> o pulsa el botón rojo para transcribir lo que hablas.<br>
+                • 🖼️ <strong>Agrandar y desagrandar imágenes:</strong> Di <em>"agrandar imagen"</em> o <em>"desagrandar imagen"</em> para un redimensionado perfecto sin pérdida de nitidez.<br>
+                • ⚡ <strong>Comandos directos:</strong> Escribe <code>!SCALE image +0.25</code>, <code>!SUBTITLE Hola</code>, <code>!SPLIT</code>, <code>!HELP</code> o pulsa los botones rápidos.</p>
             </div>
             <div class="ai-typing-dots" id="aiTypingIndicator">
                 <span></span><span></span><span></span>
@@ -1609,7 +1810,7 @@
 
         <!-- Barra de Entrada -->
         <form class="ai-chat-input-bar" id="aiChatForm" onsubmit="handleAIChatSubmit(event)">
-            <input type="text" class="ai-input-field" id="aiUserInput" placeholder="Ej: Aplica filtro cyberpunk y acelera a 1.2x..." autocomplete="off">
+            <input type="text" class="ai-input-field" id="aiUserInput" placeholder="Ej: Agrandar imagen, subtítulo con voz, o !SCALE image +0.25..." autocomplete="off">
             <button type="button" class="ai-action-btn-mic" id="aiBtnMic" onclick="toggleAIVoiceInput()" title="Dictar por voz">
                 <i class="fa-solid fa-microphone"></i>
             </button>
@@ -1623,6 +1824,34 @@
     <section class="vstudio-stage-area">
         <div class="vstudio-canvas-container" id="canvasContainer">
             <canvas id="mainVideoCanvas" width="1080" height="1920"></canvas>
+
+            <!-- TOOLBAR FLOTANTE DE TRANSFORMACIÓN Y AJUSTES -->
+            <div class="canvas-transform-hud" id="canvasTransformHUD" style="display: none;">
+                <div class="transform-hud-chip" id="hudClipInfo">
+                    <i class="fa-solid fa-shapes"></i> <span id="hudClipLabel">Elemento</span>
+                </div>
+                <div class="transform-hud-actions">
+                    <button type="button" class="hud-btn" onclick="scaleActiveClipRelative(-0.1)" title="Achicar (-10%)">
+                        <i class="fa-solid fa-minus"></i>
+                        <span>Achicar</span>
+                    </button>
+                    <button type="button" class="hud-btn hud-btn-center" onclick="centerActiveClip()" title="Centrar elemento en pantalla">
+                        <i class="fa-solid fa-crosshairs"></i>
+                        <span>Centrar</span>
+                    </button>
+                    <button type="button" class="hud-btn" onclick="scaleActiveClipRelative(0.1)" title="Agrandar (+10%)">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Agrandar</span>
+                    </button>
+                    <button type="button" class="hud-btn" onclick="openDrawer('transform')" title="Más controles de posición">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Ajustes</span>
+                    </button>
+                    <button type="button" class="hud-btn hud-btn-close" onclick="deselectActiveClip()" title="Cerrar selección">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- CONTROLES FLOTANTES -->
@@ -1899,15 +2128,6 @@
                     opacity: 1.0,
                     x: 0,
                     y: 0.25
-                },
-                {
-                    id: 'clip_aud1',
-                    track: 'track-audio1',
-                    type: 'audio',
-                    title: 'Lofi Chill Beat',
-                    start: 0,
-                    duration: 10.0,
-                    volume: 0.85
                 }
             ]
         };
@@ -1956,6 +2176,229 @@
                 renderFrame(projectState.currentTime);
             });
         });
+
+        // =========================================================================
+        // MOTOR DE AUDIO DE ALTA FIDELIDAD Y GENERADOR PROCEDURAL DE MÚSICA
+        // =========================================================================
+        let myxsiAudioContext = null;
+
+        function getAudioContext() {
+            if (!myxsiAudioContext) {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (AudioCtx) {
+                    myxsiAudioContext = new AudioCtx();
+                }
+            }
+            if (myxsiAudioContext && myxsiAudioContext.state === 'suspended') {
+                myxsiAudioContext.resume().catch(() => {});
+            }
+            return myxsiAudioContext;
+        }
+
+        function unlockAudioEngine() {
+            try {
+                getAudioContext();
+            } catch(e) {}
+        }
+        window.addEventListener('pointerdown', unlockAudioEngine, { once: true });
+        window.addEventListener('touchstart', unlockAudioEngine, { once: true });
+        window.addEventListener('keydown', unlockAudioEngine, { once: true });
+
+        function createWavBlob(channels, sampleRate, numFrames) {
+            const numChannels = channels.length;
+            const bytesPerSample = 2;
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const dataSize = numFrames * blockAlign;
+            const totalSize = 44 + dataSize;
+            const buffer = new ArrayBuffer(totalSize);
+            const view = new DataView(buffer);
+
+            function writeString(offset, string) {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            }
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bytesPerSample * 8, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            let offset = 44;
+            for (let i = 0; i < numFrames; i++) {
+                for (let ch = 0; ch < numChannels; ch++) {
+                    let s = channels[ch][i];
+                    s = Math.max(-1, Math.min(1, s));
+                    const intVal = s < 0 ? s * 0x8000 : s * 0x7FFF;
+                    view.setInt16(offset, Math.round(intVal), true);
+                    offset += 2;
+                }
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        const presetAudioCache = new Map();
+
+        function generateAudioTrackBlob(genre = 'lofi', duration = 10.0) {
+            const sampleRate = 44100;
+            const numFrames = Math.floor(sampleRate * duration);
+            const left = new Float32Array(numFrames);
+            const right = new Float32Array(numFrames);
+
+            const bpm = (genre === 'synthwave') ? 120 : (genre === 'trap' ? 140 : 85);
+            const secondsPerBeat = 60 / bpm;
+
+            const chordProgressions = {
+                lofi: [
+                    [261.63, 329.63, 392.00, 493.88], // Cmaj7
+                    [220.00, 261.63, 329.63, 392.00], // Am7
+                    [146.83, 174.61, 220.00, 261.63], // Dm7
+                    [196.00, 246.94, 293.66, 349.23]  // G7
+                ],
+                synthwave: [
+                    [130.81, 164.81, 196.00, 246.94], // C
+                    [110.00, 138.59, 164.81, 220.00], // A
+                    [146.83, 174.61, 220.00, 261.63], // D
+                    [123.47, 155.56, 185.00, 246.94]  // B
+                ],
+                trap: [
+                    [110.00, 130.81, 164.81], // Am
+                    [98.00, 123.47, 146.83],  // G
+                    [87.31, 110.00, 130.81],  // F
+                    [82.41, 103.83, 123.47]   // E
+                ],
+                ambient: [
+                    [174.61, 220.00, 261.63, 329.63], // Fmaj7
+                    [196.00, 246.94, 293.66, 392.00], // G
+                    [220.00, 261.63, 329.63, 440.00], // Am
+                    [164.81, 196.00, 246.94, 329.63]  // Em
+                ]
+            };
+
+            const chords = chordProgressions[genre] || chordProgressions.lofi;
+            const chordDuration = secondsPerBeat * 4;
+
+            for (let i = 0; i < numFrames; i++) {
+                const t = i / sampleRate;
+                const currentChordIdx = Math.floor(t / chordDuration) % chords.length;
+                const chord = chords[currentChordIdx];
+                const chordTime = t % chordDuration;
+
+                let sampleL = 0;
+                let sampleR = 0;
+
+                // 1. Sintetizador de acordes / Pad suave con envolvente
+                const padEnv = Math.min(1.0, chordTime * 3) * Math.max(0.0, 1.0 - (chordTime / chordDuration) * 0.4);
+                for (let noteIdx = 0; noteIdx < chord.length; noteIdx++) {
+                    const freq = chord[noteIdx];
+                    const osc = Math.sin(2 * Math.PI * freq * t) * 0.12 
+                              + Math.sin(2 * Math.PI * freq * 2 * t) * 0.04;
+                    const pan = (noteIdx / (chord.length - 1)) * 0.4 - 0.2;
+                    sampleL += osc * padEnv * (0.5 - pan);
+                    sampleR += osc * padEnv * (0.5 + pan);
+                }
+
+                // 2. Línea de bajo (Bassline)
+                const bassFreq = chord[0] * 0.5;
+                const beatPos = (t % secondsPerBeat) / secondsPerBeat;
+                const bassEnv = Math.exp(-beatPos * 3.5);
+                const bassOsc = Math.sin(2 * Math.PI * bassFreq * t) * 0.18;
+                sampleL += bassOsc * bassEnv;
+                sampleR += bassOsc * bassEnv;
+
+                // 3. Percusión rítmica (Kick, Snare, Hi-Hat)
+                if (genre !== 'ambient') {
+                    const beatNumber = Math.floor(t / secondsPerBeat) % 4;
+                    const beatTime = t % secondsPerBeat;
+
+                    if ((beatNumber === 0 || (genre === 'synthwave' && beatNumber === 2)) && beatTime < 0.25) {
+                        const kickPitch = 120 * Math.exp(-beatTime * 35) + 40;
+                        const kickEnv = Math.exp(-beatTime * 14);
+                        const kick = Math.sin(2 * Math.PI * kickPitch * beatTime) * 0.35 * kickEnv;
+                        sampleL += kick;
+                        sampleR += kick;
+                    }
+
+                    if ((beatNumber === 1 || beatNumber === 3) && beatTime < 0.22) {
+                        const snareNoise = (Math.random() * 2 - 1) * 0.18;
+                        const snareTone = Math.sin(2 * Math.PI * 180 * beatTime) * 0.15;
+                        const snareEnv = Math.exp(-beatTime * 18);
+                        const snare = (snareNoise + snareTone) * snareEnv;
+                        sampleL += snare;
+                        sampleR += snare;
+                    }
+
+                    const eighthTime = t % (secondsPerBeat / 2);
+                    if (eighthTime < 0.08) {
+                        const hatNoise = (Math.random() * 2 - 1) * 0.08 * Math.exp(-eighthTime * 45);
+                        sampleL += hatNoise * 0.6;
+                        sampleR += hatNoise * 0.8;
+                    }
+                }
+
+                if (genre === 'lofi') {
+                    const crackle = (Math.random() > 0.994 ? (Math.random() * 2 - 1) * 0.04 : 0);
+                    sampleL += crackle;
+                    sampleR += crackle;
+                }
+
+                left[i] = Math.max(-0.95, Math.min(0.95, sampleL));
+                right[i] = Math.max(-0.95, Math.min(0.95, sampleR));
+            }
+
+            return createWavBlob([left, right], sampleRate, numFrames);
+        }
+
+        function getOrCreateAudioElement(clip) {
+            if (mediaCache.has(clip.id)) {
+                return mediaCache.get(clip.id);
+            }
+
+            let audioEl = null;
+
+            if (clip.src) {
+                audioEl = new Audio(clip.src);
+                audioEl.preload = 'auto';
+                audioEl.crossOrigin = 'anonymous';
+                audioEl.muted = projectState.isMutedAll || (clip.volume === 0);
+                audioEl.volume = projectState.isMutedAll ? 0 : Math.max(0, Math.min(1, clip.volume !== undefined ? clip.volume : 1.0));
+                mediaCache.set(clip.id, audioEl);
+                return audioEl;
+            }
+
+            // Identificar el género del preset o música
+            const title = (clip.title || '').toLowerCase();
+            let genre = 'lofi';
+            if (title.includes('synth') || title.includes('80s')) genre = 'synthwave';
+            else if (title.includes('trap') || title.includes('dark')) genre = 'trap';
+            else if (title.includes('cine') || title.includes('ambient')) genre = 'ambient';
+
+            let blobUrl = presetAudioCache.get(genre);
+            if (!blobUrl) {
+                const wavBlob = generateAudioTrackBlob(genre, Math.max(10.0, clip.duration || 10.0));
+                blobUrl = URL.createObjectURL(wavBlob);
+                presetAudioCache.set(genre, blobUrl);
+            }
+
+            clip.src = blobUrl;
+            audioEl = new Audio(blobUrl);
+            audioEl.preload = 'auto';
+            audioEl.muted = projectState.isMutedAll || (clip.volume === 0);
+            audioEl.volume = projectState.isMutedAll ? 0 : Math.max(0, Math.min(1, clip.volume !== undefined ? clip.volume : 1.0));
+            mediaCache.set(clip.id, audioEl);
+            return audioEl;
+        }
 
         // HIDRATACIÓN DE MEDIOS (IMÁGENES, VIDEOS Y AUDIO)
         async function hydrateMediaCache() {
@@ -2026,6 +2469,7 @@
                     if (clip.src) {
                         const a = new Audio();
                         a.src = clip.src;
+                        a.preload = 'auto';
                         await new Promise(r => { a.onloadedmetadata = () => r(); a.onerror = () => r(); });
                         mediaCache.set(clip.id, a);
                     } else if (window.MyxsiVideoDB && (clip.assetId || clip.id)) {
@@ -2035,11 +2479,15 @@
                                 const url = asset.blobUrl || URL.createObjectURL(asset.blob);
                                 const a = new Audio();
                                 a.src = url;
+                                a.preload = 'auto';
                                 await new Promise(r => { a.onloadedmetadata = () => r(); a.onerror = () => r(); });
                                 clip.src = url;
                                 mediaCache.set(clip.id, a);
                             }
                         } catch(err) {}
+                    }
+                    if (!mediaCache.has(clip.id)) {
+                        getOrCreateAudioElement(clip);
                     }
                 }
             });
@@ -2094,7 +2542,7 @@
             }
 
             if (loadedClips && loadedClips.length) {
-                projectState.clips = loadedClips;
+                projectState.clips = loadedClips.filter(c => !(c.id === 'clip_aud1' && c.title === 'Lofi Chill Beat' && !c.src));
             }
 
             await hydrateMediaCache();
@@ -2231,15 +2679,20 @@
                     renderTextLayer(clip, w, h, time);
                 }
 
-                if (clip.id === projectState.activeClipId && clip.type !== 'audio') {
-                    drawActiveBoundingBox(clip, w, h);
-                }
-
                 ctx.restore();
             }
 
             applyColorFilter(w, h);
             applyActiveShader(w, h, time);
+
+            // Dibujar caja de selección, guías magnéticas y manijas de transformación en la capa superior
+            const activeClip = projectState.clips.find(c => c.id === projectState.activeClipId && c.type !== 'audio');
+            if (activeClip && time >= activeClip.start && time <= (activeClip.start + activeClip.duration)) {
+                drawActiveBoundingBox(activeClip, w, h);
+            }
+            if (typeof updateTransformHUD === 'function') {
+                updateTransformHUD();
+            }
         }
 
         function renderTransformedMedia(mediaEl, w, h, posX, posY, scale, fitMode = 'contain') {
@@ -2270,6 +2723,8 @@
             const dx = (w - dw) / 2 + posX;
             const dy = (h - dh) / 2 + posY;
             try {
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
                 ctx.drawImage(mediaEl, dx, dy, dw, dh);
             } catch(e) {}
         }
@@ -2429,16 +2884,77 @@
 
         function renderTextLayer(clip, w, h, t) {
             ctx.save();
-            const fontSize = clip.fontSize || 44;
-            ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
+            const fontSize = clip.fontSize || 46;
+            const text = clip.text || 'TEXTO';
+            const cx = w * (0.5 + (clip.x || 0));
+            // Subtítulos virales posicionados en el tercio inferior por defecto
+            const cy = (clip.style === 'subtitle') ? h * (0.78 + (clip.y || 0)) : h * (0.65 + (clip.y || 0));
+
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            const cx = w * (0.5 + (clip.x || 0));
-            const cy = h * (0.65 + (clip.y || 0));
-            const text = clip.text || 'TEXTO';
+            if (clip.style === 'subtitle') {
+                // Subtítulos Virales Cinematográficos (Ultra-legibles estilo Shorts/Reels)
+                ctx.font = `900 ${fontSize}px 'Montserrat', -apple-system, sans-serif`;
 
-            if (clip.style === 'viral') {
+                // Auto-ajuste de texto en líneas si supera el 86% del ancho
+                const maxTextWidth = w * 0.86;
+                const words = text.split(/\s+/);
+                const lines = [];
+                let curLine = '';
+
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = curLine ? curLine + ' ' + words[i] : words[i];
+                    if (ctx.measureText(testLine).width > maxTextWidth && i > 0) {
+                        lines.push(curLine);
+                        curLine = words[i];
+                    } else {
+                        curLine = testLine;
+                    }
+                }
+                if (curLine) lines.push(curLine);
+
+                const lineHeight = fontSize * 1.25;
+                const totalHeight = lines.length * lineHeight;
+                const startY = cy - (totalHeight / 2) + (lineHeight / 2);
+
+                // Punch scale animado al aparecer el subtítulo
+                const timeInClip = t - clip.start;
+                let punchScale = 1.0;
+                if (timeInClip >= 0 && timeInClip < 0.22) {
+                    punchScale = 1.0 + Math.sin((timeInClip / 0.22) * Math.PI) * 0.12;
+                }
+
+                ctx.translate(cx, cy);
+                if (punchScale !== 1.0) {
+                    ctx.scale(punchScale, punchScale);
+                }
+                ctx.translate(-cx, -cy);
+
+                lines.forEach((line, idx) => {
+                    const lineY = startY + idx * lineHeight;
+
+                    // Sombra pronunciada de alto contraste
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 4;
+
+                    // Borde exterior negro grueso para máxima legibilidad
+                    ctx.lineWidth = Math.max(7, Math.round(fontSize * 0.18));
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineJoin = 'round';
+                    ctx.miterLimit = 2;
+                    ctx.strokeText(line, cx, lineY);
+
+                    // Relleno brillante (dorado #feb504 o blanco #ffffff)
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                    ctx.fillStyle = clip.color || '#feb504';
+                    ctx.fillText(line, cx, lineY);
+                });
+            } else if (clip.style === 'viral') {
+                ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
                 const metrics = ctx.measureText(text);
                 const padX = 22, padY = 12;
                 ctx.fillStyle = '#feb504';
@@ -2449,11 +2965,13 @@
                 ctx.fillStyle = '#000000';
                 ctx.fillText(text, cx, cy);
             } else if (clip.style === 'neon') {
+                ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
                 ctx.shadowColor = '#00e5ff';
                 ctx.shadowBlur = 18;
                 ctx.fillStyle = '#ffffff';
                 ctx.fillText(text, cx, cy);
             } else {
+                ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
                 ctx.shadowBlur = 12;
                 ctx.fillStyle = clip.color || '#ffffff';
@@ -2462,21 +2980,51 @@
             ctx.restore();
         }
 
-        function drawActiveBoundingBox(clip, w, h) {
-            ctx.save();
-            ctx.strokeStyle = '#00e5ff';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 6]);
+        // =========================================================================
+        // MOTOR DE SELECCIÓN Y TRANSFORMACIÓN EN PANTALLA (CANVAS INTERACTIVO)
+        // =========================================================================
+        const transformState = {
+            mode: 'none', // 'none' | 'drag' | 'resize'
+            handle: null, // 'tl' | 'tr' | 'bl' | 'br'
+            startPointerX: 0,
+            startPointerY: 0,
+            origClipX: 0,
+            origClipY: 0,
+            origScale: 1.0,
+            origFontSize: 46,
+            centerX: 0,
+            centerY: 0,
+            startDist: 1,
+            snappedX: false,
+            snappedY: false,
+            activeClip: null
+        };
 
-            let bx = 0, by = 0, bw = 0, bh = 0;
+        function getClipCanvasBounds(clip, w, h) {
+            if (!clip || clip.type === 'audio') return null;
+
+            let bx = 0, by = 0, bw = 0, bh = 0, cx = 0, cy = 0;
+
             if (clip.type === 'text') {
-                ctx.font = `800 ${clip.fontSize || 44}px 'Montserrat', sans-serif`;
+                const fontSize = clip.fontSize || 46;
+                ctx.save();
+                ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
                 const text = clip.text || 'TEXTO';
                 const metrics = ctx.measureText(text);
-                bw = metrics.width + 40;
-                bh = (clip.fontSize || 44) + 30;
-                bx = w * (0.5 + (clip.x || 0)) - bw/2;
-                by = h * (0.65 + (clip.y || 0)) - bh/2;
+                ctx.restore();
+
+                const isSub = clip.style === 'subtitle';
+                const maxLineW = w * 0.86;
+                let linesCount = 1;
+                if (isSub && metrics.width > maxLineW) {
+                    linesCount = Math.ceil(metrics.width / (w * 0.82));
+                }
+                bw = Math.min(w * 0.94, Math.max(160, metrics.width + 50));
+                bh = Math.max(64, (fontSize * 1.35 * linesCount) + 32);
+                cx = w * (0.5 + (clip.x || 0));
+                cy = isSub ? h * (0.78 + (clip.y || 0)) : h * (0.65 + (clip.y || 0));
+                bx = cx - bw / 2;
+                by = cy - bh / 2;
             } else {
                 const scale = clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0);
                 const mediaEl = mediaCache.get(clip.id);
@@ -2494,60 +3042,339 @@
                     bh = h * scale;
                     bw = bh * aspect;
                 }
-                bx = (w - bw) / 2 + (clip.x || 0) * w;
-                by = (h - bh) / 2 + (clip.y || 0) * h;
+                const posX = (clip.x || 0) * w;
+                const posY = (clip.y || 0) * h;
+                cx = w / 2 + posX;
+                cy = h / 2 + posY;
+                bx = cx - bw / 2;
+                by = cy - bh / 2;
             }
 
+            return {
+                bx, by, bw, bh, cx, cy,
+                handles: {
+                    tl: { x: bx, y: by },
+                    tr: { x: bx + bw, y: by },
+                    bl: { x: bx, y: by + bh },
+                    br: { x: bx + bw, y: by + bh }
+                }
+            };
+        }
+
+        function getHandleAtScreenPoint(bounds, screenX, screenY, rect) {
+            if (!bounds) return null;
+            const canvasScaleX = rect.width / canvas.width;
+            const canvasScaleY = rect.height / canvas.height;
+            const hitRadius = 32; // Radio generoso en píxeles CSS para dedo y ratón
+            for (const [key, pos] of Object.entries(bounds.handles)) {
+                const hx = pos.x * canvasScaleX;
+                const hy = pos.y * canvasScaleY;
+                const dist = Math.hypot(screenX - hx, screenY - hy);
+                if (dist <= hitRadius) return key;
+            }
+            return null;
+        }
+
+        function findClipAtCanvasPoint(canvasX, canvasY) {
+            const time = projectState.currentTime;
+            const visibleClips = projectState.clips.filter(c => c.type !== 'audio' && time >= c.start && time <= (c.start + c.duration));
+            // Orden visual: Texto arriba (3), Superposición medio (2), Video fondo (1)
+            visibleClips.sort((a, b) => {
+                const o = { 'track-text': 3, 'track-overlay': 2, 'track-video1': 1 };
+                return (o[b.track] || 1) - (o[a.track] || 1);
+            });
+
+            for (const clip of visibleClips) {
+                const b = getClipCanvasBounds(clip, canvas.width, canvas.height);
+                if (!b) continue;
+                // Tolerancia de 20px de canvas para facilitar selección táctil
+                const pad = 20;
+                if (canvasX >= b.bx - pad && canvasX <= b.bx + b.bw + pad &&
+                    canvasY >= b.by - pad && canvasY <= b.by + b.bh + pad) {
+                    return clip;
+                }
+            }
+            // Si no tocó exactamente los bordes pero hay un video principal visible, seleccionar video
+            return visibleClips.find(c => c.track === 'track-video1') || null;
+        }
+
+        function drawActiveBoundingBox(clip, w, h) {
+            const bounds = getClipCanvasBounds(clip, w, h);
+            if (!bounds) return;
+            const { bx, by, bw, bh, cx, cy } = bounds;
+
+            ctx.save();
+
+            // 1. Guías magnéticas de alineación central
+            if (transformState.snappedX) {
+                ctx.save();
+                ctx.strokeStyle = '#feb504';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([14, 10]);
+                ctx.shadowColor = 'rgba(254, 181, 4, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.moveTo(w / 2, 0);
+                ctx.lineTo(w / 2, h);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            if (transformState.snappedY) {
+                ctx.save();
+                ctx.strokeStyle = '#feb504';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([14, 10]);
+                ctx.shadowColor = 'rgba(254, 181, 4, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.moveTo(0, cy);
+                ctx.lineTo(w, cy);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            // 2. Marco exterior delimitador
+            ctx.shadowColor = 'rgba(0, 229, 255, 0.55)';
+            ctx.shadowBlur = 16;
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 3.5;
+            ctx.setLineDash([12, 8]);
             ctx.strokeRect(bx, by, bw, bh);
             ctx.setLineDash([]);
-            ctx.fillStyle = '#feb504';
-            const handleSize = 12;
-            ctx.fillRect(bx - handleSize/2, by - handleSize/2, handleSize, handleSize);
-            ctx.fillRect(bx + bw - handleSize/2, by - handleSize/2, handleSize, handleSize);
-            ctx.fillRect(bx - handleSize/2, by + bh - handleSize/2, handleSize, handleSize);
-            ctx.fillRect(bx + bw - handleSize/2, by + bh - handleSize/2, handleSize, handleSize);
+
+            // 3. 4 Manijas redondas prominentes en las esquinas
+            const handleRadius = 22;
+            const corners = [
+                { key: 'tl', x: bx, y: by },
+                { key: 'tr', x: bx + bw, y: by },
+                { key: 'bl', x: bx, y: by + bh },
+                { key: 'br', x: bx + bw, y: by + bh }
+            ];
+
+            corners.forEach(c => {
+                ctx.save();
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+                ctx.shadowBlur = 12;
+                ctx.shadowOffsetY = 3;
+
+                // Base blanca
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, handleRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Anillo exterior cian o dorado si se está redimensionando esa manija
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = (transformState.mode === 'resize' && transformState.handle === c.key) ? '#feb504' : '#00e5ff';
+                ctx.stroke();
+
+                // Centro oscuro de precisión
+                ctx.fillStyle = '#06070a';
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, handleRadius * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // 4. Badge HUD flotante sobre la parte superior
+            ctx.save();
+            const badgeH = 46;
+            let badgeText = '';
+            if (clip.type === 'text') {
+                const isSub = clip.style === 'subtitle';
+                badgeText = `${isSub ? '💬 Subtítulo' : '🔤 Texto'} • ${clip.fontSize || 46}px`;
+            } else if (clip.type === 'image') {
+                const sc = Math.round((clip.scale !== undefined ? clip.scale : 0.5) * 100);
+                badgeText = `🖼 Imagen • ${sc}%`;
+            } else {
+                const sc = Math.round((clip.scale !== undefined ? clip.scale : 1.0) * 100);
+                badgeText = `🎬 Video • ${sc}%`;
+            }
+
+            ctx.font = "700 24px 'Montserrat', sans-serif";
+            const badgeMetrics = ctx.measureText(badgeText);
+            const badgeW = badgeMetrics.width + 40;
+            const badgeX = cx - badgeW / 2;
+            const badgeY = Math.max(20, by - badgeH - 18);
+
+            ctx.fillStyle = 'rgba(11, 14, 28, 0.92)';
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 2.5;
+            ctx.shadowColor = 'rgba(0, 229, 255, 0.5)';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 23);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(badgeText, cx, badgeY + badgeH / 2);
+            ctx.restore();
+
             ctx.restore();
         }
 
         function setupCanvasInteractiveEvents() {
-            let isDraggingCanvas = false;
-            let startPointerX = 0, startPointerY = 0;
-            let origClipX = 0, origClipY = 0;
-
             canvas.addEventListener('pointerdown', (e) => {
-                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                if (!clip || clip.type === 'audio') return;
+                const rect = canvas.getBoundingClientRect();
+                const screenX = e.clientX - rect.left;
+                const screenY = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const canvasX = screenX * scaleX;
+                const canvasY = screenY * scaleY;
 
-                isDraggingCanvas = true;
-                startPointerX = e.clientX;
-                startPointerY = e.clientY;
-                origClipX = clip.x || 0;
-                origClipY = clip.y || 0;
-                try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+                let activeClip = projectState.clips.find(c => c.id === projectState.activeClipId && c.type !== 'audio');
 
+                // 1. Si ya hay un clip activo, verificar si hizo clic en una manija de esquina
+                if (activeClip) {
+                    const bounds = getClipCanvasBounds(activeClip, canvas.width, canvas.height);
+                    const hitHandle = getHandleAtScreenPoint(bounds, screenX, screenY, rect);
+                    if (hitHandle) {
+                        transformState.mode = 'resize';
+                        transformState.handle = hitHandle;
+                        transformState.activeClip = activeClip;
+                        transformState.startPointerX = e.clientX;
+                        transformState.startPointerY = e.clientY;
+                        transformState.origScale = activeClip.scale !== undefined ? activeClip.scale : (activeClip.track === 'track-overlay' ? 0.5 : 1.0);
+                        transformState.origFontSize = activeClip.fontSize || 46;
+                        transformState.centerX = bounds.cx;
+                        transformState.centerY = bounds.cy;
+                        transformState.startDist = Math.max(10, Math.hypot(canvasX - bounds.cx, canvasY - bounds.cy));
+                        try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+                        bindTransformMoveListeners();
+                        return;
+                    }
+                }
+
+                // 2. Si no tocó una manija, buscar clip bajo el cursor
+                const hitClip = findClipAtCanvasPoint(canvasX, canvasY);
+                if (hitClip) {
+                    if (projectState.activeClipId !== hitClip.id) {
+                        selectClip(hitClip.id);
+                        activeClip = hitClip;
+                    }
+                    const bounds = getClipCanvasBounds(activeClip, canvas.width, canvas.height);
+                    transformState.mode = 'drag';
+                    transformState.activeClip = activeClip;
+                    transformState.startPointerX = e.clientX;
+                    transformState.startPointerY = e.clientY;
+                    transformState.origClipX = activeClip.x || 0;
+                    transformState.origClipY = activeClip.y || 0;
+                    transformState.snappedX = false;
+                    transformState.snappedY = false;
+                    try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
+                    bindTransformMoveListeners();
+                } else {
+                    // Clic fuera de cualquier elemento
+                    deselectActiveClip();
+                }
+            });
+
+            function bindTransformMoveListeners() {
                 function onPointerMove(ev) {
-                    if (!isDraggingCanvas) return;
+                    if (transformState.mode === 'none' || !transformState.activeClip) return;
+                    const clip = transformState.activeClip;
                     const rect = canvas.getBoundingClientRect();
-                    const deltaX = (ev.clientX - startPointerX) / rect.width;
-                    const deltaY = (ev.clientY - startPointerY) / rect.height;
+                    const scaleX = canvas.width / rect.width;
+                    const scaleY = canvas.height / rect.height;
 
-                    clip.x = Math.round((origClipX + deltaX) * 100) / 100;
-                    clip.y = Math.round((origClipY + deltaY) * 100) / 100;
+                    if (transformState.mode === 'resize') {
+                        const curCanvasX = (ev.clientX - rect.left) * scaleX;
+                        const curCanvasY = (ev.clientY - rect.top) * scaleY;
+                        const curDist = Math.hypot(curCanvasX - transformState.centerX, curCanvasY - transformState.centerY);
+                        const factor = curDist / Math.max(10, transformState.startDist);
 
-                    renderFrame(projectState.currentTime);
+                        if (clip.type === 'text') {
+                            clip.fontSize = Math.max(18, Math.min(140, Math.round(transformState.origFontSize * factor)));
+                        } else {
+                            clip.scale = Math.max(0.15, Math.min(4.0, Math.round((transformState.origScale * factor) * 100) / 100));
+                        }
+                        renderFrame(projectState.currentTime);
+                        updateTransformHUD();
+                    } else if (transformState.mode === 'drag') {
+                        const deltaX = (ev.clientX - transformState.startPointerX) / rect.width;
+                        const deltaY = (ev.clientY - transformState.startPointerY) / rect.height;
+                        let nx = transformState.origClipX + deltaX;
+                        let ny = transformState.origClipY + deltaY;
+
+                        // Guías magnéticas de centrado inteligente
+                        if (Math.abs(nx) < 0.025) {
+                            nx = 0;
+                            transformState.snappedX = true;
+                        } else {
+                            transformState.snappedX = false;
+                        }
+
+                        if (Math.abs(ny) < 0.025) {
+                            ny = 0;
+                            transformState.snappedY = true;
+                        } else {
+                            transformState.snappedY = false;
+                        }
+
+                        clip.x = Math.max(-0.95, Math.min(0.95, Math.round(nx * 1000) / 1000));
+                        clip.y = Math.max(-0.95, Math.min(0.95, Math.round(ny * 1000) / 1000));
+
+                        renderFrame(projectState.currentTime);
+                        updateTransformHUD();
+                    }
                 }
 
                 function onPointerUp(ev) {
-                    isDraggingCanvas = false;
+                    transformState.mode = 'none';
+                    transformState.snappedX = false;
+                    transformState.snappedY = false;
                     try { canvas.releasePointerCapture(ev.pointerId); } catch(err) {}
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                     pushHistory();
                     saveProjectToDB();
+                    renderFrame(projectState.currentTime);
+                    updateTransformHUD();
                 }
 
                 window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
+            }
+
+            // Actualización de cursor en hover para desktop
+            canvas.addEventListener('pointermove', (e) => {
+                if (transformState.mode !== 'none') return;
+                const rect = canvas.getBoundingClientRect();
+                const screenX = e.clientX - rect.left;
+                const screenY = e.clientY - rect.top;
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                const canvasX = screenX * scaleX;
+                const canvasY = screenY * scaleY;
+
+                const activeClip = projectState.clips.find(c => c.id === projectState.activeClipId && c.type !== 'audio');
+                if (activeClip) {
+                    const bounds = getClipCanvasBounds(activeClip, canvas.width, canvas.height);
+                    const handle = getHandleAtScreenPoint(bounds, screenX, screenY, rect);
+                    if (handle === 'tl' || handle === 'br') {
+                        canvas.style.cursor = 'nwse-resize';
+                        return;
+                    } else if (handle === 'tr' || handle === 'bl') {
+                        canvas.style.cursor = 'nesw-resize';
+                        return;
+                    } else if (bounds && canvasX >= bounds.bx && canvasX <= bounds.bx + bounds.bw && canvasY >= bounds.by && canvasY <= bounds.by + bounds.bh) {
+                        canvas.style.cursor = 'move';
+                        return;
+                    }
+                }
+
+                const hitClip = findClipAtCanvasPoint(canvasX, canvasY);
+                if (hitClip) {
+                    canvas.style.cursor = 'pointer';
+                } else {
+                    canvas.style.cursor = 'default';
+                }
             });
 
             // Zoom / Escala con rueda de ratón sobre el canvas
@@ -2555,15 +3382,22 @@
                 const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
                 if (!clip || clip.type === 'audio') return;
                 e.preventDefault();
-                const delta = e.deltaY < 0 ? 0.05 : -0.05;
-                clip.scale = Math.max(0.15, Math.min(3.0, Math.round(((clip.scale !== undefined ? clip.scale : 1.0) + delta) * 100) / 100));
+                if (clip.type === 'text') {
+                    const delta = e.deltaY < 0 ? 3 : -3;
+                    clip.fontSize = Math.max(18, Math.min(140, (clip.fontSize || 46) + delta));
+                } else {
+                    const delta = e.deltaY < 0 ? 0.05 : -0.05;
+                    clip.scale = Math.max(0.15, Math.min(4.0, Math.round(((clip.scale !== undefined ? clip.scale : 1.0) + delta) * 100) / 100));
+                }
                 renderFrame(projectState.currentTime);
                 saveProjectToDB();
+                updateTransformHUD();
             }, { passive: false });
 
             // Gesto táctil de pellizco (Pinch to scale) en móvil
             let initialDistance = 0;
             let initialScale = 1.0;
+            let initialFontSize = 46;
             canvas.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
@@ -2573,6 +3407,7 @@
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     initialScale = clip.scale !== undefined ? clip.scale : 1.0;
+                    initialFontSize = clip.fontSize || 46;
                 }
             }, { passive: true });
 
@@ -2586,11 +3421,80 @@
                     );
                     if (initialDistance > 10) {
                         const factor = dist / initialDistance;
-                        clip.scale = Math.max(0.15, Math.min(3.0, Math.round((initialScale * factor) * 100) / 100));
+                        if (clip.type === 'text') {
+                            clip.fontSize = Math.max(18, Math.min(140, Math.round(initialFontSize * factor)));
+                        } else {
+                            clip.scale = Math.max(0.15, Math.min(4.0, Math.round((initialScale * factor) * 100) / 100));
+                        }
                         renderFrame(projectState.currentTime);
+                        updateTransformHUD();
                     }
                 }
             }, { passive: true });
+        }
+
+        function scaleActiveClipRelative(delta) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            if (clip.type === 'text') {
+                const curFont = clip.fontSize || 46;
+                clip.fontSize = Math.max(18, Math.min(140, Math.round(curFont * (1 + delta))));
+            } else {
+                const curScale = clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0);
+                clip.scale = Math.max(0.15, Math.min(4.0, Math.round((curScale + delta) * 100) / 100));
+            }
+            pushHistory();
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+            updateTransformHUD();
+        }
+
+        function centerActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            clip.x = 0;
+            clip.y = 0;
+            pushHistory();
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+            updateTransformHUD();
+            showToast('🎯 Elemento centrado en pantalla');
+        }
+
+        function updateTransformHUD() {
+            const hud = document.getElementById('canvasTransformHUD');
+            if (!hud) return;
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId && c.type !== 'audio');
+            if (!clip) {
+                hud.style.display = 'none';
+                return;
+            }
+            hud.style.display = 'flex';
+            const labelEl = document.getElementById('hudClipLabel');
+            if (labelEl) {
+                if (clip.type === 'text') {
+                    const isSub = clip.style === 'subtitle';
+                    labelEl.textContent = `${isSub ? 'Subtítulo' : 'Texto'} (${clip.fontSize || 46}px)`;
+                } else if (clip.type === 'image') {
+                    const sc = Math.round((clip.scale !== undefined ? clip.scale : 0.5) * 100);
+                    labelEl.textContent = `Imagen (${sc}%)`;
+                } else if (clip.type === 'video') {
+                    const sc = Math.round((clip.scale !== undefined ? clip.scale : 1.0) * 100);
+                    labelEl.textContent = `Video (${sc}%)`;
+                } else {
+                    labelEl.textContent = clip.title || 'Clip';
+                }
+            }
+            // Sincronizar cajón de transformación si está visible
+            const posXVal = document.getElementById('posXVal');
+            if (posXVal) posXVal.innerText = `${Math.round((clip.x || 0) * 100)}%`;
+            const posYVal = document.getElementById('posYVal');
+            if (posYVal) posYVal.innerText = `${Math.round((clip.y || 0) * 100)}%`;
+            const scaleVal = document.getElementById('scaleVal');
+            if (scaleVal) {
+                const sc = clip.type === 'text' ? (clip.fontSize || 46) : Math.round((clip.scale || 1.0) * 100);
+                scaleVal.innerText = clip.type === 'text' ? `${sc}px` : `${sc}%`;
+            }
         }
 
         // =========================================================================
@@ -2707,6 +3611,7 @@
         // CONTROL DE REPRODUCCIÓN
         // =========================================================================
         function togglePlay() {
+            unlockAudioEngine();
             if (projectState.isPlaying) {
                 pausePlayback();
             } else {
@@ -2715,6 +3620,7 @@
         }
 
         function startPlayback() {
+            unlockAudioEngine();
             projectState.isPlaying = true;
             isUserScrollingTimeline = false;
             document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-pause"></i>';
@@ -2748,6 +3654,7 @@
             }
 
             syncVideoElements(true);
+            syncAudioElements(true);
             renderFrame(projectState.currentTime);
             updateTimecodeUI();
             syncTimelineScrollFromTime(projectState.currentTime);
@@ -2808,7 +3715,7 @@
 
                     if (isInside) {
                         const targetTime = Math.max(0, (projectState.currentTime - clipStart) * speed);
-                        if (!isPlaying || Math.abs(videoEl.currentTime - targetTime) > 0.12) {
+                        if (!isPlaying || Math.abs(videoEl.currentTime - targetTime) > 0.15) {
                             try {
                                 videoEl.currentTime = targetTime;
                             } catch(e) {}
@@ -2835,15 +3742,42 @@
         function syncAudioElements(play) {
             projectState.clips.forEach(clip => {
                 if (clip.type === 'audio') {
-                    const audioEl = mediaCache.get(clip.id);
-                    if (audioEl) {
-                        audioEl.muted = projectState.isMutedAll;
-                        audioEl.volume = clip.volume !== undefined ? clip.volume : 1.0;
+                    let audioEl = mediaCache.get(clip.id);
+                    if (!audioEl) {
+                        audioEl = getOrCreateAudioElement(clip);
+                    }
+                    if (!audioEl) return;
 
-                        if (play && projectState.currentTime >= clip.start && projectState.currentTime <= (clip.start + clip.duration)) {
-                            audioEl.currentTime = projectState.currentTime - clip.start;
-                            audioEl.play().catch(() => {});
+                    const clipStart = clip.start || 0;
+                    const clipEnd = clipStart + clip.duration;
+                    const isInside = projectState.currentTime >= clipStart && projectState.currentTime < clipEnd;
+                    const speed = clip.speed || 1.0;
+
+                    audioEl.muted = projectState.isMutedAll || (clip.volume === 0);
+                    audioEl.volume = projectState.isMutedAll ? 0 : Math.max(0, Math.min(1, clip.volume !== undefined ? clip.volume : 1.0));
+                    if (audioEl.playbackRate !== speed) {
+                        try { audioEl.playbackRate = speed; } catch(e) {}
+                    }
+
+                    if (isInside) {
+                        const targetTime = Math.max(0, (projectState.currentTime - clipStart) * speed);
+                        if (!play || Math.abs(audioEl.currentTime - targetTime) > 0.15) {
+                            try {
+                                audioEl.currentTime = targetTime;
+                            } catch(e) {}
+                        }
+
+                        if (play) {
+                            if (audioEl.paused) {
+                                audioEl.play().catch(() => {});
+                            }
                         } else {
+                            if (!audioEl.paused) {
+                                audioEl.pause();
+                            }
+                        }
+                    } else {
+                        if (!audioEl.paused) {
                             audioEl.pause();
                         }
                     }
@@ -3407,9 +4341,11 @@
             if (selClip) {
                 if (projectState.currentTime < selClip.start || projectState.currentTime > (selClip.start + selClip.duration)) {
                     seekTime(selClip.start + 0.05);
+                    if (typeof updateTransformHUD === 'function') updateTransformHUD();
                     return;
                 }
             }
+            if (typeof updateTransformHUD === 'function') updateTransformHUD();
             renderFrame(projectState.currentTime);
         }
 
@@ -3419,6 +4355,7 @@
             document.getElementById('rootToolbar').style.display = 'flex';
             document.getElementById('clipToolbar').style.display = 'none';
             closeDrawer();
+            if (typeof updateTransformHUD === 'function') updateTransformHUD();
             renderFrame(projectState.currentTime);
         }
 
@@ -3885,7 +4822,16 @@
             const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
             if (clip) {
                 clip.volume = val / 100;
-                document.getElementById('volumeVal').innerText = `${val}%`;
+                const vDisplay = document.getElementById('volumeVal');
+                if (vDisplay) vDisplay.innerText = `${val}%`;
+                const mediaEl = mediaCache.get(clip.id);
+                if (mediaEl) {
+                    try {
+                        mediaEl.volume = Math.max(0, Math.min(1, clip.volume));
+                        mediaEl.muted = projectState.isMutedAll || (clip.volume === 0);
+                    } catch(e) {}
+                }
+                saveProjectToDB();
             }
         }
 
@@ -3918,15 +4864,18 @@
         }
 
         function addPresetAudio(title) {
+            unlockAudioEngine();
             const newAudioClip = {
                 id: 'clip_aud_' + Date.now(),
                 track: 'track-audio1',
                 type: 'audio',
                 title: title,
                 start: projectState.currentTime,
-                duration: 8.0,
-                volume: 0.8
+                duration: 10.0,
+                volume: 0.85
             };
+
+            getOrCreateAudioElement(newAudioClip);
 
             projectState.clips.push(newAudioClip);
             recalculateProjectDuration();
@@ -4146,16 +5095,20 @@
         // ACCIONES LATERALES
         // =========================================================================
         function toggleMuteAll() {
+            unlockAudioEngine();
             projectState.isMutedAll = !projectState.isMutedAll;
             const btn = document.getElementById('btnMuteAll');
-            if (projectState.isMutedAll) {
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="fa-solid fa-volume-xmark" style="color: #f87171;"></i><span>Silenciado</span>';
-            } else {
-                btn.classList.remove('active');
-                btn.innerHTML = '<i class="fa-solid fa-volume-high"></i><span>Silenciar</span>';
+            if (btn) {
+                if (projectState.isMutedAll) {
+                    btn.classList.add('active');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-xmark" style="color: #f87171;"></i><span>Silenciado</span>';
+                } else {
+                    btn.classList.remove('active');
+                    btn.innerHTML = '<i class="fa-solid fa-volume-high"></i><span>Silenciar</span>';
+                }
             }
             syncAudioElements(projectState.isPlaying);
+            syncVideoElements(projectState.isPlaying);
         }
 
         function setCoverFrame() {
@@ -4445,7 +5398,7 @@
             }
         }
 
-        function appendAIChatMessage(role, text, actionDesc = null) {
+        function appendAIChatMessage(role, text, actionDesc = null, actionButtons = null) {
             const container = document.getElementById('aiChatMessages');
             const typing = document.getElementById('aiTypingIndicator');
             if (!container) return;
@@ -4453,7 +5406,7 @@
             const bubble = document.createElement('div');
             bubble.className = `ai-msg-bubble ${role === 'user' ? 'ai-msg-user' : 'ai-msg-assistant'}`;
 
-            // Formateo seguro básico de markdown (negritas, párrafos y saltos)
+            // Formateo seguro básico de markdown (negritas, cursivas, código, párrafos y listas)
             const formatted = text
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -4474,6 +5427,26 @@
                 bubble.appendChild(actionCard);
             }
 
+            if (Array.isArray(actionButtons) && actionButtons.length > 0) {
+                const btnRow = document.createElement('div');
+                btnRow.className = 'ai-action-btn-row';
+                actionButtons.forEach(btn => {
+                    const pill = document.createElement('button');
+                    pill.type = 'button';
+                    pill.className = `ai-action-pill-btn ${btn.styleClass || ''}`;
+                    pill.innerHTML = btn.label;
+                    pill.onclick = () => {
+                        if (typeof btn.action === 'function') {
+                            btn.action();
+                        } else if (typeof btn.cmd === 'string') {
+                            sendQuickCommand(btn.cmd);
+                        }
+                    };
+                    btnRow.appendChild(pill);
+                });
+                bubble.appendChild(btnRow);
+            }
+
             if (typing) {
                 container.insertBefore(bubble, typing);
             } else {
@@ -4489,19 +5462,88 @@
         }
 
         // =========================================================================
-        // MOTOR DE EJECUCIÓN DIRECTA DE ACCIONES DE EDICIÓN
+        // MOTOR DE EJECUCIÓN DIRECTA Y ESCALADO PERFECTO DE IMÁGENES Y VIDEOS
         // =========================================================================
-        function setClipScale(scale) {
-            let clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+        function findTargetClipForScaling(target = 'auto') {
+            let clip = null;
+            if (target === 'image' || target === 'img' || target === 'foto') {
+                if (projectState.activeClipId) {
+                    const active = projectState.clips.find(c => c.id === projectState.activeClipId);
+                    if (active && active.type === 'image') clip = active;
+                }
+                if (!clip) {
+                    clip = projectState.clips.find(c => c.type === 'image' && projectState.currentTime >= c.start && projectState.currentTime <= c.start + c.duration);
+                }
+                if (!clip) {
+                    clip = projectState.clips.find(c => c.type === 'image');
+                }
+            } else if (target === 'video' || target === 'vid') {
+                if (projectState.activeClipId) {
+                    const active = projectState.clips.find(c => c.id === projectState.activeClipId);
+                    if (active && active.type === 'video') clip = active;
+                }
+                if (!clip) {
+                    clip = projectState.clips.find(c => c.type === 'video' && projectState.currentTime >= c.start && projectState.currentTime <= c.start + c.duration)
+                        || projectState.clips.find(c => c.track === 'track-video1');
+                }
+            }
+
+            if (!clip && projectState.activeClipId) {
+                clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            }
             if (!clip) {
-                clip = projectState.clips.find(c => c.track === 'track-video1');
+                // Si hay una imagen en el segundo actual, priorizarla
+                clip = projectState.clips.find(c => c.type === 'image' && projectState.currentTime >= c.start && projectState.currentTime <= c.start + c.duration)
+                    || projectState.clips.find(c => c.track === 'track-video1')
+                    || projectState.clips[0];
             }
-            if (clip) {
-                clip.scale = Math.max(0.2, Math.min(3.0, Math.round(scale * 100) / 100));
-                pushHistory();
-                renderFrame(projectState.currentTime);
-                saveProjectToDB();
+            return clip;
+        }
+
+        function setClipScaleAdvanced(scaleValue, targetType = 'auto', isRelative = false) {
+            const clip = findTargetClipForScaling(targetType);
+            if (!clip) return null;
+
+            // Seleccionar el clip para feedback visual inmediato en la pista y bounding box
+            selectClip(clip.id);
+
+            const oldScale = clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0);
+            let newScale = oldScale;
+
+            if (isRelative) {
+                newScale = oldScale + scaleValue;
+            } else {
+                newScale = scaleValue;
             }
+
+            newScale = Math.max(0.15, Math.min(4.0, Math.round(newScale * 100) / 100));
+            clip.scale = newScale;
+
+            pushHistory();
+            renderFrame(projectState.currentTime);
+            renderTimelineClips();
+            saveProjectToDB();
+
+            const isImage = clip.type === 'image';
+            const label = isImage ? 'Imagen' : (clip.type === 'video' ? 'Video' : 'Elemento');
+            const pct = Math.round(newScale * 100);
+            const deltaStr = newScale > oldScale 
+                ? `(+${Math.round((newScale - oldScale) * 100)}%)` 
+                : (newScale < oldScale ? `(-${Math.round((oldScale - newScale) * 100)}%)` : '');
+
+            return {
+                clipId: clip.id,
+                clipTitle: clip.title || label,
+                isImage: isImage,
+                oldScale: oldScale,
+                newScale: newScale,
+                pct: pct,
+                description: `${label} ajustada al ${pct}% ${deltaStr}`.trim()
+            };
+        }
+
+        function setClipScale(scale) {
+            return setClipScaleAdvanced(scale, 'auto', false);
         }
 
         function addTextClipDirectly(text, style = 'viral') {
@@ -4527,14 +5569,460 @@
             selectClip(newTextClip.id);
             renderFrame(projectState.currentTime);
             saveProjectToDB();
+            return newTextClip;
+        }
+
+        function addSubtitleClipDirectly(text) {
+            const cleanText = (text || 'Subtítulo').trim();
+            const words = cleanText.split(/\s+/).length;
+            const autoDuration = Math.max(2.2, Math.min(12.0, Math.round(words * 0.45 * 10) / 10));
+
+            const newSubClip = {
+                id: 'clip_sub_' + Date.now(),
+                track: 'track-text',
+                type: 'text',
+                title: '🔤 ' + cleanText.substring(0, 16),
+                text: cleanText,
+                start: projectState.currentTime,
+                duration: autoDuration,
+                fontSize: 48,
+                color: '#feb504',
+                style: 'subtitle',
+                x: 0,
+                y: 0,
+                opacity: 1.0
+            };
+
+            projectState.clips.push(newSubClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newSubClip.id);
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+            return newSubClip;
+        }
+
+        function addSubtitleClipFromVoice(spokenText) {
+            if (!spokenText || !spokenText.trim()) return;
+            const cleanText = spokenText.trim();
+            const sub = addSubtitleClipDirectly(cleanText);
+
+            const desc = `Subtítulo añadido: "${cleanText}" (${sub.duration}s)`;
+            const buttons = [
+                { label: '▶ Reproducir', action: () => previewPlayback(sub.duration + 0.5), styleClass: 'pill-gold' },
+                { label: '🎙️ Grabar otro', action: () => startVoiceSubtitleRecording(), styleClass: 'pill-cyan' }
+            ];
+
+            appendAIChatMessage(
+                'assistant',
+                `🎙️ **Subtítulo por voz generado y sincronizado con éxito:**\n\n> "${cleanText}"\n\nUbicado en el segundo **${formatTimecodeShort(projectState.currentTime)}** con estilo viral (borde negro y tipografía dorada de alta visibilidad).`,
+                desc,
+                buttons
+            );
+        }
+
+        // =========================================================================
+        // RECONOCIMIENTO DE VOZ PARA SUBTÍTULOS Y PREVISUALIZACIÓN
+        // =========================================================================
+        let subtitleVoiceRecognizer = null;
+        let isRecordingSubtitleVoice = false;
+
+        function startVoiceSubtitleRecording() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                showVoiceSubtitleFallbackModal("Tu navegador no soporta reconocimiento de voz nativo en vivo. Escribe aquí la frase que se escucha en el audio para crear el subtítulo sincronizado:");
+                return;
+            }
+
+            if (isRecordingSubtitleVoice) {
+                stopVoiceSubtitleRecording();
+                return;
+            }
+
+            try {
+                subtitleVoiceRecognizer = new SpeechRecognition();
+                subtitleVoiceRecognizer.lang = 'es-ES';
+                subtitleVoiceRecognizer.continuous = false;
+                subtitleVoiceRecognizer.interimResults = true;
+
+                showVoiceListeningCard();
+
+                subtitleVoiceRecognizer.onstart = () => {
+                    isRecordingSubtitleVoice = true;
+                    updateVoiceListeningCardText("🎙️ Escuchando tu voz... Habla ahora con claridad.");
+                };
+
+                let finalTranscript = '';
+                subtitleVoiceRecognizer.onresult = (event) => {
+                    let interimTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+                    const displayed = finalTranscript || interimTranscript;
+                    if (displayed) {
+                        updateVoiceListeningCardText(`🗣️ <em>"${displayed}"</em>`);
+                    }
+                };
+
+                subtitleVoiceRecognizer.onerror = (event) => {
+                    console.warn("Speech recognition error:", event.error);
+                    isRecordingSubtitleVoice = false;
+                    removeVoiceListeningCard();
+                    if (event.error === 'not-allowed') {
+                        appendAIChatMessage('assistant', '⚠️ Permiso de micrófono no concedido. Puedes escribir el texto del subtítulo directamente.');
+                    } else if (event.error === 'no-speech') {
+                        appendAIChatMessage('assistant', '⚠️ No se detectó audio en el micrófono. Pulsa "🎙️ Subtítulo con Voz" e inténtalo de nuevo.');
+                    } else {
+                        showVoiceSubtitleFallbackModal("Escribe la frase que se escucha en el video para generar el subtítulo sincronizado:");
+                    }
+                };
+
+                subtitleVoiceRecognizer.onend = () => {
+                    isRecordingSubtitleVoice = false;
+                    removeVoiceListeningCard();
+                    if (finalTranscript && finalTranscript.trim().length > 0) {
+                        addSubtitleClipFromVoice(finalTranscript.trim());
+                    }
+                };
+
+                subtitleVoiceRecognizer.start();
+            } catch(err) {
+                console.error("Error starting speech recognition:", err);
+                showVoiceSubtitleFallbackModal("Escribe el texto que se escucha en el video para generar el subtítulo:");
+            }
+        }
+
+        function stopVoiceSubtitleRecording() {
+            if (subtitleVoiceRecognizer) {
+                try {
+                    subtitleVoiceRecognizer.stop();
+                } catch(e) {}
+            }
+            isRecordingSubtitleVoice = false;
+            removeVoiceListeningCard();
+        }
+
+        function showVoiceListeningCard() {
+            removeVoiceListeningCard();
+            const container = document.getElementById('aiChatMessages');
+            const typing = document.getElementById('aiTypingIndicator');
+            if (!container) return;
+
+            const card = document.createElement('div');
+            card.className = 'ai-voice-listening-card';
+            card.id = 'aiVoiceListeningCard';
+            card.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-weight:700;color:#f59e0b;font-size:0.78rem;display:flex;align-items:center;gap:6px;">
+                        <i class="fa-solid fa-microphone-lines" style="color:#ef4444;"></i>
+                        Escuchando voz para subtítulo...
+                    </span>
+                    <button type="button" onclick="stopVoiceSubtitleRecording()" class="ai-action-undo-btn" style="background:#ef4444;border-color:#ef4444;color:#fff;">Detener</button>
+                </div>
+                <div class="ai-voice-wave-container">
+                    <div class="ai-voice-wave-bar"></div>
+                    <div class="ai-voice-wave-bar"></div>
+                    <div class="ai-voice-wave-bar"></div>
+                    <div class="ai-voice-wave-bar"></div>
+                    <div class="ai-voice-wave-bar"></div>
+                </div>
+                <p id="aiVoiceListeningStatusText" style="font-size:0.73rem;color:#cbd5e1;margin:0;text-align:center;">
+                    Habla ahora. Myxsi edit transcribirá y creará el subtítulo sincronizado.
+                </p>
+            `;
+
+            if (typing) {
+                container.insertBefore(card, typing);
+            } else {
+                container.appendChild(card);
+            }
+            scrollAIChatToBottom();
+        }
+
+        function updateVoiceListeningCardText(msg) {
+            const el = document.getElementById('aiVoiceListeningStatusText');
+            if (el) el.innerHTML = msg;
+        }
+
+        function removeVoiceListeningCard() {
+            const card = document.getElementById('aiVoiceListeningCard');
+            if (card && card.parentNode) {
+                card.parentNode.removeChild(card);
+            }
+        }
+
+        function showVoiceSubtitleFallbackModal(promptText = "Escribe el texto que se escucha en el audio:") {
+            const defaultText = "Mi nuevo video en Myxsi Studio";
+            const userText = prompt(promptText, defaultText);
+            if (userText && userText.trim().length > 0) {
+                addSubtitleClipFromVoice(userText.trim());
+            }
+        }
+
+        function previewPlayback(durationSec = 3.5) {
+            if (projectState.isPlaying) {
+                pausePlayback();
+            }
+            startPlayback();
+            setTimeout(() => {
+                if (projectState.isPlaying) {
+                    pausePlayback();
+                }
+            }, durationSec * 1000);
+        }
+
+        // =========================================================================
+        // PROTOCOLO DE COMANDOS INTERNOS EXCLUSIVOS DE MYXSI EDIT (!DSL)
+        // =========================================================================
+        const MYXSI_COMMANDS_DOC = `
+📋 **Comandos Internos Exclusivos de Myxsi edit:**
+• \`!SCALE image +0.25\` : Agrandar imagen (+25%) de forma perfecta
+• \`!SCALE image -0.25\` : Desagrandar imagen (-25%) de forma perfecta
+• \`!SCALE image 1.5\` : Fijar tamaño de imagen al 150%
+• \`!SCALE image reset\` : Restablecer tamaño original (100%)
+• \`!VOICE_SUBTITLE\` : Activar micrófono y generar subtítulo sincronizado con tu voz
+• \`!SUBTITLE <texto>\` : Añadir subtítulo viral con borde negro y texto dorado
+• \`!SPLIT\` / \`!SPLIT <segundos>\` : Cortar clip en cabezal o segundo
+• \`!SPEED <1.5|2.0|0.5>\` : Cambiar velocidad del clip
+• \`!FILTER <vintage|bw|warm|cool|cyber|none>\` : Aplicar filtro cinematográfico
+• \`!SHADER <film_grain|vhs|rgb_split|neon_glow|beat_shake|none>\` : Efecto visual
+• \`!MOVE <left|right>\` : Mover clip hacia izquierda o derecha
+• \`!POS <x> <y>\` : Cambiar posición y encuadre (-0.5 a 0.5)
+• \`!RATIO <9:16|16:9|1:1>\` : Formato de pantalla
+• \`!MUTE <true|false>\` : Silenciar o activar audio
+• \`!SEEK <segundos>\` : Mover cabezal a un segundo exacto
+• \`!DUPLICATE\` / \`!DELETE\` : Duplicar o borrar clip activo
+• \`!UNDO\` / \`!REDO\` : Deshacer o rehacer cambios
+`;
+
+        function parseInternalDSLCommand(rawInput) {
+            if (!rawInput) return null;
+            const str = rawInput.trim();
+
+            let cmdLine = '';
+            if (str.startsWith('!')) {
+                cmdLine = str.substring(1).trim();
+            } else if (/^myxsi:\s*/i.test(str)) {
+                cmdLine = str.replace(/^myxsi:\s*/i, '').trim();
+            } else {
+                return null;
+            }
+
+            const parts = cmdLine.split(/\s+/);
+            const cmd = parts[0].toUpperCase();
+            const arg1 = parts[1] || '';
+            const arg2 = parts[2] || '';
+            const restArgs = parts.slice(1).join(' ');
+
+            switch (cmd) {
+                case 'SCALE':
+                case 'ESCALAR':
+                case 'ZOOM': {
+                    let target = 'auto';
+                    let valStr = arg1;
+                    if (/^(image|img|foto|video|vid|clip|active)$/i.test(arg1)) {
+                        target = arg1.toLowerCase();
+                        if (target === 'img' || target === 'foto') target = 'image';
+                        if (target === 'vid') target = 'video';
+                        valStr = arg2;
+                    }
+
+                    let isRelative = false;
+                    let scaleVal = 1.0;
+
+                    if (valStr.startsWith('+') || valStr.startsWith('-')) {
+                        isRelative = true;
+                        if (valStr.endsWith('%')) {
+                            scaleVal = parseFloat(valStr.replace('%', '')) / 100;
+                        } else {
+                            scaleVal = parseFloat(valStr);
+                        }
+                    } else if (/^(double|doble|2x)$/i.test(valStr)) {
+                        return { action: 'scale_advanced', target: target, scale: 2.0, isMultiplier: true, rawCmd: str };
+                    } else if (/^(half|mitad|0\.5x)$/i.test(valStr)) {
+                        return { action: 'scale_advanced', target: target, scale: 0.5, isMultiplier: true, rawCmd: str };
+                    } else if (/^(reset|normal|100%|1x)$/i.test(valStr)) {
+                        scaleVal = 1.0;
+                        isRelative = false;
+                    } else if (valStr.endsWith('%')) {
+                        scaleVal = parseFloat(valStr.replace('%', '')) / 100;
+                        isRelative = false;
+                    } else if (!isNaN(parseFloat(valStr)) && valStr !== '') {
+                        scaleVal = parseFloat(valStr);
+                        isRelative = false;
+                    } else {
+                        scaleVal = 0.25;
+                        isRelative = true;
+                    }
+
+                    return { action: 'scale_advanced', target: target, scale: scaleVal, isRelative: isRelative, rawCmd: str };
+                }
+
+                case 'VOICE_SUBTITLE':
+                case 'VOICESUBTITLE':
+                case 'VOZ_SUBTITULO': {
+                    return { action: 'voice_subtitle', rawCmd: str };
+                }
+
+                case 'SUBTITLE':
+                case 'SUBTITULO': {
+                    const subText = restArgs || 'Texto de Subtítulo';
+                    return { action: 'add_subtitle', text: subText, rawCmd: str };
+                }
+
+                case 'SPLIT':
+                case 'CORTAR':
+                case 'DIVIDIR': {
+                    const timeSec = parseFloat(arg1);
+                    if (!isNaN(timeSec) && timeSec >= 0) {
+                        return { action: 'split_at', time: timeSec, rawCmd: str };
+                    }
+                    return { action: 'split', rawCmd: str };
+                }
+
+                case 'SPEED':
+                case 'VELOCIDAD': {
+                    const spd = parseFloat(arg1.replace('x', '')) || 1.0;
+                    return { action: 'speed', value: spd, rawCmd: str };
+                }
+
+                case 'FILTER':
+                case 'FILTRO': {
+                    const f = (arg1 || 'none').toLowerCase();
+                    return { action: 'filter', value: f, rawCmd: str };
+                }
+
+                case 'SHADER':
+                case 'EFECTO': {
+                    const s = (arg1 || 'none').toLowerCase();
+                    return { action: 'shader', value: s, rawCmd: str };
+                }
+
+                case 'MOVE':
+                case 'MOVER': {
+                    const dir = (/^(left|izq|izquierda)$/i.test(arg1)) ? 'left' : 'right';
+                    return { action: 'move_clip', direction: dir, rawCmd: str };
+                }
+
+                case 'POS':
+                case 'POSITION':
+                case 'ENCUADRE': {
+                    const x = parseFloat(arg1) || 0;
+                    const y = parseFloat(arg2) || 0;
+                    return { action: 'position', x: x, y: y, rawCmd: str };
+                }
+
+                case 'RATIO':
+                case 'ASPECT': {
+                    const r = arg1 || '9:16';
+                    return { action: 'ratio', value: r, rawCmd: str };
+                }
+
+                case 'MUTE':
+                case 'SILENCIO': {
+                    const val = !(/^(false|no|off|0)$/i.test(arg1));
+                    return { action: 'mute', value: val, rawCmd: str };
+                }
+
+                case 'UNMUTE':
+                case 'SOUND':
+                case 'AUDIO':
+                case 'SONIDO': {
+                    return { action: 'unmute_and_check', rawCmd: str };
+                }
+
+                case 'SEEK':
+                case 'IR': {
+                    const t = parseFloat(arg1) || 0;
+                    return { action: 'seek', time: t, rawCmd: str };
+                }
+
+                case 'DUPLICATE':
+                case 'DUPLICAR': {
+                    return { action: 'duplicate', rawCmd: str };
+                }
+
+                case 'DELETE':
+                case 'ELIMINAR':
+                case 'BORRAR': {
+                    return { action: 'delete', rawCmd: str };
+                }
+
+                case 'UNDO':
+                case 'DESHACER': {
+                    return { action: 'undo', rawCmd: str };
+                }
+
+                case 'REDO':
+                case 'REHACER': {
+                    return { action: 'redo', rawCmd: str };
+                }
+
+                case 'HELP':
+                case 'AYUDA':
+                case 'COMANDOS': {
+                    return { action: 'help', rawCmd: str };
+                }
+
+                default:
+                    return null;
+            }
         }
 
         function executeVideoAIAction(actionObj) {
             if (!actionObj || !actionObj.action) return null;
             const act = actionObj.action.toLowerCase();
             let description = actionObj.description || '';
+            let actionButtons = null;
 
             switch (act) {
+                case 'scale_advanced': {
+                    const target = actionObj.target || 'auto';
+                    let scaleVal = actionObj.scale !== undefined ? actionObj.scale : 0.25;
+                    const isRel = !!actionObj.isRelative;
+
+                    if (actionObj.isMultiplier) {
+                        const targetClip = findTargetClipForScaling(target);
+                        if (targetClip) {
+                            const curScale = targetClip.scale !== undefined ? targetClip.scale : (targetClip.track === 'track-overlay' ? 0.5 : 1.0);
+                            scaleVal = curScale * scaleVal;
+                        }
+                    }
+
+                    const res = setClipScaleAdvanced(scaleVal, target, isRel);
+                    if (res) {
+                        description = res.description;
+                        const tgtType = res.isImage ? 'image' : 'video';
+                        actionButtons = [
+                            { label: '➕ Agrandar (+25%)', cmd: `!SCALE ${tgtType} +0.25`, styleClass: 'pill-gold' },
+                            { label: '➖ Desagrandar (-25%)', cmd: `!SCALE ${tgtType} -0.25`, styleClass: 'pill-gold' },
+                            { label: '🔄 100% Original', cmd: `!SCALE ${tgtType} 1.0` },
+                            { label: '🎯 Centrar', cmd: '!POS 0 0' }
+                        ];
+                    }
+                    break;
+                }
+                case 'voice_subtitle': {
+                    startVoiceSubtitleRecording();
+                    description = 'Reconocimiento de voz para subtítulos activado';
+                    break;
+                }
+                case 'add_subtitle': {
+                    const subText = actionObj.text || 'Texto de Subtítulo';
+                    const sub = addSubtitleClipDirectly(subText);
+                    description = `Subtítulo viral añadido: "${subText}"`;
+                    actionButtons = [
+                        { label: '▶ Reproducir', action: () => previewPlayback(sub.duration + 0.5), styleClass: 'pill-gold' },
+                        { label: '🎙️ Subtítulo con Voz', action: () => startVoiceSubtitleRecording(), styleClass: 'pill-cyan' }
+                    ];
+                    break;
+                }
                 case 'split':
                 case 'cortar':
                 case 'dividir': {
@@ -4592,8 +6080,8 @@
                 case 'zoom':
                 case 'scale': {
                     const scale = parseFloat(actionObj.value) || 1.0;
-                    setClipScale(scale);
-                    description = `Zoom ajustado al ${Math.round(scale * 100)}%`;
+                    const res = setClipScaleAdvanced(scale, 'auto', false);
+                    description = res ? res.description : `Zoom ajustado al ${Math.round(scale * 100)}%`;
                     break;
                 }
                 case 'position':
@@ -4613,6 +6101,36 @@
                         if (!projectState.isMutedAll) toggleMuteAll();
                         description = 'Audio silenciado';
                     }
+                    break;
+                }
+                case 'unmute_and_check': {
+                    unlockAudioEngine();
+                    projectState.isMutedAll = false;
+                    const btn = document.getElementById('btnMuteAll');
+                    if (btn) {
+                        btn.classList.remove('active');
+                        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i><span>Silenciar</span>';
+                    }
+                    projectState.clips.forEach(c => {
+                        if (c.type === 'video' || c.type === 'audio') {
+                            if (c.volume === 0 || c.volume === undefined) c.volume = 1.0;
+                            let mediaEl = mediaCache.get(c.id);
+                            if (!mediaEl && c.type === 'audio') {
+                                mediaEl = getOrCreateAudioElement(c);
+                            }
+                            if (mediaEl) {
+                                mediaEl.muted = false;
+                                mediaEl.volume = 1.0;
+                            }
+                        }
+                    });
+                    syncAudioElements(projectState.isPlaying);
+                    syncVideoElements(projectState.isPlaying);
+                    description = 'Sonido reactivado al 100% y pistas resincronizadas';
+                    actionButtons = [
+                        { label: '▶ Reproducir ahora', action: () => { if (!projectState.isPlaying) startPlayback(); }, styleClass: 'pill-gold' },
+                        { label: '🎵 Añadir Música Lofi', action: () => addPresetAudio('Lofi Chill Beat'), styleClass: 'pill-cyan' }
+                    ];
                     break;
                 }
                 case 'ratio': {
@@ -4647,6 +6165,10 @@
                     description = 'Acción rehecha';
                     break;
                 }
+                case 'help': {
+                    description = 'Mostrando comandos de Myxsi edit';
+                    break;
+                }
                 default:
                     return null;
             }
@@ -4654,7 +6176,7 @@
             renderFrame(projectState.currentTime);
             renderTimelineClips();
             updateAIVideoStatusBar();
-            return description;
+            return { description: description, actionButtons: actionButtons };
         }
 
         // =========================================================================
@@ -4663,7 +6185,57 @@
         function parseLocalVideoIntent(userMsg) {
             const msg = userMsg.toLowerCase().trim();
 
-            // 1. Deshacer / Rehacer
+            // 0. Reconocimiento de Subtítulos por Voz ("que se escuche la voz", "con mi voz")
+            if (/subt[ií]tulo.*(?:voz|audio|habl|escuch)|(?:voz|audio|habl|escuch).*subt[ií]tulo|que\s+e\s+escuche\s+la\s+voz|que\s+se\s+escuche\s+la\s+voz|transcribir\s+voz|dictar\s+subt[ií]tulo/i.test(msg)) {
+                return { action: 'voice_subtitle', response: '¡Entendido! He activado el micrófono para escuchar tu voz y sincronizar los subtítulos.' };
+            }
+
+            // Subtítulo con texto específico
+            const subMatch = msg.match(/(?:subt[ií]tulo|subtitulo)\s+(?:que diga|con el texto|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
+            if (subMatch && subMatch[1].trim().length > 1 && !/voz|audio|habl/i.test(subMatch[1])) {
+                const subTxt = subMatch[1].trim();
+                return { action: 'add_subtitle', text: subTxt, response: `He añadido el subtítulo "${subTxt}" en el cabezal de reproducción.` };
+            }
+
+            // 1. Desagrandar / Reducir Imágenes de forma perfecta (procesar primero para evitar colisión con 'agrandar')
+            if (/desagranda(?:r|me)?\s+(?:la\s+)?(?:imagen|foto|gr[aá]fico)|achica(?:r|me)?\s+(?:la\s+)?(?:imagen|foto)|reduc(?:ir|e)?\s+(?:la\s+)?(?:imagen|foto)|hacer?\s+m[aá]s\s+chica\s+(?:la\s+)?(?:imagen|foto)|m[aá]s\s+peque[ñn]a\s+(?:la\s+)?(?:imagen|foto)|disminu(?:ir|ye)?\s+(?:la\s+)?(?:imagen|foto)/i.test(msg)) {
+                const pctMatch = msg.match(/(\d+)%/);
+                let delta = -0.25;
+                if (pctMatch) {
+                    delta = -(parseInt(pctMatch[1]) / 100);
+                }
+                if (/mitad|0\.5x/i.test(msg)) {
+                    return { action: 'scale_advanced', target: 'image', scale: 0.5, isMultiplier: true, response: 'He reducido la imagen a la mitad.' };
+                }
+                return { action: 'scale_advanced', target: 'image', scale: delta, isRelative: true, response: `He reducido la imagen un ${Math.round(Math.abs(delta) * 100)}% con centrado perfecto.` };
+            }
+
+            // Agrandar / Ampliar Imágenes de forma perfecta
+            if (/(?<!des)agranda(?:r|me)?\s+(?:la\s+)?(?:imagen|foto|gr[aá]fico)|hacer?\s+m[aá]s\s+grande\s+(?:la\s+)?(?:imagen|foto)|m[aá]s\s+grande\s+(?:la\s+)?(?:imagen|foto)|amplia(?:r)?\s+(?:la\s+)?(?:imagen|foto)/i.test(msg)) {
+                const pctMatch = msg.match(/(\d+)%/);
+                let delta = 0.25;
+                if (pctMatch) {
+                    const p = parseInt(pctMatch[1]);
+                    if (p > 100) delta = (p - 100) / 100;
+                    else delta = p / 100;
+                }
+                if (/doble|2x/i.test(msg)) {
+                    return { action: 'scale_advanced', target: 'image', scale: 2.0, isMultiplier: true, response: 'He duplicado el tamaño de la imagen perfectamente.' };
+                }
+                return { action: 'scale_advanced', target: 'image', scale: delta, isRelative: true, response: `He agrandado la imagen un ${Math.round(delta * 100)}% manteniendo resolución y aspecto perfecto.` };
+            }
+
+            // Desagrandar / Achicar genérico
+            if (/desagranda(?:r|me)?|achica(?:r|me)?|reduc(?:ir|e)?|m[aá]s\s+peque[ñn]o/i.test(msg)) {
+                return { action: 'scale_advanced', target: 'auto', scale: -0.25, isRelative: true, response: 'He reducido el elemento un -25%.' };
+            }
+
+            // Agrandar genérico
+            if (/(?<!des)agranda(?:r|me)?|hazlo\s+m[aá]s\s+grande|m[aá]s\s+grande/i.test(msg)) {
+                return { action: 'scale_advanced', target: 'auto', scale: 0.25, isRelative: true, response: 'He agrandado el elemento un +25%.' };
+            }
+
+            // 2. Deshacer / Rehacer
             if (/deshaz|deshacer|undo|atrás|revertir/i.test(msg)) {
                 return { action: 'undo', response: 'Listo, he deshecho la última modificación sobre el video.' };
             }
@@ -4671,7 +6243,7 @@
                 return { action: 'redo', response: 'He rehecho el cambio en tu video.' };
             }
 
-            // 2. Dividir / Cortar
+            // 3. Dividir / Cortar
             if (/corta|cortar|divide|dividir|split|separar|recorta en/i.test(msg)) {
                 const timeMatch = msg.match(/(?:segundo|en|al)?\s*(\d+(?:\.\d+)?)\s*(?:s|segundos?)?/i);
                 if (timeMatch && parseFloat(timeMatch[1]) > 0 && !msg.includes('playhead') && !msg.includes('aquí')) {
@@ -4681,7 +6253,7 @@
                 return { action: 'split', response: 'He dividido el clip en la posición actual del cabezal de reproducción.' };
             }
 
-            // 3. Velocidad
+            // 4. Velocidad
             if (/acelera|rapido|rápido|velocidad/i.test(msg)) {
                 if (/2x|doble/i.test(msg)) return { action: 'speed', value: 2.0, response: 'Velocidad duplicada a 2.0x.' };
                 if (/1\.5x|1\.5/i.test(msg)) return { action: 'speed', value: 1.5, response: 'Velocidad aumentada a 1.5x.' };
@@ -4697,7 +6269,7 @@
                 return { action: 'speed', value: 1.0, response: 'Velocidad restablecida a 1.0x normal.' };
             }
 
-            // 4. Mover clip de lado en la pista
+            // 5. Mover clip de lado en la pista
             if (/mueve.*derecha|hacia la derecha|der|pasar al final/i.test(msg)) {
                 return { action: 'move_clip', direction: 'right', response: 'He movido el clip hacia la derecha en la pista magnética.' };
             }
@@ -4705,7 +6277,7 @@
                 return { action: 'move_clip', direction: 'left', response: 'He movido el clip hacia la izquierda en la pista magnética.' };
             }
 
-            // 5. Filtros de Color
+            // 6. Filtros de Color
             if (/vintage|retro|antiguo|sepia/i.test(msg)) {
                 return { action: 'filter', value: 'vintage', response: 'Filtro Vintage cinematográfico aplicado.' };
             }
@@ -4725,7 +6297,7 @@
                 return { action: 'filter', value: 'none', response: 'Filtros de color desactivados, mostrando original.' };
             }
 
-            // 6. Efectos Shader
+            // 7. Efectos Shader
             if (/grano|film grain|pelicula|película/i.test(msg)) {
                 return { action: 'shader', value: 'film_grain', response: 'Efecto de grano de película cinematográfico aplicado.' };
             }
@@ -4748,15 +6320,15 @@
                 return { action: 'shader', value: 'none', response: 'Efectos visuales desactivados.' };
             }
 
-            // 7. Texto / Subtítulo
-            const textMatch = msg.match(/(?:texto|título|titulo|subtítulo|subtitulo|escribe|pon)\s+(?:que diga|con|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
+            // 8. Texto común
+            const textMatch = msg.match(/(?:texto|título|titulo|escribe|pon)\s+(?:que diga|con|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
             if (textMatch && textMatch[1].trim().length > 1) {
                 const txt = textMatch[1].trim();
                 return { action: 'add_text', text: txt, style: 'viral', response: `He añadido el texto "${txt}" a la pista de títulos.` };
             }
 
-            // 8. Zoom y Encuadre
-            if (/zoom|amplia|amplía|acerca/i.test(msg)) {
+            // 9. Zoom y Encuadre
+            if (/zoom|acerca/i.test(msg)) {
                 const zoomMatch = msg.match(/(\d+)%/);
                 const zVal = zoomMatch ? parseInt(zoomMatch[1]) / 100 : 1.25;
                 return { action: 'zoom', value: zVal, response: `Zoom configurado al ${Math.round(zVal * 100)}%.` };
@@ -4765,15 +6337,18 @@
                 return { action: 'position', x: 0, y: 0, response: 'Video centrado en el encuadre.' };
             }
 
-            // 9. Silencio / Audio
-            if (/silencia|quitar? sonido|sin audio|mute|silencio/i.test(msg)) {
+            // 10. Silencio / Audio y Reparación Inmediata de Sonido
+            if (/no\s+se\s+escucha|no\s+se\s+oye|sin\s+sonido|no\s+hay\s+sonido|problema.*sonido|problema.*audio|activa(?:r)?\s+(?:el\s+)?(?:sonido|audio)|desmutea|sonido\s+on|sube\s+(?:el\s+)?volumen|arregla(?:r)?\s+(?:el\s+)?sonido/i.test(msg)) {
+                return { action: 'unmute_and_check', response: '¡Audio y sonido reactivados al 100%! He desmuteado todas las pistas, resincronizado el motor de audio y generado la pista musical.' };
+            }
+            if (/silencia|quitar?\s+(?:el\s+)?sonido|sin\s+audio|mute|silencio/i.test(msg)) {
                 return { action: 'mute', value: true, response: 'Audio silenciado.' };
             }
-            if (/activa sonido|con audio|desmutea|sonido on/i.test(msg)) {
+            if (/con audio/i.test(msg)) {
                 return { action: 'mute', value: false, response: 'Audio activado.' };
             }
 
-            // 10. Formato / Ratio
+            // 11. Formato / Ratio
             if (/vertical|tiktok|reels|shorts|9:16/i.test(msg)) {
                 return { action: 'ratio', value: '9:16', response: 'Formato vertical 9:16 aplicado para TikTok y Reels.' };
             }
@@ -4784,12 +6359,12 @@
                 return { action: 'ratio', value: '1:1', response: 'Formato cuadrado 1:1 aplicado.' };
             }
 
-            // 11. Navegación
+            // 12. Navegación
             if (/inicio|principio|0:00|comienzo|regresa/i.test(msg)) {
                 return { action: 'seek', time: 0, response: 'Cabezal regresado al inicio (0:00).' };
             }
 
-            // 12. Duplicar / Eliminar
+            // 13. Duplicar / Eliminar
             if (/duplica|copia/i.test(msg)) {
                 return { action: 'duplicate', response: 'Clip duplicado con éxito.' };
             }
@@ -4797,11 +6372,16 @@
                 return { action: 'delete', response: 'Clip eliminado del proyecto.' };
             }
 
+            // 14. Ayuda y Comandos
+            if (/ayuda|comandos|qu[eé]\s+comandos|qu[eé]\s+haces|instrucciones/i.test(msg)) {
+                return { action: 'help' };
+            }
+
             return null;
         }
 
         // =========================================================================
-        // PROCESAMIENTO HÍBRIDO (BACKEND CLOUDFLARE + MOTOR LOCAL)
+        // PROCESAMIENTO HÍBRIDO ULTRA-EFICIENTE (COMANDOS DSL + BACKEND + LOCAL)
         // =========================================================================
         async function processAIChatMessage(userText) {
             if (!userText || !userText.trim()) return;
@@ -4810,13 +6390,47 @@
             // 1. Mostrar mensaje del usuario en el chat
             appendAIChatMessage('user', text);
 
-            // 2. Mostrar indicador de pensamiento
+            // 2. Reconocer primero si es un comando DSL interno exclusivo (!CMD o MYXSI:CMD)
+            const dslCommand = parseInternalDSLCommand(text);
+            if (dslCommand) {
+                if (dslCommand.action === 'help') {
+                    appendAIChatMessage('assistant', MYXSI_COMMANDS_DOC);
+                    return;
+                }
+                if (dslCommand.action === 'voice_subtitle') {
+                    startVoiceSubtitleRecording();
+                    return;
+                }
+
+                const execResult = executeVideoAIAction(dslCommand);
+                const desc = (typeof execResult === 'object' && execResult) ? execResult.description : (typeof execResult === 'string' ? execResult : 'Comando ejecutado con éxito');
+                const buttons = (typeof execResult === 'object' && execResult) ? execResult.actionButtons : null;
+
+                let reply = `⚡ **Comando ejecutado:** ${desc}.`;
+                if (dslCommand.action === 'scale_advanced') {
+                    reply = `🔍 **Escala modificada de forma milimétrica:** ${desc}. Resolución y suavizado de alta calidad preservados.`;
+                }
+                appendAIChatMessage('assistant', reply, desc, buttons);
+                aiChatHistory.push({ role: 'user', content: text });
+                aiChatHistory.push({ role: 'assistant', content: reply });
+                return;
+            }
+
+            // 3. Revisar el motor local semántico
+            const localIntent = parseLocalVideoIntent(text);
+            if (localIntent && localIntent.action === 'help') {
+                appendAIChatMessage('assistant', MYXSI_COMMANDS_DOC);
+                return;
+            }
+            if (localIntent && localIntent.action === 'voice_subtitle') {
+                startVoiceSubtitleRecording();
+                return;
+            }
+
+            // 4. Mostrar indicador de pensamiento
             const typing = document.getElementById('aiTypingIndicator');
             if (typing) typing.style.display = 'flex';
             scrollAIChatToBottom();
-
-            // 3. Revisar primero el motor local de intenciones (para respuesta instantánea y offline)
-            const localIntent = parseLocalVideoIntent(text);
 
             let aiResponseText = "";
             let actionToExecute = localIntent;
@@ -4833,27 +6447,25 @@
                     shader: projectState.activeShader
                 };
 
-                const systemPrompt = `Eres Myxsi edit, el asistente de inteligencia artificial de Myxsi Video Studio. Tu misión es asistir al editor y ejecutar acciones de edición profesional sobre el video.
+                const systemPrompt = `Eres Myxsi edit, el asistente de inteligencia artificial ultra-eficiente de Myxsi Video Studio. Tu misión es asistir al editor y ejecutar acciones de edición profesional sobre el video.
 Responde de forma concisa, educada y profesional en español (máximo 2 a 3 oraciones).
 Estado del video: Duración ${projectContext.duration}s, Tiempo actual ${projectContext.currentTime}s, Ratio ${projectContext.ratio}, Filtro activo ${projectContext.filter}.
-Si el usuario te pide una modificación, debes incluir al final un bloque de código exactamente con el tag \`\`\`video_action conteniendo un JSON con la acción.
-Acciones posibles:
-{"action":"split"}
-{"action":"split_at","time":4.5}
-{"action":"speed","value":1.5}
-{"action":"filter","value":"vintage"|"bw"|"warm"|"cool"|"cyber"|"none"}
-{"action":"shader","value":"film_grain"|"vhs"|"rgb_split"|"neon_glow"|"beat_shake"|"none"}
-{"action":"move_clip","direction":"left"|"right"}
-{"action":"add_text","text":"Texto"}
-{"action":"zoom","value":1.25}
-{"action":"position","x":0,"y":0}
-{"action":"mute","value":true|false}
-{"action":"ratio","value":"9:16"|"16:9"|"1:1"}
-{"action":"seek","time":0}
-{"action":"duplicate"}
-{"action":"delete"}
-{"action":"undo"}
-{"action":"redo"}`;
+Si el usuario te pide una modificación, incluye al final tu comando interno exclusivo con el formato !COMANDO o con el tag \`\`\`video_action conteniendo el JSON.
+Comandos que dominas exclusivamente:
+!SCALE image +0.25 (agrandar imagen)
+!SCALE image -0.25 (desagrandar imagen)
+!SCALE image 1.5 (fijar tamaño imagen al 150%)
+!VOICE_SUBTITLE (grabar voz para subtítulo sincronizado)
+!SUBTITLE <texto> (añadir subtítulo viral con borde negro y texto dorado)
+!SPLIT (cortar clip en cabezal)
+!SPEED <1.5|2.0|0.5> (velocidad)
+!FILTER <vintage|bw|warm|cool|cyber|none> (filtro de color)
+!SHADER <film_grain|vhs|rgb_split|neon_glow|beat_shake|none> (efectos)
+!MOVE <left|right> (mover clip en la pista)
+!RATIO <9:16|16:9|1:1> (relación de aspecto)
+!MUTE <true|false> (silenciar/activar audio)
+!POS <x> <y> (centrar o mover encuadre)
+!HELP (ayuda de comandos)`;
 
                 const res = await fetch(apiUrl, {
                     method: 'POST',
@@ -4876,6 +6488,13 @@ Acciones posibles:
                                 const parsedAction = JSON.parse(actionMatch[1]);
                                 actionToExecute = parsedAction;
                             } catch(e) {}
+                        } else {
+                            // Buscar si la IA emitió un comando !CMD en el texto
+                            const dslMatch = raw.match(/(![A-Z_]+(?:\s+[^\n]+)?)/);
+                            if (dslMatch) {
+                                const parsedDSL = parseInternalDSLCommand(dslMatch[1].trim());
+                                if (parsedDSL) actionToExecute = parsedDSL;
+                            }
                         }
                         aiResponseText = raw.replace(/```video_action[\s\S]*?```/gi, '').trim();
                     }
@@ -4886,36 +6505,43 @@ Acciones posibles:
 
             if (typing) typing.style.display = 'none';
 
-            // 4. Ejecutar la acción sobre el video si se identificó una
+            // 5. Ejecutar la acción identificada
             let executionResultDesc = null;
+            let executionActionButtons = null;
             if (actionToExecute) {
                 try {
-                    executionResultDesc = executeVideoAIAction(actionToExecute);
+                    const execRes = executeVideoAIAction(actionToExecute);
+                    if (typeof execRes === 'object' && execRes !== null) {
+                        executionResultDesc = execRes.description;
+                        executionActionButtons = execRes.actionButtons;
+                    } else if (typeof execRes === 'string') {
+                        executionResultDesc = execRes;
+                    }
                 } catch(e) {
                     console.error("Error executing video action:", e);
                 }
             }
 
-            // 5. Generar texto final de respuesta si no vino del backend
+            // 6. Generar texto final de respuesta si no vino del backend
             if (!aiResponseText) {
                 if (actionToExecute && actionToExecute.response) {
                     aiResponseText = actionToExecute.response;
                 } else if (executionResultDesc) {
                     aiResponseText = `¡Listo! He aplicado la modificación: ${executionResultDesc}.`;
                 } else {
-                    aiResponseText = `He analizado tu video. Tienes ${projectState.clips.length} clip(s) con una duración de ${projectState.duration.toFixed(1)}s en formato ${projectState.aspectRatio}. ¿Qué deseas que modifique (cortar, mover, filtros, velocidad, textos)?`;
+                    aiResponseText = `He analizado tu video. Tienes ${projectState.clips.length} clip(s) con una duración de ${projectState.duration.toFixed(1)}s en formato ${projectState.aspectRatio}. Puedes pedirme agrandar/desagrandar imágenes, agregar subtítulos por voz o escribir \`!HELP\` para ver todos los comandos.`;
                 }
             }
 
-            // 6. Añadir mensaje de la IA con badge de acción interactiva
-            appendAIChatMessage('assistant', aiResponseText, executionResultDesc);
+            // 7. Añadir mensaje de la IA con badge y botones de acción
+            appendAIChatMessage('assistant', aiResponseText, executionResultDesc, executionActionButtons);
             aiChatHistory.push({ role: 'user', content: text });
             aiChatHistory.push({ role: 'assistant', content: aiResponseText });
             scrollAIChatToBottom();
         }
 
         // =========================================================================
-        // DICTADO POR VOZ (SPEECH-TO-TEXT) EN MYXSI EDIT
+        // DICTADO POR VOZ (SPEECH-TO-TEXT) EN EL CHAT DE MYXSI EDIT
         // =========================================================================
         function toggleAIVoiceInput() {
             const micBtn = document.getElementById('aiBtnMic');

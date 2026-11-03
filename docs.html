@@ -2629,8 +2629,32 @@
             } else if (statusEl) {
                 statusEl.innerHTML = `<i class="fa-solid fa-hard-drive" style="color: #a78bfa;"></i> <span>Guardado local</span>`;
             }
-        }, 1200);
+        }, 500);
     };
+
+    // Guardado inmediato al cambiar de pestaña o cerrar el navegador para evitar pérdida de datos entre navegadores
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && window.smartDocQuill) {
+            if (docAutosaveTimeout) {
+                clearTimeout(docAutosaveTimeout);
+                docAutosaveTimeout = null;
+            }
+            window.exportDocToGoogleDriveSilent();
+        }
+    });
+
+    window.addEventListener('beforeunload', () => {
+        if (window.smartDocQuill) {
+            const html = window.smartDocQuill.root.innerHTML;
+            const effectiveId = window.activeGoogleDocId || new URLSearchParams(window.location.search).get('docId');
+            if (effectiveId) {
+                localStorage.setItem('smart_doc_content_' + effectiveId, html);
+                const title = (document.getElementById('smartDocTitle')?.value || '').trim() || 'Documento sin título';
+                localStorage.setItem('smart_doc_title_' + effectiveId, title);
+            }
+            window.exportDocToGoogleDriveSilent();
+        }
+    });
 
     // =========================================================
     // 3. COPILOTO IA & CHAT EN TIEMPO REAL CON LA HOJA
