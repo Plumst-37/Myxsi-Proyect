@@ -1721,6 +1721,11 @@
 
             renderBreadcrumbs();
 
+            // Renderizado instantáneo de archivos locales para que la pantalla NUNCA se quede en blanco
+            const initialLocal = getLocalFilesList(folderId);
+            allFolderFiles = initialLocal;
+            applyFiltersAndRender();
+
             let token = typeof window.ensureValidToken === 'function' 
                 ? await window.ensureValidToken(false) 
                 : (accessToken || localStorage.getItem('gdrive_access_token'));
@@ -1870,8 +1875,67 @@
             return [];
         }
 
+        // Escanear e indexar todos los documentos y hojas de cálculo creados en otras páginas de Myxsi
+        function syncAndIndexAllLocalArtifacts() {
+            let localFiles = [];
+            try {
+                localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                if (!Array.isArray(localFiles)) localFiles = [];
+            } catch(e) { localFiles = []; }
+
+            const existingIds = new Set(localFiles.map(f => f.id));
+
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key) continue;
+
+                    // 1. Documentos de Myxsi Docs
+                    if (key.startsWith('smart_doc_title_')) {
+                        const docId = key.replace('smart_doc_title_', '');
+                        if (docId && docId !== 'main_smart_doc' && docId !== 'doc_current' && !existingIds.has(docId)) {
+                            const title = localStorage.getItem(key) || 'Documento Myxsi';
+                            localFiles.unshift({
+                                id: docId,
+                                name: title,
+                                mimeType: 'application/vnd.google-apps.document',
+                                type: 'doc',
+                                isDoc: true,
+                                updatedAt: Date.now(),
+                                isLocal: true,
+                                isCloud: false
+                            });
+                            existingIds.add(docId);
+                        }
+                    }
+
+                    // 2. Hojas de cálculo de Myxsi Sheets
+                    if (key.startsWith('sheets_studio_title_')) {
+                        const sheetId = key.replace('sheets_studio_title_', '');
+                        if (sheetId && sheetId !== 'main_sheets_doc' && !existingIds.has(sheetId)) {
+                            const title = localStorage.getItem(key) || 'Hoja de Cálculo Myxsi';
+                            localFiles.unshift({
+                                id: sheetId,
+                                name: title,
+                                mimeType: 'application/vnd.google-apps.spreadsheet',
+                                type: 'sheet',
+                                isSheet: true,
+                                updatedAt: Date.now(),
+                                isLocal: true,
+                                isCloud: false
+                            });
+                            existingIds.add(sheetId);
+                        }
+                    }
+                }
+                localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+            } catch(e) {}
+            return localFiles;
+        }
+
         // Obtener Archivos Locales Guardados
         function getLocalFilesList(folderId = 'root') {
+            syncAndIndexAllLocalArtifacts();
             let stored = [];
             try {
                 stored = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');

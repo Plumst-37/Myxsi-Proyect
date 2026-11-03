@@ -855,4 +855,39 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
     } else {
         initImmediate();
     }
+
+    // -------------------------------------------------------------
+    // 11. SINCRONIZACIÓN REACTIVA ENTRE PESTAÑAS (MULTI-TAB SYNC)
+    // -------------------------------------------------------------
+    window.addEventListener('storage', (event) => {
+        if (!event.key || event.key === 'myxsi_user' || event.key === 'gdrive_access_token' || event.key === 'myxsi_local_files') {
+            renderUserProfile();
+            updateDriveStatusUI();
+            if (typeof window.loadCurrentFolder === 'function') {
+                window.loadCurrentFolder(window.currentFolderId || 'root');
+            }
+            if (typeof window.loadUserDocuments === 'function') {
+                window.loadUserDocuments();
+            }
+            if (typeof window.loadUserSheets === 'function') {
+                window.loadUserSheets();
+            }
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            renderUserProfile();
+            updateDriveStatusUI();
+            if (typeof window.loadCurrentFolder === 'function') {
+                window.loadCurrentFolder(window.currentFolderId || 'root');
+            }
+            if (typeof window.loadUserDocuments === 'function') {
+                window.loadUserDocuments();
+            }
+            if (typeof window.loadUserSheets === 'function') {
+                window.loadUserSheets();
+            }
+        }
+    });
 })();
