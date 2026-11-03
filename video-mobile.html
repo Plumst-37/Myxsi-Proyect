@@ -276,14 +276,37 @@
         .transport-center-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             background: rgba(18, 20, 28, 0.85);
             border: 1px solid rgba(255, 255, 255, 0.14);
             border-radius: 99px;
-            padding: 4px 14px 4px 5px;
+            padding: 4px 12px 4px 8px;
             backdrop-filter: blur(16px);
             pointer-events: auto;
             box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+        }
+
+        .transport-rewind-btn {
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.15s ease, transform 0.1s ease;
+            border-radius: 50%;
+        }
+
+        .transport-rewind-btn:hover {
+            color: var(--vs-accent);
+            transform: scale(1.1);
+        }
+
+        .transport-rewind-btn:active {
+            transform: scale(0.9);
         }
 
         .btn-play-pause-circle {
@@ -338,9 +361,25 @@
             width: 2px;
             background: #ffffff;
             transform: translateX(-50%);
-            z-index: 60;
-            pointer-events: none;
+            z-index: 65;
+            pointer-events: auto;
+            cursor: ew-resize;
+            touch-action: none;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.9);
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        /* Área táctil amplia y cómoda para agarrar la aguja / flecha con dedo o ratón */
+        .vstudio-center-needle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 44px;
+            cursor: ew-resize;
+            pointer-events: auto;
         }
 
         .needle-pip {
@@ -348,10 +387,51 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 14px;
-            height: 10px;
+            width: 20px;
+            height: 14px;
             background: #ffffff;
             clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+            cursor: ew-resize;
+            pointer-events: auto;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.85));
+            transition: transform 0.15s ease, background 0.15s ease, filter 0.15s ease;
+        }
+
+        .vstudio-center-needle:hover .needle-pip,
+        .vstudio-center-needle.scrubbing .needle-pip {
+            background: #feb504;
+            transform: translateX(-50%) scale(1.3);
+            filter: drop-shadow(0 0 10px #feb504);
+        }
+
+        .vstudio-center-needle.scrubbing {
+            background: #feb504;
+            box-shadow: 0 0 16px #feb504;
+        }
+
+        .needle-time-bubble {
+            position: absolute;
+            top: -24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(18, 20, 28, 0.95);
+            border: 1px solid #feb504;
+            color: #feb504;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+            z-index: 70;
+        }
+
+        .vstudio-center-needle.scrubbing .needle-time-bubble {
+            opacity: 1;
         }
 
         /* INDICADOR AMBAR DE INSERCIÓN MAGNÉTICA */
@@ -359,33 +439,37 @@
             position: absolute;
             top: 0;
             bottom: 0;
-            width: 3px;
-            background: var(--vs-accent);
-            box-shadow: 0 0 12px var(--vs-accent);
-            z-index: 70;
+            width: 4px;
+            background: #feb504;
+            box-shadow: 0 0 16px rgba(254, 181, 4, 0.9), 0 0 4px #ffffff;
+            z-index: 100;
             pointer-events: none;
             display: none;
             border-radius: 2px;
+            transform: translateX(-50%);
+            transition: left 0.05s ease-out;
         }
 
         .timeline-drop-indicator::before {
             content: '';
             position: absolute;
-            top: -5px;
-            left: -4px;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 6px solid var(--vs-accent);
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #feb504;
         }
 
         .timeline-drop-indicator::after {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: -4px;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-bottom: 6px solid var(--vs-accent);
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 8px solid #feb504;
         }
 
         /* ACCIONES LATERALES FIJAS */
@@ -451,10 +535,17 @@
 
         /* REGLA DE TIEMPO */
         .timeline-ruler-bar {
-            height: 22px;
+            height: 24px;
             position: relative;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            pointer-events: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            pointer-events: auto;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s ease;
+        }
+
+        .timeline-ruler-bar:hover {
+            background: rgba(255, 255, 255, 0.03);
         }
 
         .ruler-second-mark {
@@ -898,6 +989,462 @@
             transition: width 0.1s linear;
         }
 
+        /* =========================================================================
+           BOTONES Y ACCESOS DE MYXSI EDIT IA
+           ========================================================================= */
+        .topbar-ai-btn {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(0, 229, 255, 0.18));
+            border: 1px solid rgba(168, 85, 247, 0.55);
+            color: #ffffff;
+            padding: 5px 11px;
+            border-radius: 99px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.18s ease;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.28);
+        }
+
+        .topbar-ai-btn i {
+            color: #feb504;
+            font-size: 0.82rem;
+            animation: pulseSparkle 2.5s infinite ease-in-out;
+        }
+
+        .topbar-ai-btn:hover {
+            transform: scale(1.04);
+            border-color: #00e5ff;
+            box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+        }
+
+        .topbar-ai-btn.active {
+            background: linear-gradient(135deg, #a855f7, #00e5ff);
+            color: #000000;
+            border-color: #ffffff;
+            font-weight: 800;
+        }
+
+        .topbar-ai-btn.active i {
+            color: #000000;
+        }
+
+        @keyframes pulseSparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.9; }
+            50% { transform: scale(1.22) rotate(12deg); opacity: 1; filter: drop-shadow(0 0 6px #feb504); }
+        }
+
+        /* Pestaña lateral derecha para acceso rápido sin estorbar */
+        .ai-side-dock-btn {
+            position: fixed;
+            right: 0;
+            top: 48%;
+            transform: translateY(-50%);
+            background: rgba(18, 20, 30, 0.9);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            padding: 10px 6px 10px 8px;
+            color: #ffffff;
+            cursor: pointer;
+            z-index: 89;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            backdrop-filter: blur(14px);
+            box-shadow: -2px 0 18px rgba(0, 0, 0, 0.65);
+            transition: all 0.2s ease;
+        }
+
+        .ai-side-dock-btn:hover {
+            background: rgba(28, 30, 48, 0.98);
+            padding-left: 12px;
+            border-color: #00e5ff;
+            box-shadow: 0 0 22px rgba(0, 229, 255, 0.5);
+        }
+
+        .ai-side-dock-btn i {
+            color: #feb504;
+            font-size: 0.95rem;
+        }
+
+        .ai-side-dock-btn span {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: #00e5ff;
+            letter-spacing: 0.5px;
+        }
+
+        /* Overlay translúcido de fondo para cerrar fácilmente */
+        .ai-panel-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(2px);
+            z-index: 92;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .ai-panel-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* =========================================================================
+           PANEL LATERAL DERECHO DE CHAT IA (MYXSI EDIT)
+           ========================================================================= */
+        .ai-side-panel {
+            position: fixed;
+            right: 0;
+            top: calc(44px + var(--safe-top));
+            bottom: 0;
+            width: 360px;
+            max-width: 90vw;
+            background: rgba(13, 15, 23, 0.97);
+            backdrop-filter: blur(24px);
+            border-left: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: -8px 0 35px rgba(0, 0, 0, 0.85);
+            z-index: 95;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(102%);
+            transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+        }
+
+        .ai-side-panel.open {
+            transform: translateX(0);
+        }
+
+        /* Cabecera del Panel */
+        .ai-panel-header {
+            padding: 12px 14px;
+            background: rgba(20, 23, 35, 0.95);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .ai-panel-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-panel-title-group i {
+            color: #feb504;
+            font-size: 1.05rem;
+            filter: drop-shadow(0 0 8px rgba(254, 181, 4, 0.6));
+        }
+
+        .ai-panel-title {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+
+        .ai-panel-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #00e5ff;
+            background: rgba(0, 229, 255, 0.12);
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            padding: 2px 6px;
+            border-radius: 99px;
+        }
+
+        .ai-panel-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--vs-text-muted);
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            transition: all 0.15s ease;
+        }
+
+        .ai-panel-close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Barra de estado del video en tiempo real */
+        .ai-video-status-bar {
+            padding: 7px 12px;
+            background: rgba(254, 181, 4, 0.06);
+            border-bottom: 1px solid rgba(254, 181, 4, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.68rem;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+
+        .ai-video-status-bar span {
+            color: #feb504;
+            font-weight: 700;
+        }
+
+        /* Chips de sugerencias rápidas */
+        .ai-quick-chips-wrapper {
+            padding: 8px 10px;
+            background: rgba(10, 12, 18, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+        }
+
+        .ai-quick-chips-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .ai-chip-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 4px 9px;
+            border-radius: 99px;
+            font-size: 0.67rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ai-chip-btn:hover {
+            background: rgba(168, 85, 247, 0.22);
+            border-color: #a855f7;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* Área de Mensajes del Chat */
+        .ai-chat-messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scroll-behavior: smooth;
+        }
+
+        .ai-chat-messages-area::-webkit-scrollbar {
+            width: 4px;
+        }
+        .ai-chat-messages-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        .ai-msg-bubble {
+            max-width: 90%;
+            padding: 9px 12px;
+            border-radius: 12px;
+            font-size: 0.77rem;
+            line-height: 1.42;
+            word-wrap: break-word;
+            animation: fadeInMsg 0.2s ease;
+        }
+
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-msg-user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.18), rgba(168, 85, 247, 0.25));
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            color: #ffffff;
+            border-bottom-right-radius: 3px;
+        }
+
+        .ai-msg-assistant {
+            align-self: flex-start;
+            background: rgba(26, 30, 46, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f1f5f9;
+            border-bottom-left-radius: 3px;
+        }
+
+        .ai-msg-assistant p {
+            margin-bottom: 6px;
+        }
+        .ai-msg-assistant p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Badge de acción ejecutada en el video */
+        .ai-action-executed-badge {
+            margin-top: 8px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            border-radius: 8px;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .ai-action-undo-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 0.63rem;
+            cursor: pointer;
+            transition: all 0.12s ease;
+        }
+
+        .ai-action-undo-btn:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: #ffffff;
+        }
+
+        /* Indicador de escribiendo */
+        .ai-typing-dots {
+            display: none;
+            align-self: flex-start;
+            background: rgba(26, 30, 46, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 14px;
+            border-radius: 12px;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .ai-typing-dots span {
+            width: 5px;
+            height: 5px;
+            background: #feb504;
+            border-radius: 50%;
+            animation: bounceDot 1.2s infinite ease-in-out;
+        }
+        .ai-typing-dots span:nth-child(2) { animation-delay: 0.2s; background: #00e5ff; }
+        .ai-typing-dots span:nth-child(3) { animation-delay: 0.4s; background: #a855f7; }
+
+        @keyframes bounceDot {
+            0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+            40% { transform: translateY(-5px); opacity: 1; }
+        }
+
+        /* Barra de Entrada del Chat */
+        .ai-chat-input-bar {
+            padding: 10px;
+            background: rgba(18, 20, 30, 0.98);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .ai-input-field {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: #ffffff;
+            font-size: 0.77rem;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+
+        .ai-input-field:focus {
+            border-color: #00e5ff;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+        }
+
+        .ai-input-field::placeholder {
+            color: #64748b;
+            font-size: 0.74rem;
+        }
+
+        .ai-action-btn-send {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #feb504, #ffc72c);
+            border: none;
+            color: #000000;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s ease, filter 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .ai-action-btn-send:hover {
+            transform: scale(1.06);
+            filter: brightness(1.1);
+        }
+
+        .ai-action-btn-mic {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: #cbd5e1;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .ai-action-btn-mic:hover {
+            background: rgba(168, 85, 247, 0.25);
+            color: #ffffff;
+            border-color: #a855f7;
+        }
+
+        .ai-action-btn-mic.listening {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #ef4444;
+            animation: pulseMic 1.2s infinite ease-in-out;
+        }
+
+        @keyframes pulseMic {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 6px #ef4444; }
+            50% { transform: scale(1.1); box-shadow: 0 0 16px #ef4444; }
+        }
+
         /* ADAPTACIÓN PC */
         @media (min-width: 850px) {
             .vstudio-topbar {
@@ -992,6 +1539,10 @@
         </div>
 
         <div class="topbar-right">
+            <button type="button" class="topbar-ai-btn" id="btnToggleAi" onclick="toggleAIChat()" title="Abrir Myxsi edit">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>Myxsi edit</span>
+            </button>
             <button type="button" class="topbar-icon-btn" onclick="saveProjectToDB()" title="Guardar Proyecto Localmente">
                 <i class="fa-solid fa-floppy-disk"></i>
             </button>
@@ -1001,6 +1552,72 @@
             </button>
         </div>
     </header>
+
+    <!-- OVERLAY OSCURO PARA CERRAR MYXSI EDIT EN MÓVIL AL TOCAR FUERA -->
+    <div class="ai-panel-overlay" id="aiPanelOverlay" onclick="toggleAIChat()"></div>
+
+    <!-- BOTÓN DOCK FLOTANTE LATERAL DERECHO (QUEDAR ACCESIBLE SIN ESTORBAR) -->
+    <button type="button" class="ai-side-dock-btn" id="aiSideDockBtn" onclick="toggleAIChat()" title="Abrir Myxsi edit">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>IA</span>
+    </button>
+
+    <!-- PANEL DE CHAT IA LATERAL DERECHO (MYXSI EDIT) -->
+    <aside class="ai-side-panel" id="aiSidePanel">
+        <!-- Cabecera -->
+        <div class="ai-panel-header">
+            <div class="ai-panel-title-group">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="ai-panel-title">Myxsi edit</span>
+                <span class="ai-panel-badge">Video Studio</span>
+            </div>
+            <button type="button" class="ai-panel-close-btn" onclick="toggleAIChat()" title="Ocultar chat IA (Esc)">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Estado del Video en Vivo -->
+        <div class="ai-video-status-bar" id="aiVideoStatusBar">
+            <div>⏱ <span id="aiStatTime">00:00.0</span> / <span id="aiStatDur">00:10.0</span></div>
+            <div>🎬 <span id="aiStatClips">0 clips</span></div>
+            <div>📐 <span id="aiStatRatio">9:16</span></div>
+        </div>
+
+        <!-- Chips de Acciones Rápidas -->
+        <div class="ai-quick-chips-wrapper">
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('✂️ Cortar el video en el playhead')">✂️ Cortar aquí</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('⚡ Acelerar este clip a 1.5x')">⚡ Acelerar 1.5x</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🎨 Ponle filtro cinematográfico vintage')">🎨 Filtro Vintage</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔄 Mueve este clip hacia la derecha')">🔄 Mover ▶</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔤 Añadir título viral que diga Bienvenido')">🔤 Título Viral</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔍 Haz zoom al 125%')">🔍 Zoom 125%</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🔇 Silenciar todo el audio')">🔇 Silenciar</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('🎯 Centrar el encuadre del video')">🎯 Centrar</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('⏪ Regresa al inicio del video')">⏪ Ir a 0:00</button>
+        </div>
+
+        <!-- Área de Conversación -->
+        <div class="ai-chat-messages-area" id="aiChatMessages">
+            <div class="ai-msg-bubble ai-msg-assistant">
+                <p>👋 <strong>¡Hola! Soy Myxsi edit, tu asistente de video inteligente.</strong></p>
+                <p>Puedo editar tu video en tiempo real: cortar, mover clips, aplicar filtros, cambiar velocidad, añadir textos o ajustar encuadres profesionales. Dime qué deseas hacer o pulsa una sugerencia rápida.</p>
+            </div>
+            <div class="ai-typing-dots" id="aiTypingIndicator">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <!-- Barra de Entrada -->
+        <form class="ai-chat-input-bar" id="aiChatForm" onsubmit="handleAIChatSubmit(event)">
+            <input type="text" class="ai-input-field" id="aiUserInput" placeholder="Ej: Aplica filtro cyberpunk y acelera a 1.2x..." autocomplete="off">
+            <button type="button" class="ai-action-btn-mic" id="aiBtnMic" onclick="toggleAIVoiceInput()" title="Dictar por voz">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button type="submit" class="ai-action-btn-send" title="Enviar instrucción">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+    </aside>
 
     <!-- 2. ESCENARIO DE PREVISUALIZACIÓN DE VIDEO (CANVAS) -->
     <section class="vstudio-stage-area">
@@ -1016,10 +1633,13 @@
             </div>
 
             <div class="transport-center-group">
+                <button type="button" class="transport-rewind-btn" id="btnRewindStart" onclick="seekTime(0)" title="Ir al inicio (0:00)">
+                    <i class="fa-solid fa-backward-step"></i>
+                </button>
                 <button type="button" class="btn-play-pause-circle" id="btnPlayPause" onclick="togglePlay()" title="Reproducir / Pausa (Espacio)">
                     <i class="fa-solid fa-play"></i>
                 </button>
-                <span class="stage-timecode" id="timecodeDisplay">00:00.00 / 00:10.00</span>
+                <span class="stage-timecode" id="timecodeDisplay" onclick="seekTime(0)" style="cursor: pointer;" title="Toca para ir al inicio (0:00)">00:00.00 / 00:10.00</span>
             </div>
 
             <div class="stage-side-group">
@@ -1030,8 +1650,9 @@
 
     <!-- 3. LÍNEA DE TIEMPO MAGNÉTICA SECUENCIAL -->
     <section class="vstudio-timeline-wrapper">
-        <div class="vstudio-center-needle">
-            <div class="needle-pip"></div>
+        <div class="vstudio-center-needle" id="centerNeedle" title="Arrastra la flecha blanca para moverte por el video">
+            <div class="needle-pip" id="needlePip"></div>
+            <div class="needle-time-bubble" id="needleTimeBubble">00:00.0</div>
         </div>
 
         <!-- ACCIONES LATERALES FIJAS DE PISTA (SILENCIAR / PORTADA) -->
@@ -1314,6 +1935,9 @@
             buildTimelineRuler();
             renderTimelineClips();
             setupTimelineScrollListener();
+            setupRulerSeek();
+            setupCenterNeedleDrag();
+            setupTimelineMouseDrag();
             setupDesktopKeyboardEvents();
             setupCanvasInteractiveEvents();
             pushHistory();
@@ -1327,9 +1951,101 @@
 
             window.addEventListener('resize', () => {
                 setupCanvasDimensions();
+                buildTimelineRuler();
+                renderTimelineClips();
                 renderFrame(projectState.currentTime);
             });
         });
+
+        // HIDRATACIÓN DE MEDIOS (IMÁGENES, VIDEOS Y AUDIO)
+        async function hydrateMediaCache() {
+            const promises = projectState.clips.map(async (clip) => {
+                if (mediaCache.has(clip.id)) return;
+
+                if (clip.type === 'image') {
+                    if (clip.src) {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        await new Promise((resolve) => {
+                            img.onload = () => resolve();
+                            img.onerror = () => resolve();
+                            img.src = clip.src;
+                        });
+                        if (img.complete && (img.naturalWidth > 0 || img.width > 0)) {
+                            mediaCache.set(clip.id, img);
+                            return;
+                        }
+                    }
+
+                    if (window.MyxsiVideoDB && (clip.assetId || clip.id)) {
+                        try {
+                            const asset = await window.MyxsiVideoDB.getAsset(clip.assetId || clip.id);
+                            if (asset && (asset.blobUrl || asset.blob)) {
+                                const url = asset.blobUrl || URL.createObjectURL(asset.blob);
+                                const img = new Image();
+                                img.crossOrigin = 'anonymous';
+                                await new Promise((resolve) => {
+                                    img.onload = () => resolve();
+                                    img.onerror = () => resolve();
+                                    img.src = url;
+                                });
+                                if (img.complete && (img.naturalWidth > 0 || img.width > 0)) {
+                                    clip.src = url;
+                                    mediaCache.set(clip.id, img);
+                                    return;
+                                }
+                            }
+                        } catch(err) {}
+                    }
+                } else if (clip.type === 'video') {
+                    if (clip.src) {
+                        const v = document.createElement('video');
+                        v.src = clip.src;
+                        v.crossOrigin = 'anonymous';
+                        v.playsInline = true;
+                        v.muted = false;
+                        await new Promise(r => { v.onloadedmetadata = () => r(); v.onerror = () => r(); });
+                        mediaCache.set(clip.id, v);
+                    } else if (window.MyxsiVideoDB && (clip.assetId || clip.id)) {
+                        try {
+                            const asset = await window.MyxsiVideoDB.getAsset(clip.assetId || clip.id);
+                            if (asset && (asset.blobUrl || asset.blob)) {
+                                const url = asset.blobUrl || URL.createObjectURL(asset.blob);
+                                const v = document.createElement('video');
+                                v.src = url;
+                                v.crossOrigin = 'anonymous';
+                                v.playsInline = true;
+                                v.muted = false;
+                                await new Promise(r => { v.onloadedmetadata = () => r(); v.onerror = () => r(); });
+                                clip.src = url;
+                                mediaCache.set(clip.id, v);
+                            }
+                        } catch(err) {}
+                    }
+                } else if (clip.type === 'audio') {
+                    if (clip.src) {
+                        const a = new Audio();
+                        a.src = clip.src;
+                        await new Promise(r => { a.onloadedmetadata = () => r(); a.onerror = () => r(); });
+                        mediaCache.set(clip.id, a);
+                    } else if (window.MyxsiVideoDB && (clip.assetId || clip.id)) {
+                        try {
+                            const asset = await window.MyxsiVideoDB.getAsset(clip.assetId || clip.id);
+                            if (asset && (asset.blobUrl || asset.blob)) {
+                                const url = asset.blobUrl || URL.createObjectURL(asset.blob);
+                                const a = new Audio();
+                                a.src = url;
+                                await new Promise(r => { a.onloadedmetadata = () => r(); a.onerror = () => r(); });
+                                clip.src = url;
+                                mediaCache.set(clip.id, a);
+                            }
+                        } catch(err) {}
+                    }
+                }
+            });
+
+            await Promise.all(promises);
+        }
 
         // PARÁMETROS URL E INDEXEDDB
         async function initUrlParams() {
@@ -1337,6 +2053,8 @@
             const id = params.get('id');
             const ratio = params.get('ratio');
             if (ratio) setAspectRatio(ratio, false);
+
+            let loadedClips = null;
 
             if (id && window.MyxsiVideoDB) {
                 try {
@@ -1349,30 +2067,56 @@
                         }
                         if (saved.ratio) setAspectRatio(saved.ratio, false);
                         if (saved.clips && saved.clips.length) {
-                            projectState.clips = saved.clips;
+                            loadedClips = saved.clips;
                         }
-                        // Limpiar y forzar una sola fila sin sobreposiciones
-                        enforceMagneticMainTrack();
-                        renderTimelineClips();
-                        renderFrame(0);
                     }
                 } catch(e) {
                     console.warn('Carga de IndexedDB:', e);
                 }
             }
+
+            if (!loadedClips && id) {
+                try {
+                    const projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
+                    const found = projects.find(p => p.id === id);
+                    if (found) {
+                        projectState.id = found.id;
+                        if (found.title) {
+                            projectState.title = found.title;
+                            document.getElementById('projectTitle').innerText = found.title;
+                        }
+                        if (found.ratio) setAspectRatio(found.ratio, false);
+                        if (found.clips && found.clips.length) {
+                            loadedClips = found.clips;
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            if (loadedClips && loadedClips.length) {
+                projectState.clips = loadedClips;
+            }
+
+            await hydrateMediaCache();
+
+            enforceMagneticMainTrack(true);
+            renderTimelineClips();
+            renderFrame(0);
         }
 
         // =========================================================================
         // LÍNEA DE TIEMPO MAGNÉTICA: NUNCA SE SOBREPONEN, TODO EN UNA SOLA FILA
         // =========================================================================
-        function enforceMagneticMainTrack() {
+        function enforceMagneticMainTrack(forceSortByStart = false) {
             const otherClips = projectState.clips.filter(c => c.track !== 'track-video1');
             const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
 
-            // Ordenar por tiempo de inicio actual
-            mainClips.sort((a, b) => a.start - b.start);
+            // Ordenar por tiempo de inicio solo en la carga inicial si se solicita
+            if (forceSortByStart) {
+                mainClips.sort((a, b) => a.start - b.start);
+            }
 
-            // Alinear consecutivamente uno detrás de otro (cero sobreposiciones, cero huecos no deseados)
+            // Alinear consecutivamente uno detrás de otro según su orden en el array
             let curTime = 0;
             mainClips.forEach(c => {
                 c.duration = Math.max(0.4, Math.round((c.duration || 1.0) * 10) / 10);
@@ -1396,6 +2140,7 @@
             updateTimecodeUI();
             const metaDur = document.getElementById('exportMetaDur');
             if (metaDur) metaDur.innerText = `${projectState.duration.toFixed(1)}s`;
+            if (typeof updateAIVideoStatusBar === 'function') updateAIVideoStatusBar();
         }
 
         // DIMENSIONES DEL CANVAS SEGÚN ASPECT RATIO
@@ -1449,21 +2194,44 @@
 
                 if (clip.type === 'video') {
                     const videoEl = mediaCache.get(clip.id);
-                    if (videoEl && videoEl.readyState >= 2) {
+                    if (videoEl && videoEl.readyState >= 1) {
                         renderTransformedMedia(videoEl, w, h, posX, posY, scale);
                     } else {
                         renderProceduralCosmicWave(w, h, time, posX, posY, scale);
                     }
                 } else if (clip.type === 'image') {
                     const imgEl = mediaCache.get(clip.id);
-                    if (imgEl && imgEl.complete) {
+                    if (imgEl && imgEl.complete && (imgEl.naturalWidth > 0 || imgEl.width > 0)) {
                         renderTransformedMedia(imgEl, w, h, posX, posY, scale);
+                    } else {
+                        // Carga asíncrona reactiva si existe clip.src o asset en IndexedDB
+                        if (clip.src && !mediaCache.has(clip.id)) {
+                            const newImg = new Image();
+                            newImg.crossOrigin = 'anonymous';
+                            newImg.onload = () => renderFrame(projectState.currentTime);
+                            newImg.src = clip.src;
+                            mediaCache.set(clip.id, newImg);
+                        } else if (window.MyxsiVideoDB && (clip.assetId || clip.id) && !clip._loadingAsset) {
+                            clip._loadingAsset = true;
+                            window.MyxsiVideoDB.getAsset(clip.assetId || clip.id).then(asset => {
+                                if (asset && (asset.blobUrl || asset.blob)) {
+                                    const url = asset.blobUrl || URL.createObjectURL(asset.blob);
+                                    const newImg = new Image();
+                                    newImg.onload = () => renderFrame(projectState.currentTime);
+                                    newImg.src = url;
+                                    clip.src = url;
+                                    mediaCache.set(clip.id, newImg);
+                                }
+                            }).catch(() => {});
+                        }
+                        // Tarjeta gráfica estética de respaldo: ¡LA PANTALLA NUNCA ESTÁ EN NEGRO!
+                        renderImageFallbackCard(clip, w, h, posX, posY, scale);
                     }
                 } else if (clip.type === 'text') {
                     renderTextLayer(clip, w, h, time);
                 }
 
-                if (clip.id === projectState.activeClipId && (clip.type === 'text' || clip.track === 'track-overlay')) {
+                if (clip.id === projectState.activeClipId && clip.type !== 'audio') {
                     drawActiveBoundingBox(clip, w, h);
                 }
 
@@ -1474,12 +2242,116 @@
             applyActiveShader(w, h, time);
         }
 
-        function renderTransformedMedia(mediaEl, w, h, posX, posY, scale) {
-            const dw = w * scale;
-            const dh = h * scale;
+        function renderTransformedMedia(mediaEl, w, h, posX, posY, scale, fitMode = 'contain') {
+            const natW = mediaEl.videoWidth || mediaEl.naturalWidth || mediaEl.width || w;
+            const natH = mediaEl.videoHeight || mediaEl.naturalHeight || mediaEl.height || h;
+            const aspect = natW / (natH || 1);
+            const canvasAspect = w / (h || 1);
+
+            let dw, dh;
+            if (fitMode === 'cover') {
+                if (aspect > canvasAspect) {
+                    dh = h * scale;
+                    dw = dh * aspect;
+                } else {
+                    dw = w * scale;
+                    dh = dw / aspect;
+                }
+            } else { // contain (default)
+                if (aspect > canvasAspect) {
+                    dw = w * scale;
+                    dh = dw / aspect;
+                } else {
+                    dh = h * scale;
+                    dw = dh * aspect;
+                }
+            }
+
             const dx = (w - dw) / 2 + posX;
             const dy = (h - dh) / 2 + posY;
-            ctx.drawImage(mediaEl, dx, dy, dw, dh);
+            try {
+                ctx.drawImage(mediaEl, dx, dy, dw, dh);
+            } catch(e) {}
+        }
+
+        function renderImageFallbackCard(clip, w, h, posX, posY, scale) {
+            ctx.save();
+            ctx.translate(posX, posY);
+            if (scale !== 1.0) {
+                ctx.translate(w/2, h/2);
+                ctx.scale(scale, scale);
+                ctx.translate(-w/2, -h/2);
+            }
+
+            // Fondo con degradado sofisticado
+            const grad = ctx.createLinearGradient(0, 0, w, h);
+            grad.addColorStop(0, '#0f172a');
+            grad.addColorStop(0.5, '#1e1b4b');
+            grad.addColorStop(1, '#020617');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Resplandor cósmico de acento
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.12)';
+            ctx.beginPath();
+            ctx.arc(w / 2, h / 2, Math.min(w, h) * 0.38, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tarjeta central translúcida
+            const cardW = Math.min(w * 0.84, 880);
+            const cardH = Math.min(h * 0.72, 1200);
+            const cx = (w - cardW) / 2;
+            const cy = (h - cardH) / 2;
+
+            ctx.fillStyle = 'rgba(30, 27, 75, 0.55)';
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.45)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(cx, cy, cardW, cardH, 24);
+            ctx.fill();
+            ctx.stroke();
+
+            // Círculo insignia con borde dorado
+            ctx.fillStyle = 'rgba(254, 181, 4, 0.18)';
+            ctx.beginPath();
+            ctx.arc(w / 2, cy + cardH * 0.38, 54, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#feb504';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(w / 2, cy + cardH * 0.38, 54, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Glifo de paisaje e imagen fotográfica
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(w / 2 + 16, cy + cardH * 0.38 - 14, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(w / 2 - 28, cy + cardH * 0.38 + 24);
+            ctx.lineTo(w / 2 - 6, cy + cardH * 0.38 - 8);
+            ctx.lineTo(w / 2 + 12, cy + cardH * 0.38 + 12);
+            ctx.lineTo(w / 2 + 22, cy + cardH * 0.38 - 2);
+            ctx.lineTo(w / 2 + 32, cy + cardH * 0.38 + 24);
+            ctx.closePath();
+            ctx.fill();
+
+            // Título de la imagen
+            ctx.fillStyle = '#ffffff';
+            ctx.font = "700 40px 'Montserrat', sans-serif";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            const displayTitle = clip.title || 'Imagen del Proyecto';
+            ctx.fillText(displayTitle, w / 2, cy + cardH * 0.62);
+
+            // Subtítulo descriptivo
+            ctx.fillStyle = '#a5b4fc';
+            ctx.font = "500 24px 'Montserrat', sans-serif";
+            ctx.fillText('Fotografía en Pista Multimedia', w / 2, cy + cardH * 0.71);
+
+            ctx.restore();
         }
 
         function renderProceduralCosmicWave(w, h, t, posX, posY, scale) {
@@ -1491,18 +2363,36 @@
                 ctx.translate(-w/2, -h/2);
             }
 
-            const grad = ctx.createLinearGradient(0, 0, w, h);
-            grad.addColorStop(0, '#101226');
-            grad.addColorStop(0.5, '#241442');
+            // Fondo de gradiente con movimiento cósmico continuo
+            const grad = ctx.createLinearGradient(
+                w * 0.5 + Math.sin(t * 0.8) * w * 0.3,
+                0,
+                w * 0.5 - Math.sin(t * 0.8) * w * 0.3,
+                h
+            );
+            grad.addColorStop(0, '#0f1026');
+            grad.addColorStop(0.35, '#241442');
+            grad.addColorStop(0.7, '#180e30');
             grad.addColorStop(1, '#080914');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, w, h);
 
-            ctx.fillStyle = 'rgba(168, 85, 247, 0.22)';
+            // Aura de resplandor dinámico central
+            const auraX = w * 0.5 + Math.sin(t * 1.2) * (w * 0.15);
+            const auraY = h * 0.45 + Math.cos(t * 0.9) * (h * 0.12);
+            const aura = ctx.createRadialGradient(auraX, auraY, 20, auraX, auraY, w * 0.6);
+            aura.addColorStop(0, 'rgba(168, 85, 247, 0.35)');
+            aura.addColorStop(0.5, 'rgba(0, 229, 255, 0.15)');
+            aura.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = aura;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ondas energéticas animadas (múltiples capas armónicas)
+            ctx.fillStyle = 'rgba(168, 85, 247, 0.28)';
             ctx.beginPath();
-            ctx.moveTo(0, h * 0.6);
-            for (let x = 0; x <= w; x += 30) {
-                const y = h * 0.6 + Math.sin(x * 0.008 + t * 2) * 45;
+            ctx.moveTo(0, h * 0.65);
+            for (let x = 0; x <= w; x += 25) {
+                const y = h * 0.65 + Math.sin(x * 0.006 + t * 2.5) * 50 + Math.cos(x * 0.012 - t * 1.8) * 20;
                 ctx.lineTo(x, y);
             }
             ctx.lineTo(w, h);
@@ -1510,14 +2400,30 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = 'rgba(254, 181, 4, 0.4)';
-            for (let i = 0; i < 5; i++) {
-                const px = (w * 0.2 + i * (w * 0.15) + Math.sin(t + i) * 20);
-                const py = (h * 0.45 + Math.cos(t * 1.5 + i) * 30);
+            // Segunda ola con luz cian
+            ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
+            ctx.beginPath();
+            ctx.moveTo(0, h * 0.72);
+            for (let x = 0; x <= w; x += 25) {
+                const y = h * 0.72 + Math.cos(x * 0.007 + t * 3.0) * 45 + Math.sin(x * 0.015 - t * 2.0) * 18;
+                ctx.lineTo(x, y);
+            }
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Partículas flotantes con destellos
+            for (let i = 0; i < 9; i++) {
+                const px = (w * 0.15 + i * (w * 0.1) + Math.sin(t * 1.4 + i * 1.2) * 35) % w;
+                const py = (h * 0.35 + Math.cos(t * 1.6 + i * 0.9) * (h * 0.22));
+                const radius = 4 + (i % 5);
+                ctx.fillStyle = i % 2 === 0 ? 'rgba(254, 181, 4, 0.75)' : 'rgba(0, 229, 255, 0.75)';
                 ctx.beginPath();
-                ctx.arc(px, py, 6 + i, 0, Math.PI * 2);
+                ctx.arc(px, py, radius, 0, Math.PI * 2);
                 ctx.fill();
             }
+
             ctx.restore();
         }
 
@@ -1572,9 +2478,22 @@
                 bx = w * (0.5 + (clip.x || 0)) - bw/2;
                 by = h * (0.65 + (clip.y || 0)) - bh/2;
             } else {
-                const scale = clip.scale !== undefined ? clip.scale : 0.5;
-                bw = w * scale;
-                bh = h * scale;
+                const scale = clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0);
+                const mediaEl = mediaCache.get(clip.id);
+                let aspect = w / (h || 1);
+                if (mediaEl && (mediaEl.naturalWidth || mediaEl.videoWidth || mediaEl.width)) {
+                    const natW = mediaEl.videoWidth || mediaEl.naturalWidth || mediaEl.width || w;
+                    const natH = mediaEl.videoHeight || mediaEl.naturalHeight || mediaEl.height || h;
+                    if (natH > 0) aspect = natW / natH;
+                }
+                const canvasAspect = w / (h || 1);
+                if (aspect > canvasAspect) {
+                    bw = w * scale;
+                    bh = bw / aspect;
+                } else {
+                    bh = h * scale;
+                    bw = bh * aspect;
+                }
                 bx = (w - bw) / 2 + (clip.x || 0) * w;
                 by = (h - bh) / 2 + (clip.y || 0) * h;
             }
@@ -1597,13 +2516,14 @@
 
             canvas.addEventListener('pointerdown', (e) => {
                 const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                if (!clip || (clip.type !== 'text' && clip.track !== 'track-overlay')) return;
+                if (!clip || clip.type === 'audio') return;
 
                 isDraggingCanvas = true;
                 startPointerX = e.clientX;
                 startPointerY = e.clientY;
                 origClipX = clip.x || 0;
                 origClipY = clip.y || 0;
+                try { canvas.setPointerCapture(e.pointerId); } catch(err) {}
 
                 function onPointerMove(ev) {
                     if (!isDraggingCanvas) return;
@@ -1617,8 +2537,9 @@
                     renderFrame(projectState.currentTime);
                 }
 
-                function onPointerUp() {
+                function onPointerUp(ev) {
                     isDraggingCanvas = false;
+                    try { canvas.releasePointerCapture(ev.pointerId); } catch(err) {}
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
                     pushHistory();
@@ -1628,6 +2549,48 @@
                 window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
             });
+
+            // Zoom / Escala con rueda de ratón sobre el canvas
+            canvas.addEventListener('wheel', (e) => {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                if (!clip || clip.type === 'audio') return;
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.05 : -0.05;
+                clip.scale = Math.max(0.15, Math.min(3.0, Math.round(((clip.scale !== undefined ? clip.scale : 1.0) + delta) * 100) / 100));
+                renderFrame(projectState.currentTime);
+                saveProjectToDB();
+            }, { passive: false });
+
+            // Gesto táctil de pellizco (Pinch to scale) en móvil
+            let initialDistance = 0;
+            let initialScale = 1.0;
+            canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                    if (!clip || clip.type === 'audio') return;
+                    initialDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialScale = clip.scale !== undefined ? clip.scale : 1.0;
+                }
+            }, { passive: true });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                    if (!clip || clip.type === 'audio') return;
+                    const dist = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    if (initialDistance > 10) {
+                        const factor = dist / initialDistance;
+                        clip.scale = Math.max(0.15, Math.min(3.0, Math.round((initialScale * factor) * 100) / 100));
+                        renderFrame(projectState.currentTime);
+                    }
+                }
+            }, { passive: true });
         }
 
         // =========================================================================
@@ -1753,9 +2716,11 @@
 
         function startPlayback() {
             projectState.isPlaying = true;
+            isUserScrollingTimeline = false;
             document.getElementById('btnPlayPause').innerHTML = '<i class="fa-solid fa-pause"></i>';
             lastTimestamp = performance.now();
             syncAudioElements(true);
+            syncVideoElements(true);
             animationFrameId = requestAnimationFrame(playLoop);
         }
 
@@ -1767,6 +2732,7 @@
                 animationFrameId = null;
             }
             syncAudioElements(false);
+            syncVideoElements(false);
         }
 
         function playLoop(timestamp) {
@@ -1781,6 +2747,7 @@
                 projectState.currentTime = 0;
             }
 
+            syncVideoElements(true);
             renderFrame(projectState.currentTime);
             updateTimecodeUI();
             syncTimelineScrollFromTime(projectState.currentTime);
@@ -1789,11 +2756,17 @@
         }
 
         function seekTime(time) {
+            isUserScrollingTimeline = false;
             projectState.currentTime = Math.max(0, Math.min(projectState.duration, time));
+            syncVideoElements(projectState.isPlaying);
+            syncAudioElements(projectState.isPlaying);
             renderFrame(projectState.currentTime);
             updateTimecodeUI();
-            syncTimelineScrollFromTime(projectState.currentTime);
-            syncAudioElements(projectState.isPlaying);
+            const targetX = projectState.currentTime * projectState.zoomPxPerSec;
+            timelineScrollContainer.scrollLeft = targetX;
+            const bubble = document.getElementById('needleTimeBubble');
+            if (bubble) bubble.innerText = formatTimecodeShort(projectState.currentTime);
+            if (typeof updateAIVideoStatusBar === 'function' && isAIChatOpen) updateAIVideoStatusBar();
         }
 
         function updateTimecodeUI() {
@@ -1807,6 +2780,56 @@
             const s = Math.floor(sec % 60);
             const ms = Math.floor((sec % 1) * 100);
             return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(ms).padStart(2, '0')}`;
+        }
+
+        function formatTimecodeShort(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            const ms = Math.floor((sec % 1) * 10);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${ms}`;
+        }
+
+        function syncVideoElements(isPlaying) {
+            projectState.clips.forEach(clip => {
+                if (clip.type === 'video') {
+                    const videoEl = mediaCache.get(clip.id);
+                    if (!videoEl) return;
+
+                    const clipStart = clip.start || 0;
+                    const clipEnd = clipStart + clip.duration;
+                    const speed = clip.speed || 1.0;
+                    const isInside = projectState.currentTime >= clipStart && projectState.currentTime < clipEnd;
+
+                    videoEl.muted = projectState.isMutedAll || (clip.volume === 0);
+                    videoEl.volume = projectState.isMutedAll ? 0 : Math.max(0, Math.min(1, clip.volume !== undefined ? clip.volume : 1.0));
+                    if (videoEl.playbackRate !== speed) {
+                        try { videoEl.playbackRate = speed; } catch(e) {}
+                    }
+
+                    if (isInside) {
+                        const targetTime = Math.max(0, (projectState.currentTime - clipStart) * speed);
+                        if (!isPlaying || Math.abs(videoEl.currentTime - targetTime) > 0.12) {
+                            try {
+                                videoEl.currentTime = targetTime;
+                            } catch(e) {}
+                        }
+
+                        if (isPlaying) {
+                            if (videoEl.paused) {
+                                videoEl.play().catch(() => {});
+                            }
+                        } else {
+                            if (!videoEl.paused) {
+                                videoEl.pause();
+                            }
+                        }
+                    } else {
+                        if (!videoEl.paused) {
+                            videoEl.pause();
+                        }
+                    }
+                }
+            });
         }
 
         function syncAudioElements(play) {
@@ -1833,8 +2856,22 @@
         // =========================================================================
         function buildTimelineRuler() {
             const ruler = document.getElementById('timelineRuler');
+            if (!ruler) return;
             ruler.innerHTML = '';
-            const totalSec = Math.ceil(projectState.duration + 5);
+            const totalSec = Math.ceil(projectState.duration + 6);
+            const contentWidth = Math.ceil(totalSec * projectState.zoomPxPerSec);
+
+            ruler.style.width = `${contentWidth}px`;
+            ruler.style.minWidth = `${contentWidth}px`;
+            const tracksArea = document.getElementById('tracksArea');
+            if (tracksArea) {
+                tracksArea.style.width = `${contentWidth}px`;
+                tracksArea.style.minWidth = `${contentWidth}px`;
+            }
+            document.querySelectorAll('.track-row').forEach(row => {
+                row.style.width = `${contentWidth}px`;
+                row.style.minWidth = `${contentWidth}px`;
+            });
 
             for (let s = 0; s <= totalSec; s++) {
                 const mark = document.createElement('div');
@@ -1929,7 +2966,7 @@
             pushHistory();
             renderTimelineClips();
             selectClip(temp.id);
-            renderFrame(projectState.currentTime);
+            seekTime(temp.start + 0.05);
             saveProjectToDB();
         }
 
@@ -1948,12 +2985,13 @@
             pushHistory();
             renderTimelineClips();
             selectClip(temp.id);
-            renderFrame(projectState.currentTime);
+            seekTime(temp.start + 0.05);
             saveProjectToDB();
         }
 
         function setupMainClipDragEvents(clipEl, clip) {
             let startX = 0;
+            let startY = 0;
             let isDragging = false;
             let initialIndex = 0;
             let targetIndex = 0;
@@ -1963,6 +3001,7 @@
 
                 selectClip(clip.id);
                 startX = e.clientX;
+                startY = e.clientY;
                 isDragging = false;
 
                 const mainClips = projectState.clips.filter(c => c.track === 'track-video1');
@@ -1970,21 +3009,19 @@
                 targetIndex = initialIndex;
                 const otherClips = mainClips.filter(c => c.id !== clip.id);
 
-                e.preventDefault();
-                e.stopPropagation();
-                try { clipEl.setPointerCapture(e.pointerId); } catch(err) {}
-
                 function onPointerMove(ev) {
                     const deltaPx = ev.clientX - startX;
-                    if (!isDragging && Math.abs(deltaPx) > 4) {
+                    if (!isDragging && Math.abs(deltaPx) > 8) {
                         isDragging = true;
                         clipEl.classList.add('dragging-clip');
+                        try { clipEl.setPointerCapture(ev.pointerId); } catch(err) {}
                     }
 
                     if (isDragging) {
-                        clipEl.style.transform = `translateX(${deltaPx}px) scale(1.04)`;
+                        ev.preventDefault();
+                        clipEl.style.transform = `translateX(${deltaPx}px) scale(1.03)`;
 
-                        // Auto-scroll si el puntero se acerca a los bordes
+                        // Auto-scroll suave si el puntero se acerca a los bordes
                         const rect = timelineScrollContainer.getBoundingClientRect();
                         if (ev.clientX > rect.right - 50) {
                             timelineScrollContainer.scrollLeft += 8;
@@ -1992,30 +3029,47 @@
                             timelineScrollContainer.scrollLeft -= 8;
                         }
 
-                        // Calcular posición del centro del clip arrastrado
+                        // Calcular posición del centro del clip arrastrado en coordenadas de la pista
                         const clipW = clip.duration * projectState.zoomPxPerSec;
                         const curCenter = (clip.start * projectState.zoomPxPerSec) + (clipW / 2) + deltaPx;
 
-                        // Determinar dónde se insertaría entre los otros clips
                         let newTarget = 0;
-                        let acc = 0;
-                        for (let i = 0; i < otherClips.length; i++) {
-                            const oW = otherClips[i].duration * projectState.zoomPxPerSec;
-                            const oMid = acc + (oW / 2);
-                            if (curCenter > oMid) {
-                                newTarget = i + 1;
-                            }
-                            acc += oW;
-                        }
-                        targetIndex = newTarget;
+                        let indicatorX = 0;
 
-                        showDropIndicator(otherClips, targetIndex);
+                        if (otherClips.length === 0) {
+                            newTarget = 0;
+                            indicatorX = 0;
+                        } else if (curCenter <= (otherClips[0].start + otherClips[0].duration / 2) * projectState.zoomPxPerSec) {
+                            // Arrastrado antes del primer clip (inicio absoluto)
+                            newTarget = 0;
+                            indicatorX = 0;
+                        } else if (curCenter >= (otherClips[otherClips.length - 1].start + otherClips[otherClips.length - 1].duration / 2) * projectState.zoomPxPerSec) {
+                            // Arrastrado después del último clip (final absoluto)
+                            newTarget = otherClips.length;
+                            const lastClip = otherClips[otherClips.length - 1];
+                            indicatorX = (lastClip.start + lastClip.duration) * projectState.zoomPxPerSec;
+                        } else {
+                            // Entre otros clips intermedios
+                            for (let k = 0; k < otherClips.length - 1; k++) {
+                                const midA = (otherClips[k].start + otherClips[k].duration / 2) * projectState.zoomPxPerSec;
+                                const midB = (otherClips[k + 1].start + otherClips[k + 1].duration / 2) * projectState.zoomPxPerSec;
+                                if (curCenter > midA && curCenter <= midB) {
+                                    newTarget = k + 1;
+                                    indicatorX = (otherClips[k].start + otherClips[k].duration) * projectState.zoomPxPerSec;
+                                    break;
+                                }
+                            }
+                        }
+
+                        targetIndex = newTarget;
+                        showDropIndicator(indicatorX);
                     }
                 }
 
                 function onPointerUp(ev) {
                     window.removeEventListener('pointermove', onPointerMove);
                     window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
                     try { clipEl.releasePointerCapture(ev.pointerId); } catch(err) {}
                     hideDropIndicator();
 
@@ -2026,36 +3080,33 @@
                         // Reordenar estrictamente en una sola fila sin sobreposiciones
                         const allOthers = projectState.clips.filter(c => c.track !== 'track-video1');
                         const mainClipsOrdered = projectState.clips.filter(c => c.track === 'track-video1');
-                        const [moved] = mainClipsOrdered.splice(initialIndex, 1);
-                        mainClipsOrdered.splice(targetIndex, 0, moved);
 
-                        projectState.clips = [...mainClipsOrdered, ...allOthers];
-                        enforceMagneticMainTrack();
-                        pushHistory();
-                        renderTimelineClips();
-                        selectClip(moved.id);
-                        renderFrame(projectState.currentTime);
-                        saveProjectToDB();
+                        if (initialIndex >= 0 && initialIndex < mainClipsOrdered.length && targetIndex >= 0 && targetIndex <= mainClipsOrdered.length) {
+                            const [moved] = mainClipsOrdered.splice(initialIndex, 1);
+                            if (moved) {
+                                mainClipsOrdered.splice(targetIndex, 0, moved);
+                                projectState.clips = [...mainClipsOrdered, ...allOthers];
+                                enforceMagneticMainTrack();
+                                pushHistory();
+                                renderTimelineClips();
+                                selectClip(moved.id);
+                                seekTime(moved.start + 0.05);
+                                saveProjectToDB();
+                            }
+                        }
                     }
                 }
 
                 window.addEventListener('pointermove', onPointerMove);
                 window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
             });
         }
 
-        function showDropIndicator(otherClips, targetIdx) {
+        function showDropIndicator(x) {
             const indicator = document.getElementById('timelineDropIndicator');
             if (!indicator) return;
-
-            let targetX = 0;
-            for (let i = 0; i < targetIdx; i++) {
-                if (otherClips[i]) {
-                    targetX += otherClips[i].duration * projectState.zoomPxPerSec;
-                }
-            }
-
-            indicator.style.left = `${targetX}px`;
+            indicator.style.left = `${Math.round(x)}px`;
             indicator.style.display = 'block';
         }
 
@@ -2078,14 +3129,14 @@
                 initialStart = clip.start;
                 hasMoved = false;
 
-                e.preventDefault();
-                e.stopPropagation();
-                try { clipEl.setPointerCapture(e.pointerId); } catch(err) {}
-
                 function onMove(ev) {
                     const deltaPx = ev.clientX - startX;
-                    if (Math.abs(deltaPx) > 4) {
+                    if (!hasMoved && Math.abs(deltaPx) > 8) {
                         hasMoved = true;
+                        try { clipEl.setPointerCapture(ev.pointerId); } catch(err) {}
+                    }
+                    if (hasMoved) {
+                        ev.preventDefault();
                         const deltaSec = deltaPx / projectState.zoomPxPerSec;
                         let newStart = Math.max(0, initialStart + deltaSec);
                         newStart = Math.round(newStart * 10) / 10;
@@ -2094,7 +3145,7 @@
                         clipEl.style.left = `${newStart * projectState.zoomPxPerSec}px`;
 
                         recalculateProjectDuration();
-                        renderFrame(projectState.currentTime);
+                        renderFrame(newStart);
                     }
                 }
 
@@ -2106,6 +3157,7 @@
                         pushHistory();
                         recalculateProjectDuration();
                         renderTimelineClips();
+                        seekTime(clip.start + 0.05);
                         saveProjectToDB();
                     }
                 }
@@ -2183,6 +3235,7 @@
                 const time = scrollLeft / projectState.zoomPxPerSec;
                 projectState.currentTime = Math.max(0, Math.min(projectState.duration, time));
 
+                syncVideoElements(false);
                 renderFrame(projectState.currentTime);
                 updateTimecodeUI();
 
@@ -2196,6 +3249,140 @@
                 e.preventDefault();
                 timelineScrollContainer.scrollLeft += e.deltaY || e.deltaX;
             }, { passive: false });
+        }
+
+        function setupRulerSeek() {
+            const ruler = document.getElementById('timelineRuler');
+            if (!ruler) return;
+
+            let isSeeking = false;
+            let startClientX = 0;
+            let startRulerTime = 0;
+
+            function getTimeFromClientX(clientX) {
+                const rulerRect = ruler.getBoundingClientRect();
+                const offsetPx = clientX - rulerRect.left;
+                const time = offsetPx / projectState.zoomPxPerSec;
+                return Math.max(0, Math.min(projectState.duration, Math.round(time * 10) / 10));
+            }
+
+            ruler.addEventListener('pointerdown', (e) => {
+                isSeeking = true;
+                try { ruler.setPointerCapture(e.pointerId); } catch(err) {}
+                startClientX = e.clientX;
+                startRulerTime = getTimeFromClientX(e.clientX);
+                seekTime(startRulerTime);
+
+                function onPointerMove(ev) {
+                    if (!isSeeking) return;
+                    ev.preventDefault();
+                    // Al fregar sobre la regla horizontalmente:
+                    const deltaPx = ev.clientX - startClientX;
+                    // Arrastrar la regla hacia la izquierda avanza el video, hacia la derecha retrocede
+                    const newTime = Math.max(0, Math.min(projectState.duration, startRulerTime - (deltaPx / projectState.zoomPxPerSec)));
+                    seekTime(Math.round(newTime * 10) / 10);
+                }
+
+                function onPointerUp(ev) {
+                    isSeeking = false;
+                    try { ruler.releasePointerCapture(ev.pointerId); } catch(err) {}
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+                }
+
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
+            });
+        }
+
+        // =========================================================================
+        // ARRASTRE DIRECTO DE LA FLECHA / AGUJA DE REPRODUCCIÓN (SCRUBBING PRECISO)
+        // =========================================================================
+        function setupCenterNeedleDrag() {
+            const needle = document.getElementById('centerNeedle') || document.querySelector('.vstudio-center-needle');
+            if (!needle) return;
+
+            let isDraggingNeedle = false;
+            let startX = 0;
+            let startTime = 0;
+            const bubble = document.getElementById('needleTimeBubble');
+
+            needle.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                isDraggingNeedle = true;
+                needle.classList.add('scrubbing');
+                startX = e.clientX;
+                startTime = projectState.currentTime;
+                try { needle.setPointerCapture(e.pointerId); } catch(err) {}
+
+                if (bubble) {
+                    bubble.innerText = formatTimecodeShort(startTime);
+                }
+
+                function onPointerMove(ev) {
+                    if (!isDraggingNeedle) return;
+                    ev.preventDefault();
+                    const deltaPx = ev.clientX - startX;
+                    // Arrastrar la flecha a la derecha avanza el tiempo, a la izquierda retrocede
+                    const targetTime = Math.max(0, Math.min(projectState.duration, startTime + (deltaPx / projectState.zoomPxPerSec)));
+                    seekTime(targetTime);
+                    if (bubble) {
+                        bubble.innerText = formatTimecodeShort(targetTime);
+                    }
+                }
+
+                function onPointerUp(ev) {
+                    if (!isDraggingNeedle) return;
+                    isDraggingNeedle = false;
+                    needle.classList.remove('scrubbing');
+                    try { needle.releasePointerCapture(ev.pointerId); } catch(err) {}
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+                }
+
+                window.addEventListener('pointermove', onPointerMove);
+                window.addEventListener('pointerup', onPointerUp);
+                window.addEventListener('pointercancel', onPointerUp);
+            });
+        }
+
+        // DESPLAZAMIENTO DEL TIMELINE CON EL RATÓN EN ESCRITORIO
+        function setupTimelineMouseDrag() {
+            let isDragging = false;
+            let startX = 0;
+            let startScroll = 0;
+
+            timelineScrollContainer.addEventListener('mousedown', (e) => {
+                // No interferir con clicks en clips, handles de recorte, botones ni la aguja
+                if (e.target.closest('.vstudio-clip-block') || 
+                    e.target.closest('.vstudio-add-tile') || 
+                    e.target.closest('button') ||
+                    e.target.closest('.vstudio-center-needle') ||
+                    e.target.closest('.timeline-ruler-bar')) {
+                    return;
+                }
+                isDragging = true;
+                startX = e.clientX;
+                startScroll = timelineScrollContainer.scrollLeft;
+                timelineScrollContainer.style.cursor = 'grabbing';
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                timelineScrollContainer.scrollLeft = startScroll - dx;
+            });
+
+            window.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    timelineScrollContainer.style.cursor = '';
+                }
+            });
         }
 
         function syncTimelineScrollFromTime(time) {
@@ -2215,6 +3402,14 @@
 
             document.getElementById('rootToolbar').style.display = 'none';
             document.getElementById('clipToolbar').style.display = 'flex';
+
+            const selClip = projectState.clips.find(c => c.id === clipId);
+            if (selClip) {
+                if (projectState.currentTime < selClip.start || projectState.currentTime > (selClip.start + selClip.duration)) {
+                    seekTime(selClip.start + 0.05);
+                    return;
+                }
+            }
             renderFrame(projectState.currentTime);
         }
 
@@ -2337,16 +3532,18 @@
 
             if (tool === 'transform') {
                 const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
-                const curScale = clip ? (clip.scale || 1.0) : 1.0;
+                const curScale = clip ? (clip.scale !== undefined ? clip.scale : (clip.track === 'track-overlay' ? 0.5 : 1.0)) : 1.0;
+                const curX = clip ? (clip.x || 0) : 0;
+                const curY = clip ? (clip.y || 0) : 0;
                 const isMainVideo = clip && clip.track === 'track-video1';
 
-                title.innerHTML = '<i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i> Mover y Posicionar Clip';
+                title.innerHTML = '<i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i> Mover y Posicionar Video / Clip';
                 body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
                         ${isMainVideo ? `
                             <div style="background: rgba(254, 181, 4, 0.12); border: 1px solid rgba(254, 181, 4, 0.35); border-radius: 12px; padding: 12px;">
                                 <div style="font-size: 0.82rem; font-weight: 800; color: #feb504; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                    <i class="fa-solid fa-arrows-left-right"></i> Mover video de lado en la fila:
+                                    <i class="fa-solid fa-arrows-left-right"></i> Mover video de lado en la pista:
                                 </div>
                                 <div style="display: flex; gap: 8px;">
                                     <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.12); color: #fff; box-shadow: none; padding: 10px;" onclick="moveClipLeft()">
@@ -2358,17 +3555,71 @@
                                 </div>
                             </div>
                         ` : ''}
-                        <div style="font-size: 0.72rem; color: #94a3b8;">Posicionamiento en pantalla (arrastra sobre el video o usa los atajos):</div>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
-                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, -0.3)"><span>↖ Arriba</span></button>
-                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, 0)"><span>⏺ Centro</span></button>
-                            <button type="button" class="drawer-item-card" onclick="setClipPosition(0, 0.3)"><span>↘ Abajo</span></button>
+
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            <div style="font-size: 0.78rem; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                <span><i class="fa-solid fa-arrows-up-down-left-right" style="color: #00e5ff;"></i> Mover Posición en Pantalla</span>
+                                <span style="font-size: 0.68rem; color: #94a3b8;">X: ${Math.round(curX * 100)}% | Y: ${Math.round(curY * 100)}%</span>
+                            </div>
+
+                            <!-- D-PAD / BOTONES DE DIRECCIÓN -->
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; max-width: 250px; margin: 0 auto 12px auto;">
+                                <div></div>
+                                <button type="button" class="drawer-item-card" style="padding: 10px;" onclick="nudgeClipPosition(0, -0.06)" title="Mover arriba">
+                                    <i class="fa-solid fa-arrow-up" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.65rem;">Arriba</span>
+                                </button>
+                                <div></div>
+
+                                <button type="button" class="drawer-item-card" style="padding: 10px;" onclick="nudgeClipPosition(-0.06, 0)" title="Mover izquierda">
+                                    <i class="fa-solid fa-arrow-left" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.65rem;">Izq</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" style="padding: 10px; background: rgba(0, 229, 255, 0.15); border-color: rgba(0, 229, 255, 0.5);" onclick="setClipPosition(0, 0)" title="Centrar">
+                                    <i class="fa-solid fa-crosshairs" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.65rem; color: #00e5ff; font-weight: 700;">Centrar</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" style="padding: 10px;" onclick="nudgeClipPosition(0.06, 0)" title="Mover derecha">
+                                    <i class="fa-solid fa-arrow-right" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.65rem;">Der</span>
+                                </button>
+
+                                <div></div>
+                                <button type="button" class="drawer-item-card" style="padding: 10px;" onclick="nudgeClipPosition(0, 0.06)" title="Mover abajo">
+                                    <i class="fa-solid fa-arrow-down" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.65rem;">Abajo</span>
+                                </button>
+                                <div></div>
+                            </div>
+
+                            <!-- SLIDERS X / Y -->
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                    <span>Eje Horizontal (X)</span>
+                                    <span id="posXVal" style="color: #00e5ff;">${Math.round(curX * 100)}%</span>
+                                </div>
+                                <input type="range" min="-80" max="80" value="${curX * 100}" style="width: 100%; accent-color: #00e5ff;" oninput="updateActiveClipPosX(this.value)" onchange="pushHistory(); saveProjectToDB();">
+
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; margin-top: 4px;">
+                                    <span>Eje Vertical (Y)</span>
+                                    <span id="posYVal" style="color: #00e5ff;">${Math.round(curY * 100)}%</span>
+                                </div>
+                                <input type="range" min="-80" max="80" value="${curY * 100}" style="width: 100%; accent-color: #00e5ff;" oninput="updateActiveClipPosY(this.value)" onchange="pushHistory(); saveProjectToDB();">
+                            </div>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-top: 4px;">
-                            <span>Tamaño / Escala</span>
-                            <span id="scaleVal" style="color: #00e5ff;">${Math.round(curScale * 100)}%</span>
+
+                        <!-- SLIDER ESCALA / ZOOM -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-expand" style="color: #feb504;"></i> Tamaño / Zoom</span>
+                                <span id="scaleVal" style="color: #feb504;">${Math.round(curScale * 100)}%</span>
+                            </div>
+                            <input type="range" min="20" max="250" value="${curScale * 100}" style="width: 100%; accent-color: #feb504; margin-top: 8px;" oninput="updateActiveClipScale(this.value)" onchange="pushHistory(); saveProjectToDB();">
                         </div>
-                        <input type="range" min="20" max="150" value="${curScale * 100}" style="width: 100%; accent-color: #00e5ff;" oninput="updateActiveClipScale(this.value)">
+
+                        <div style="font-size: 0.7rem; color: #94a3b8; text-align: center; font-style: italic;">
+                            💡 Consejo: Puedes tocar y arrastrar directamente el video sobre la pantalla con el dedo o ratón, o pellizcar con 2 dedos para redimensionarlo.
+                        </div>
                     </div>
                 `;
             } else if (tool === 'effects') {
@@ -2562,9 +3813,42 @@
         function setClipPosition(x, y) {
             const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
             if (clip) {
-                clip.x = x;
-                clip.y = y;
+                clip.x = Math.round(x * 100) / 100;
+                clip.y = Math.round(y * 100) / 100;
                 pushHistory();
+                renderFrame(projectState.currentTime);
+                saveProjectToDB();
+                if (currentDrawerTab === 'transform') openDrawer('transform');
+            }
+        }
+
+        function nudgeClipPosition(dx, dy) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.x = Math.max(-0.9, Math.min(0.9, Math.round(((clip.x || 0) + dx) * 100) / 100));
+                clip.y = Math.max(-0.9, Math.min(0.9, Math.round(((clip.y || 0) + dy) * 100) / 100));
+                renderFrame(projectState.currentTime);
+                saveProjectToDB();
+                if (currentDrawerTab === 'transform') openDrawer('transform');
+            }
+        }
+
+        function updateActiveClipPosX(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.x = Math.round(val) / 100;
+                const el = document.getElementById('posXVal');
+                if (el) el.innerText = `${Math.round(val)}%`;
+                renderFrame(projectState.currentTime);
+            }
+        }
+
+        function updateActiveClipPosY(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (clip) {
+                clip.y = Math.round(val) / 100;
+                const el = document.getElementById('posYVal');
+                if (el) el.innerText = `${Math.round(val)}%`;
                 renderFrame(projectState.currentTime);
             }
         }
@@ -2572,8 +3856,9 @@
         function updateActiveClipScale(val) {
             const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
             if (clip) {
-                clip.scale = val / 100;
-                document.getElementById('scaleVal').innerText = `${val}%`;
+                clip.scale = Math.round(val) / 100;
+                const el = document.getElementById('scaleVal');
+                if (el) el.innerText = `${Math.round(val)}%`;
                 renderFrame(projectState.currentTime);
             }
         }
@@ -2677,30 +3962,63 @@
                     await new Promise(res => { videoEl.onloadedmetadata = () => res(); videoEl.onerror = () => res(); });
                     mediaCache.set(clipId, videoEl);
 
+                    if (window.MyxsiVideoDB) {
+                        try {
+                            await window.MyxsiVideoDB.saveAsset(file, { id: clipId, name: file.name, type: 'video' });
+                        } catch(e) {}
+                    }
+
                     projectState.clips.push({
                         id: clipId,
+                        assetId: clipId,
+                        src: url,
                         track: 'track-video1',
                         type: 'video',
                         title: file.name.substring(0, 18),
                         start: 999999, // enforceMagneticMainTrack lo colocará en orden al final
                         duration: videoEl.duration || 5.0,
                         speed: 1.0,
-                        opacity: 1.0
+                        opacity: 1.0,
+                        scale: 1.0,
+                        x: 0,
+                        y: 0
                     });
                 } else if (isImg) {
+                    let dataUrl = url;
+                    try {
+                        dataUrl = await new Promise((res) => {
+                            const reader = new FileReader();
+                            reader.onload = () => res(reader.result);
+                            reader.onerror = () => res(url);
+                            reader.readAsDataURL(file);
+                        });
+                    } catch(e) {}
+
                     const imgEl = new Image();
-                    imgEl.src = url;
-                    await new Promise(res => { imgEl.onload = () => res(); });
+                    imgEl.crossOrigin = 'anonymous';
+                    imgEl.src = dataUrl;
+                    await new Promise(res => { imgEl.onload = () => res(); imgEl.onerror = () => res(); });
                     mediaCache.set(clipId, imgEl);
+
+                    if (window.MyxsiVideoDB) {
+                        try {
+                            await window.MyxsiVideoDB.saveAsset(file, { id: clipId, name: file.name, type: 'image' });
+                        } catch(e) {}
+                    }
 
                     projectState.clips.push({
                         id: clipId,
+                        assetId: clipId,
+                        src: dataUrl,
                         track: 'track-video1',
                         type: 'image',
                         title: file.name.substring(0, 18),
                         start: 999999,
                         duration: 4.0,
-                        opacity: 1.0
+                        opacity: 1.0,
+                        scale: 1.0,
+                        x: 0,
+                        y: 0
                     });
                 } else if (isAudio) {
                     const audioEl = new Audio();
@@ -2708,8 +4026,16 @@
                     await new Promise(res => { audioEl.onloadedmetadata = () => res(); audioEl.onerror = () => res(); });
                     mediaCache.set(clipId, audioEl);
 
+                    if (window.MyxsiVideoDB) {
+                        try {
+                            await window.MyxsiVideoDB.saveAsset(file, { id: clipId, name: file.name, type: 'audio' });
+                        } catch(e) {}
+                    }
+
                     projectState.clips.push({
                         id: clipId,
+                        assetId: clipId,
+                        src: url,
                         track: 'track-audio1',
                         type: 'audio',
                         title: file.name.substring(0, 18),
@@ -2724,6 +4050,7 @@
             pushHistory();
             renderTimelineClips();
             renderFrame(projectState.currentTime);
+            saveProjectToDB();
         }
 
         async function handleOverlayInput(files) {
@@ -2744,8 +4071,16 @@
                     await new Promise(res => { videoEl.onloadedmetadata = () => res(); videoEl.onerror = () => res(); });
                     mediaCache.set(clipId, videoEl);
 
+                    if (window.MyxsiVideoDB) {
+                        try {
+                            await window.MyxsiVideoDB.saveAsset(file, { id: clipId, name: file.name, type: 'video' });
+                        } catch(e) {}
+                    }
+
                     projectState.clips.push({
                         id: clipId,
+                        assetId: clipId,
+                        src: url,
                         track: 'track-overlay',
                         type: 'video',
                         title: 'PIP: ' + file.name.substring(0, 14),
@@ -2757,13 +4092,32 @@
                         opacity: 1.0
                     });
                 } else if (isImg) {
+                    let dataUrl = url;
+                    try {
+                        dataUrl = await new Promise((res) => {
+                            const reader = new FileReader();
+                            reader.onload = () => res(reader.result);
+                            reader.onerror = () => res(url);
+                            reader.readAsDataURL(file);
+                        });
+                    } catch(e) {}
+
                     const imgEl = new Image();
-                    imgEl.src = url;
-                    await new Promise(res => { imgEl.onload = () => res(); });
+                    imgEl.crossOrigin = 'anonymous';
+                    imgEl.src = dataUrl;
+                    await new Promise(res => { imgEl.onload = () => res(); imgEl.onerror = () => res(); });
                     mediaCache.set(clipId, imgEl);
+
+                    if (window.MyxsiVideoDB) {
+                        try {
+                            await window.MyxsiVideoDB.saveAsset(file, { id: clipId, name: file.name, type: 'image' });
+                        } catch(e) {}
+                    }
 
                     projectState.clips.push({
                         id: clipId,
+                        assetId: clipId,
+                        src: dataUrl,
                         track: 'track-overlay',
                         type: 'image',
                         title: 'PIP: ' + file.name.substring(0, 14),
@@ -2781,6 +4135,7 @@
             pushHistory();
             renderTimelineClips();
             renderFrame(projectState.currentTime);
+            saveProjectToDB();
         }
 
         function handleAudioInput(files) {
@@ -2915,19 +4270,34 @@
             if (window.MyxsiVideoDB) {
                 try {
                     await window.MyxsiVideoDB.saveProject(projectData);
-                } catch(e) {}
+                } catch(e) {
+                    console.warn('MyxsiVideoDB saveProject warning:', e);
+                }
             }
 
             try {
+                // Para localStorage, sanitizar base64 pesados para no agotar la cuota de 5MB
+                const safeClips = projectState.clips.map(c => {
+                    if (c.src && c.src.length > 150000) {
+                        const copy = { ...c };
+                        delete copy.src; // Preservado en IndexedDB sin saturar localStorage
+                        return copy;
+                    }
+                    return c;
+                });
+                const lsProjectData = { ...projectData, clips: safeClips };
+
                 let projects = JSON.parse(localStorage.getItem('myxsi_video_projects') || '[]');
                 const existingIdx = projects.findIndex(p => p.id === projectState.id);
                 if (existingIdx >= 0) {
-                    projects[existingIdx] = { ...projects[existingIdx], ...projectData };
+                    projects[existingIdx] = { ...projects[existingIdx], ...lsProjectData };
                 } else {
-                    projects.unshift(projectData);
+                    projects.unshift(lsProjectData);
                 }
                 localStorage.setItem('myxsi_video_projects', JSON.stringify(projects));
-            } catch(e) {}
+            } catch(e) {
+                console.warn('LocalStorage save fallback warning:', e);
+            }
         }
 
         // =========================================================================
@@ -3010,6 +4380,604 @@
                 }
             }, 60);
         }
+
+        // =========================================================================
+        // MYXSI EDIT: ASISTENTE DE INTELIGENCIA ARTIFICIAL EN EL EDITOR DE VIDEO
+        // =========================================================================
+        let isAIChatOpen = false;
+        let aiChatHistory = [];
+        let aiSpeechRecognition = null;
+        let isAIVoiceListening = false;
+
+        function toggleAIChat() {
+            isAIChatOpen = !isAIChatOpen;
+            const panel = document.getElementById('aiSidePanel');
+            const overlay = document.getElementById('aiPanelOverlay');
+            const dockBtn = document.getElementById('aiSideDockBtn');
+            const topbarBtn = document.getElementById('btnToggleAi');
+
+            if (panel) panel.classList.toggle('open', isAIChatOpen);
+            if (overlay) overlay.classList.toggle('show', isAIChatOpen);
+            if (topbarBtn) topbarBtn.classList.toggle('active', isAIChatOpen);
+            if (dockBtn) dockBtn.style.display = isAIChatOpen ? 'none' : 'flex';
+
+            if (isAIChatOpen) {
+                updateAIVideoStatusBar();
+                const input = document.getElementById('aiUserInput');
+                if (input && window.innerWidth >= 850) {
+                    setTimeout(() => input.focus(), 150);
+                }
+            }
+        }
+
+        function updateAIVideoStatusBar() {
+            const curEl = document.getElementById('aiStatTime');
+            const durEl = document.getElementById('aiStatDur');
+            const clipsEl = document.getElementById('aiStatClips');
+            const ratioEl = document.getElementById('aiStatRatio');
+
+            if (curEl) curEl.innerText = formatTimecodeShort(projectState.currentTime);
+            if (durEl) durEl.innerText = formatTimecodeShort(projectState.duration);
+            if (clipsEl) clipsEl.innerText = `${projectState.clips.length} clip${projectState.clips.length === 1 ? '' : 's'}`;
+            if (ratioEl) ratioEl.innerText = projectState.aspectRatio;
+        }
+
+        function sendQuickCommand(cmdText) {
+            const input = document.getElementById('aiUserInput');
+            if (input) input.value = cmdText;
+            processAIChatMessage(cmdText);
+        }
+
+        function handleAIChatSubmit(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            const input = document.getElementById('aiUserInput');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            processAIChatMessage(text);
+        }
+
+        function scrollAIChatToBottom() {
+            const container = document.getElementById('aiChatMessages');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function appendAIChatMessage(role, text, actionDesc = null) {
+            const container = document.getElementById('aiChatMessages');
+            const typing = document.getElementById('aiTypingIndicator');
+            if (!container) return;
+
+            const bubble = document.createElement('div');
+            bubble.className = `ai-msg-bubble ${role === 'user' ? 'ai-msg-user' : 'ai-msg-assistant'}`;
+
+            // Formateo seguro básico de markdown (negritas, párrafos y saltos)
+            const formatted = text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .split('\n\n')
+                .map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`)
+                .join('');
+
+            bubble.innerHTML = formatted;
+
+            if (actionDesc) {
+                const actionCard = document.createElement('div');
+                actionCard.className = 'ai-action-executed-badge';
+                actionCard.innerHTML = `
+                    <span><i class="fa-solid fa-circle-check"></i> ${actionDesc}</span>
+                    <button type="button" class="ai-action-undo-btn" onclick="undoAIVideoAction()" title="Deshacer esta acción">Deshacer</button>
+                `;
+                bubble.appendChild(actionCard);
+            }
+
+            if (typing) {
+                container.insertBefore(bubble, typing);
+            } else {
+                container.appendChild(bubble);
+            }
+            scrollAIChatToBottom();
+        }
+
+        function undoAIVideoAction() {
+            undo();
+            appendAIChatMessage('assistant', 'He deshecho la última modificación sobre el video.');
+            updateAIVideoStatusBar();
+        }
+
+        // =========================================================================
+        // MOTOR DE EJECUCIÓN DIRECTA DE ACCIONES DE EDICIÓN
+        // =========================================================================
+        function setClipScale(scale) {
+            let clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) {
+                clip = projectState.clips.find(c => c.track === 'track-video1');
+            }
+            if (clip) {
+                clip.scale = Math.max(0.2, Math.min(3.0, Math.round(scale * 100) / 100));
+                pushHistory();
+                renderFrame(projectState.currentTime);
+                saveProjectToDB();
+            }
+        }
+
+        function addTextClipDirectly(text, style = 'viral') {
+            const newTextClip = {
+                id: 'clip_txt_' + Date.now(),
+                track: 'track-text',
+                type: 'text',
+                title: text.substring(0, 15),
+                text: text,
+                start: projectState.currentTime,
+                duration: 4.0,
+                fontSize: 44,
+                color: '#feb504',
+                style: style,
+                x: 0,
+                y: 0.25,
+                opacity: 1.0
+            };
+            projectState.clips.push(newTextClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newTextClip.id);
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+        }
+
+        function executeVideoAIAction(actionObj) {
+            if (!actionObj || !actionObj.action) return null;
+            const act = actionObj.action.toLowerCase();
+            let description = actionObj.description || '';
+
+            switch (act) {
+                case 'split':
+                case 'cortar':
+                case 'dividir': {
+                    splitClipAtPlayhead();
+                    description = `Clip dividido en ${formatTimecodeShort(projectState.currentTime)}`;
+                    break;
+                }
+                case 'split_at': {
+                    if (typeof actionObj.time === 'number') {
+                        seekTime(actionObj.time);
+                        splitClipAtPlayhead();
+                        description = `Clip dividido en ${formatTimecodeShort(actionObj.time)}`;
+                    }
+                    break;
+                }
+                case 'filter': {
+                    const f = actionObj.value || 'none';
+                    selectFilter(f);
+                    description = `Filtro '${f}' aplicado al video`;
+                    break;
+                }
+                case 'shader':
+                case 'effect': {
+                    const s = actionObj.value || 'none';
+                    selectShader(s);
+                    description = `Efecto visual '${s}' aplicado`;
+                    break;
+                }
+                case 'speed':
+                case 'velocidad': {
+                    const spd = parseFloat(actionObj.value) || 1.0;
+                    setClipSpeed(spd);
+                    description = `Velocidad cambiada a ${spd}x`;
+                    break;
+                }
+                case 'move_clip': {
+                    const dir = (actionObj.direction || '').toLowerCase();
+                    if (dir === 'left' || dir === 'izq') {
+                        moveClipLeft();
+                        description = 'Clip movido hacia la izquierda en la pista';
+                    } else {
+                        moveClipRight();
+                        description = 'Clip movido hacia la derecha en la pista';
+                    }
+                    break;
+                }
+                case 'add_text':
+                case 'texto': {
+                    const text = actionObj.text || '🔥 TEXTO';
+                    const style = actionObj.style || 'viral';
+                    addTextClipDirectly(text, style);
+                    description = `Título '${text}' añadido al video`;
+                    break;
+                }
+                case 'zoom':
+                case 'scale': {
+                    const scale = parseFloat(actionObj.value) || 1.0;
+                    setClipScale(scale);
+                    description = `Zoom ajustado al ${Math.round(scale * 100)}%`;
+                    break;
+                }
+                case 'position':
+                case 'encuadre': {
+                    const x = parseFloat(actionObj.x) || 0;
+                    const y = parseFloat(actionObj.y) || 0;
+                    setClipPosition(x, y);
+                    description = (x === 0 && y === 0) ? 'Encuadre centrado' : `Posición ajustada a (${x}, ${y})`;
+                    break;
+                }
+                case 'mute':
+                case 'silenciar': {
+                    if (actionObj.value === false) {
+                        if (projectState.isMutedAll) toggleMuteAll();
+                        description = 'Audio activado';
+                    } else {
+                        if (!projectState.isMutedAll) toggleMuteAll();
+                        description = 'Audio silenciado';
+                    }
+                    break;
+                }
+                case 'ratio': {
+                    const r = actionObj.value || '9:16';
+                    setAspectRatio(r);
+                    description = `Formato cambiado a ${r}`;
+                    break;
+                }
+                case 'seek': {
+                    const t = parseFloat(actionObj.time) || 0;
+                    seekTime(t);
+                    description = `Cabezal movido a ${formatTimecodeShort(t)}`;
+                    break;
+                }
+                case 'duplicate': {
+                    duplicateActiveClip();
+                    description = 'Clip duplicado en la pista';
+                    break;
+                }
+                case 'delete': {
+                    deleteActiveClip();
+                    description = 'Clip eliminado del proyecto';
+                    break;
+                }
+                case 'undo': {
+                    undo();
+                    description = 'Última acción deshecha';
+                    break;
+                }
+                case 'redo': {
+                    redo();
+                    description = 'Acción rehecha';
+                    break;
+                }
+                default:
+                    return null;
+            }
+
+            renderFrame(projectState.currentTime);
+            renderTimelineClips();
+            updateAIVideoStatusBar();
+            return description;
+        }
+
+        // =========================================================================
+        // MOTOR INTELIGENTE LOCAL (RECONOCIMIENTO SEMÁNTICO Y OFFLINE RESILIENTE)
+        // =========================================================================
+        function parseLocalVideoIntent(userMsg) {
+            const msg = userMsg.toLowerCase().trim();
+
+            // 1. Deshacer / Rehacer
+            if (/deshaz|deshacer|undo|atrás|revertir/i.test(msg)) {
+                return { action: 'undo', response: 'Listo, he deshecho la última modificación sobre el video.' };
+            }
+            if (/rehaz|rehacer|redo|adelante/i.test(msg)) {
+                return { action: 'redo', response: 'He rehecho el cambio en tu video.' };
+            }
+
+            // 2. Dividir / Cortar
+            if (/corta|cortar|divide|dividir|split|separar|recorta en/i.test(msg)) {
+                const timeMatch = msg.match(/(?:segundo|en|al)?\s*(\d+(?:\.\d+)?)\s*(?:s|segundos?)?/i);
+                if (timeMatch && parseFloat(timeMatch[1]) > 0 && !msg.includes('playhead') && !msg.includes('aquí')) {
+                    const sec = parseFloat(timeMatch[1]);
+                    return { action: 'split_at', time: sec, response: `He dividido el clip exactamente en el segundo ${sec}s.` };
+                }
+                return { action: 'split', response: 'He dividido el clip en la posición actual del cabezal de reproducción.' };
+            }
+
+            // 3. Velocidad
+            if (/acelera|rapido|rápido|velocidad/i.test(msg)) {
+                if (/2x|doble/i.test(msg)) return { action: 'speed', value: 2.0, response: 'Velocidad duplicada a 2.0x.' };
+                if (/1\.5x|1\.5/i.test(msg)) return { action: 'speed', value: 1.5, response: 'Velocidad aumentada a 1.5x.' };
+                if (/1\.2x|1\.25/i.test(msg)) return { action: 'speed', value: 1.25, response: 'Velocidad ajustada a 1.25x.' };
+                return { action: 'speed', value: 1.5, response: 'He acelerado el clip a 1.5x.' };
+            }
+            if (/lento|camara lenta|cámara lenta|slow|desacelera/i.test(msg)) {
+                if (/0\.5x|0\.5|mitad/i.test(msg)) return { action: 'speed', value: 0.5, response: 'Cámara lenta ajustada a 0.5x.' };
+                if (/0\.75x|0\.75/i.test(msg)) return { action: 'speed', value: 0.75, response: 'Cámara lenta ajustada a 0.75x.' };
+                return { action: 'speed', value: 0.5, response: 'He puesto el clip en cámara lenta a 0.5x.' };
+            }
+            if (/normal|1x|velocidad original/i.test(msg)) {
+                return { action: 'speed', value: 1.0, response: 'Velocidad restablecida a 1.0x normal.' };
+            }
+
+            // 4. Mover clip de lado en la pista
+            if (/mueve.*derecha|hacia la derecha|der|pasar al final/i.test(msg)) {
+                return { action: 'move_clip', direction: 'right', response: 'He movido el clip hacia la derecha en la pista magnética.' };
+            }
+            if (/mueve.*izquierda|hacia la izquierda|izq|pasar al inicio/i.test(msg)) {
+                return { action: 'move_clip', direction: 'left', response: 'He movido el clip hacia la izquierda en la pista magnética.' };
+            }
+
+            // 5. Filtros de Color
+            if (/vintage|retro|antiguo|sepia/i.test(msg)) {
+                return { action: 'filter', value: 'vintage', response: 'Filtro Vintage cinematográfico aplicado.' };
+            }
+            if (/blanco y negro|b&w|noir|monocromo|grises/i.test(msg)) {
+                return { action: 'filter', value: 'bw', response: 'Filtro Blanco y Negro Noir aplicado.' };
+            }
+            if (/c[aá]lido|warm|dorado|atardecer/i.test(msg)) {
+                return { action: 'filter', value: 'warm', response: 'Filtro Cálido dorado aplicado.' };
+            }
+            if (/fr[ií]o|cool|azul|nieve/i.test(msg)) {
+                return { action: 'filter', value: 'cool', response: 'Filtro Frío azulado aplicado.' };
+            }
+            if (/cyber|cyberpunk|neon|rosa/i.test(msg)) {
+                return { action: 'filter', value: 'cyber', response: 'Filtro Cyberpunk aplicado.' };
+            }
+            if (/quitar?\s+filtro|sin\s+filtro|filtro original/i.test(msg)) {
+                return { action: 'filter', value: 'none', response: 'Filtros de color desactivados, mostrando original.' };
+            }
+
+            // 6. Efectos Shader
+            if (/grano|film grain|pelicula|película/i.test(msg)) {
+                return { action: 'shader', value: 'film_grain', response: 'Efecto de grano de película cinematográfico aplicado.' };
+            }
+            if (/vhs|cinta|cassette/i.test(msg)) {
+                return { action: 'shader', value: 'vhs', response: 'Efecto retro VHS con líneas de escaneo aplicado.' };
+            }
+            if (/glitch|rgb|split/i.test(msg)) {
+                return { action: 'shader', value: 'rgb_split', response: 'Efecto RGB Split Glitch aplicado.' };
+            }
+            if (/neon glow|brillo neon/i.test(msg)) {
+                return { action: 'shader', value: 'neon_glow', response: 'Efecto Neon Glow brillante aplicado.' };
+            }
+            if (/beat shake|sacudida|vibracion/i.test(msg)) {
+                return { action: 'shader', value: 'beat_shake', response: 'Efecto Beat Shake al ritmo aplicado.' };
+            }
+            if (/zoom pulse|pulso/i.test(msg)) {
+                return { action: 'shader', value: 'zoom_pulse', response: 'Efecto Zoom Pulse aplicado.' };
+            }
+            if (/quitar?\s+efecto|sin\s+efecto|efectos off/i.test(msg)) {
+                return { action: 'shader', value: 'none', response: 'Efectos visuales desactivados.' };
+            }
+
+            // 7. Texto / Subtítulo
+            const textMatch = msg.match(/(?:texto|título|titulo|subtítulo|subtitulo|escribe|pon)\s+(?:que diga|con|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
+            if (textMatch && textMatch[1].trim().length > 1) {
+                const txt = textMatch[1].trim();
+                return { action: 'add_text', text: txt, style: 'viral', response: `He añadido el texto "${txt}" a la pista de títulos.` };
+            }
+
+            // 8. Zoom y Encuadre
+            if (/zoom|amplia|amplía|acerca/i.test(msg)) {
+                const zoomMatch = msg.match(/(\d+)%/);
+                const zVal = zoomMatch ? parseInt(zoomMatch[1]) / 100 : 1.25;
+                return { action: 'zoom', value: zVal, response: `Zoom configurado al ${Math.round(zVal * 100)}%.` };
+            }
+            if (/centra|centrar|al centro/i.test(msg)) {
+                return { action: 'position', x: 0, y: 0, response: 'Video centrado en el encuadre.' };
+            }
+
+            // 9. Silencio / Audio
+            if (/silencia|quitar? sonido|sin audio|mute|silencio/i.test(msg)) {
+                return { action: 'mute', value: true, response: 'Audio silenciado.' };
+            }
+            if (/activa sonido|con audio|desmutea|sonido on/i.test(msg)) {
+                return { action: 'mute', value: false, response: 'Audio activado.' };
+            }
+
+            // 10. Formato / Ratio
+            if (/vertical|tiktok|reels|shorts|9:16/i.test(msg)) {
+                return { action: 'ratio', value: '9:16', response: 'Formato vertical 9:16 aplicado para TikTok y Reels.' };
+            }
+            if (/horizontal|youtube|pc|16:9/i.test(msg)) {
+                return { action: 'ratio', value: '16:9', response: 'Formato horizontal 16:9 aplicado para YouTube y PC.' };
+            }
+            if (/cuadrado|instagram|feed|1:1/i.test(msg)) {
+                return { action: 'ratio', value: '1:1', response: 'Formato cuadrado 1:1 aplicado.' };
+            }
+
+            // 11. Navegación
+            if (/inicio|principio|0:00|comienzo|regresa/i.test(msg)) {
+                return { action: 'seek', time: 0, response: 'Cabezal regresado al inicio (0:00).' };
+            }
+
+            // 12. Duplicar / Eliminar
+            if (/duplica|copia/i.test(msg)) {
+                return { action: 'duplicate', response: 'Clip duplicado con éxito.' };
+            }
+            if (/elimina|borra/i.test(msg)) {
+                return { action: 'delete', response: 'Clip eliminado del proyecto.' };
+            }
+
+            return null;
+        }
+
+        // =========================================================================
+        // PROCESAMIENTO HÍBRIDO (BACKEND CLOUDFLARE + MOTOR LOCAL)
+        // =========================================================================
+        async function processAIChatMessage(userText) {
+            if (!userText || !userText.trim()) return;
+            const text = userText.trim();
+
+            // 1. Mostrar mensaje del usuario en el chat
+            appendAIChatMessage('user', text);
+
+            // 2. Mostrar indicador de pensamiento
+            const typing = document.getElementById('aiTypingIndicator');
+            if (typing) typing.style.display = 'flex';
+            scrollAIChatToBottom();
+
+            // 3. Revisar primero el motor local de intenciones (para respuesta instantánea y offline)
+            const localIntent = parseLocalVideoIntent(text);
+
+            let aiResponseText = "";
+            let actionToExecute = localIntent;
+
+            try {
+                const apiUrl = window.__MYXSI_API_URL__ || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                const projectContext = {
+                    duration: projectState.duration,
+                    currentTime: projectState.currentTime,
+                    activeClipId: projectState.activeClipId,
+                    clipsCount: projectState.clips.length,
+                    ratio: projectState.aspectRatio,
+                    filter: projectState.activeFilter,
+                    shader: projectState.activeShader
+                };
+
+                const systemPrompt = `Eres Myxsi edit, el asistente de inteligencia artificial de Myxsi Video Studio. Tu misión es asistir al editor y ejecutar acciones de edición profesional sobre el video.
+Responde de forma concisa, educada y profesional en español (máximo 2 a 3 oraciones).
+Estado del video: Duración ${projectContext.duration}s, Tiempo actual ${projectContext.currentTime}s, Ratio ${projectContext.ratio}, Filtro activo ${projectContext.filter}.
+Si el usuario te pide una modificación, debes incluir al final un bloque de código exactamente con el tag \`\`\`video_action conteniendo un JSON con la acción.
+Acciones posibles:
+{"action":"split"}
+{"action":"split_at","time":4.5}
+{"action":"speed","value":1.5}
+{"action":"filter","value":"vintage"|"bw"|"warm"|"cool"|"cyber"|"none"}
+{"action":"shader","value":"film_grain"|"vhs"|"rgb_split"|"neon_glow"|"beat_shake"|"none"}
+{"action":"move_clip","direction":"left"|"right"}
+{"action":"add_text","text":"Texto"}
+{"action":"zoom","value":1.25}
+{"action":"position","x":0,"y":0}
+{"action":"mute","value":true|false}
+{"action":"ratio","value":"9:16"|"16:9"|"1:1"}
+{"action":"seek","time":0}
+{"action":"duplicate"}
+{"action":"delete"}
+{"action":"undo"}
+{"action":"redo"}`;
+
+                const res = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'chat',
+                        message: text,
+                        systemPrompt: systemPrompt,
+                        history: aiChatHistory.slice(-6)
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success && data.response) {
+                        const raw = data.response;
+                        const actionMatch = raw.match(/```video_action\s*([\s\S]*?)\s*```/i);
+                        if (actionMatch) {
+                            try {
+                                const parsedAction = JSON.parse(actionMatch[1]);
+                                actionToExecute = parsedAction;
+                            } catch(e) {}
+                        }
+                        aiResponseText = raw.replace(/```video_action[\s\S]*?```/gi, '').trim();
+                    }
+                }
+            } catch(err) {
+                console.warn("Backend AI call failed, relying on local intent engine:", err);
+            }
+
+            if (typing) typing.style.display = 'none';
+
+            // 4. Ejecutar la acción sobre el video si se identificó una
+            let executionResultDesc = null;
+            if (actionToExecute) {
+                try {
+                    executionResultDesc = executeVideoAIAction(actionToExecute);
+                } catch(e) {
+                    console.error("Error executing video action:", e);
+                }
+            }
+
+            // 5. Generar texto final de respuesta si no vino del backend
+            if (!aiResponseText) {
+                if (actionToExecute && actionToExecute.response) {
+                    aiResponseText = actionToExecute.response;
+                } else if (executionResultDesc) {
+                    aiResponseText = `¡Listo! He aplicado la modificación: ${executionResultDesc}.`;
+                } else {
+                    aiResponseText = `He analizado tu video. Tienes ${projectState.clips.length} clip(s) con una duración de ${projectState.duration.toFixed(1)}s en formato ${projectState.aspectRatio}. ¿Qué deseas que modifique (cortar, mover, filtros, velocidad, textos)?`;
+                }
+            }
+
+            // 6. Añadir mensaje de la IA con badge de acción interactiva
+            appendAIChatMessage('assistant', aiResponseText, executionResultDesc);
+            aiChatHistory.push({ role: 'user', content: text });
+            aiChatHistory.push({ role: 'assistant', content: aiResponseText });
+            scrollAIChatToBottom();
+        }
+
+        // =========================================================================
+        // DICTADO POR VOZ (SPEECH-TO-TEXT) EN MYXSI EDIT
+        // =========================================================================
+        function toggleAIVoiceInput() {
+            const micBtn = document.getElementById('aiBtnMic');
+            const input = document.getElementById('aiUserInput');
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Tu navegador no soporta reconocimiento de voz nativo. Por favor escribe tu instrucción.");
+                return;
+            }
+
+            if (isAIVoiceListening) {
+                if (aiSpeechRecognition) aiSpeechRecognition.stop();
+                isAIVoiceListening = false;
+                if (micBtn) micBtn.classList.remove('listening');
+                return;
+            }
+
+            try {
+                aiSpeechRecognition = new SpeechRecognition();
+                aiSpeechRecognition.lang = 'es-ES';
+                aiSpeechRecognition.continuous = false;
+                aiSpeechRecognition.interimResults = false;
+
+                aiSpeechRecognition.onstart = () => {
+                    isAIVoiceListening = true;
+                    if (micBtn) micBtn.classList.add('listening');
+                };
+
+                aiSpeechRecognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    if (input) {
+                        input.value = transcript;
+                        handleAIChatSubmit(new Event('submit'));
+                    }
+                };
+
+                aiSpeechRecognition.onerror = () => {
+                    isAIVoiceListening = false;
+                    if (micBtn) micBtn.classList.remove('listening');
+                };
+
+                aiSpeechRecognition.onend = () => {
+                    isAIVoiceListening = false;
+                    if (micBtn) micBtn.classList.remove('listening');
+                };
+
+                aiSpeechRecognition.start();
+            } catch(e) {
+                console.warn("Speech recognition error:", e);
+            }
+        }
+
+        // ATAJOS DE TECLADO PARA MYXSI EDIT (CTRL+I / ESC)
+        window.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
+                e.preventDefault();
+                toggleAIChat();
+            } else if (e.key === 'Escape' && isAIChatOpen) {
+                toggleAIChat();
+            }
+        });
     </script>
 </body>
 </html>

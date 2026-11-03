@@ -1311,11 +1311,25 @@
                     if (exportRes.ok) {
                         const csvContent = await exportRes.text();
                         if (csvContent && csvContent.trim()) {
-                            gridData = parseCSVToGrid(csvContent);
-                            renderGrid();
-                            localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
-                            if (typeof window.showMyxsiToast === 'function') {
-                                window.showMyxsiToast("Libro sincronizado desde Google Drive", "success");
+                            const parsedGrid = parseCSVToGrid(csvContent);
+                            const hasCloudData = Object.values(parsedGrid).some(v => v !== undefined && v !== null && String(v).trim() !== '');
+                            const localDraftData = JSON.parse(localStorage.getItem('sheets_studio_data_' + effectiveId) || '{}');
+                            const hasLocalData = Object.values(localDraftData).some(v => v !== undefined && v !== null && String(v).trim() !== '');
+
+                            if (hasCloudData) {
+                                gridData = parsedGrid;
+                                renderGrid();
+                                localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+                                if (typeof window.showMyxsiToast === 'function') {
+                                    window.showMyxsiToast("Libro sincronizado desde Google Drive", "success");
+                                }
+                            } else if (hasLocalData) {
+                                console.log("Google Sheets en la nube está vacío. Preservando datos locales y sincronizando...");
+                                gridData = localDraftData;
+                                renderGrid();
+                                setTimeout(() => {
+                                    if (typeof syncSheetToGoogleDrive === 'function') syncSheetToGoogleDrive(true);
+                                }, 500);
                             }
                         }
                     }

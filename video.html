@@ -23,10 +23,14 @@
     <script src="js/config.local.js" onerror="this.remove()"></script>
     <script type="module" src="js/auth-shared.js"></script>
 
-    <!-- Redirección unificada al Editor Myxsi adaptado para PC y Móvil -->
+    <!-- Redirección inteligente al Editor Myxsi adaptado para Móvil si corresponde -->
     <script>
         (function() {
-            window.location.replace('video-mobile.html' + window.location.search);
+            const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const forceDesktop = new URLSearchParams(window.location.search).get('desktop') === '1';
+            if (isMobile && !forceDesktop) {
+                window.location.replace('video-mobile.html' + window.location.search);
+            }
         })();
     </script>
 
@@ -4940,9 +4944,13 @@
         function setGlobalTransition(transName) {
             projectState.activeTransition = transName;
             document.querySelectorAll('#tab-trans .fx-preset-btn').forEach(b => b.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
+            if (typeof event !== 'undefined' && event && event.currentTarget) event.currentTarget.classList.add('active');
             pushHistoryState();
             autoSaveProject();
+        }
+
+        function setDriftTransition(transName) {
+            return setGlobalTransition(transName);
         }
 
         function updateActiveTextFontFamily(font) {
