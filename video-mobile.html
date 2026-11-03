@@ -1779,6 +1779,11 @@
         <!-- Chips de Acciones Rápidas -->
         <div class="ai-quick-chips-wrapper">
             <button type="button" class="ai-chip-btn" onclick="startVoiceSubtitleRecording()" style="background:rgba(239,68,68,0.22);border-color:rgba(239,68,68,0.5);color:#fca5a5;" title="Escuchar voz del usuario y crear subtítulo sincronizado">🎙️ Subtítulo con Voz</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!RECORD_VOICE')" style="background:rgba(236,72,153,0.2);border-color:rgba(236,72,153,0.5);color:#f472b6;" title="Grabar voz en off">🎙️ Grabar Voz</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!TRANSITION crossfade')" style="background:rgba(0,229,255,0.18);border-color:rgba(0,229,255,0.45);color:#67e8f9;" title="Transición de disolución suave">🎬 Transición</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!STICKER fire')" style="background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.5);color:#fde047;" title="Sticker de fuego viral">🔥 Sticker Fuego</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SFX swoosh')" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);color:#6ee7b7;" title="Efecto de sonido swoosh">💥 SFX Swoosh</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!RAMP flash')" style="background:rgba(254,181,4,0.18);border-color:rgba(254,181,4,0.45);color:#feb504;" title="Rampa de aceleración flash">⚡ Rampa Vel</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SCALE image +0.25')" style="background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.5);color:#e9d5ff;" title="Agrandar imagen de forma perfecta">➕ Agrandar Imagen (+25%)</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SCALE image -0.25')" style="background:rgba(168,85,247,0.2);border-color:rgba(168,85,247,0.5);color:#e9d5ff;" title="Desagrandar / achicar imagen de forma perfecta">➖ Desagrandar Imagen (-25%)</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('✂️ Cortar el video en el playhead')">✂️ Cortar aquí</button>
@@ -1824,34 +1829,6 @@
     <section class="vstudio-stage-area">
         <div class="vstudio-canvas-container" id="canvasContainer">
             <canvas id="mainVideoCanvas" width="1080" height="1920"></canvas>
-
-            <!-- TOOLBAR FLOTANTE DE TRANSFORMACIÓN Y AJUSTES -->
-            <div class="canvas-transform-hud" id="canvasTransformHUD" style="display: none;">
-                <div class="transform-hud-chip" id="hudClipInfo">
-                    <i class="fa-solid fa-shapes"></i> <span id="hudClipLabel">Elemento</span>
-                </div>
-                <div class="transform-hud-actions">
-                    <button type="button" class="hud-btn" onclick="scaleActiveClipRelative(-0.1)" title="Achicar (-10%)">
-                        <i class="fa-solid fa-minus"></i>
-                        <span>Achicar</span>
-                    </button>
-                    <button type="button" class="hud-btn hud-btn-center" onclick="centerActiveClip()" title="Centrar elemento en pantalla">
-                        <i class="fa-solid fa-crosshairs"></i>
-                        <span>Centrar</span>
-                    </button>
-                    <button type="button" class="hud-btn" onclick="scaleActiveClipRelative(0.1)" title="Agrandar (+10%)">
-                        <i class="fa-solid fa-plus"></i>
-                        <span>Agrandar</span>
-                    </button>
-                    <button type="button" class="hud-btn" onclick="openDrawer('transform')" title="Más controles de posición">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>Ajustes</span>
-                    </button>
-                    <button type="button" class="hud-btn hud-btn-close" onclick="deselectActiveClip()" title="Cerrar selección">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- CONTROLES FLOTANTES -->
@@ -1940,6 +1917,10 @@
                 <i class="fa-regular fa-clone"></i>
                 <span>Superponer</span>
             </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('stickers')">
+                <i class="fa-solid fa-icons" style="color: #feb504;"></i>
+                <span>Stickers</span>
+            </button>
             <button type="button" class="vstudio-tool-btn" onclick="openDrawer('effects')">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                 <span>Efectos</span>
@@ -1968,6 +1949,22 @@
                 <i class="fa-solid fa-chevron-left"></i>
                 <span>Volver</span>
             </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('crop')" title="Recortar imagen o video">
+                <i class="fa-solid fa-crop" style="color: #00e5ff;"></i>
+                <span>Recortar</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('adjust')" title="Ajustes de color, brillo y filtro">
+                <i class="fa-solid fa-sliders" style="color: #feb504;"></i>
+                <span>Color</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="splitClipAtPlayhead()" title="Dividir clip en el cursor">
+                <i class="fa-solid fa-scissors"></i>
+                <span>Dividir</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="separateAudioFromActiveClip()" title="Separar audio a pista independiente">
+                <i class="fa-solid fa-file-audio" style="color: #10b981;"></i>
+                <span>Separar</span>
+            </button>
             <button type="button" class="vstudio-tool-btn" onclick="moveClipLeft()" title="Mover clip hacia la izquierda">
                 <i class="fa-solid fa-arrow-left" style="color: #feb504;"></i>
                 <span>◀ Izq</span>
@@ -1976,31 +1973,55 @@
                 <i class="fa-solid fa-arrow-right" style="color: #feb504;"></i>
                 <span>Der ▶</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="splitClipAtPlayhead()">
-                <i class="fa-solid fa-scissors"></i>
-                <span>Dividir</span>
-            </button>
-            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('transform')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('transform')" title="Mover y acomodar en pantalla">
                 <i class="fa-solid fa-up-down-left-right" style="color: #00e5ff;"></i>
                 <span>Mover</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('speed')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('fade')" title="Fundido de entrada y salida">
+                <i class="fa-solid fa-water" style="color: #a855f7;"></i>
+                <span>Fundido</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('chroma')" title="Pantalla verde / Croma Key">
+                <i class="fa-solid fa-mask" style="color: #10b981;"></i>
+                <span>Croma</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('voice')" title="Efectos de voz y audio">
+                <i class="fa-solid fa-microphone-lines" style="color: #ec4899;"></i>
+                <span>Voz</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('speed')" title="Velocidad de reproducción">
                 <i class="fa-solid fa-gauge-high"></i>
                 <span>Velocidad</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('volume')">
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('speed_curve')" title="Rampa de velocidad dinámica (Drift Speed Curve)">
+                <i class="fa-solid fa-chart-line" style="color: #feb504;"></i>
+                <span>Rampa</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('volume')" title="Volumen de audio">
                 <i class="fa-solid fa-volume-high"></i>
                 <span>Volumen</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('opacity')">
+            <button type="button" class="vstudio-tool-btn" onclick="toggleMuteActiveClip()" title="Silenciar o activar audio del clip">
+                <i class="fa-solid fa-volume-xmark" id="btnClipMuteIcon" style="color: #cbd5e1;"></i>
+                <span>Silenciar</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="freezeFrameAtPlayhead()" title="Congelar fotograma actual">
+                <i class="fa-solid fa-snowflake" style="color: #00e5ff;"></i>
+                <span>Congelar</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="toggleFlipActiveClip()" title="Voltear en espejo horizontal">
+                <i class="fa-solid fa-repeat"></i>
+                <span>Espejo</span>
+            </button>
+            <button type="button" class="vstudio-tool-btn" onclick="openDrawer('opacity')" title="Opacidad del clip">
                 <i class="fa-solid fa-circle-half-stroke"></i>
                 <span>Opacidad</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="duplicateActiveClip()">
+            <button type="button" class="vstudio-tool-btn" onclick="duplicateActiveClip()" title="Duplicar clip">
                 <i class="fa-solid fa-copy"></i>
                 <span>Duplicar</span>
             </button>
-            <button type="button" class="vstudio-tool-btn" onclick="deleteActiveClip()" style="color: #f87171;">
+            <button type="button" class="vstudio-tool-btn" onclick="deleteActiveClip()" style="color: #f87171;" title="Eliminar clip">
                 <i class="fa-solid fa-trash-can" style="color: #f87171;"></i>
                 <span>Eliminar</span>
             </button>
@@ -2096,6 +2117,7 @@
             activeClipId: null,
             activeShader: 'none',
             activeTransition: 'none',
+            transitionDuration: 0.6,
             activeFilter: 'none',
             isMutedAll: false,
             zoomPxPerSec: 60,
@@ -2643,14 +2665,14 @@
                 if (clip.type === 'video') {
                     const videoEl = mediaCache.get(clip.id);
                     if (videoEl && videoEl.readyState >= 1) {
-                        renderTransformedMedia(videoEl, w, h, posX, posY, scale);
+                        renderTransformedMedia(videoEl, clip, w, h, posX, posY, scale);
                     } else {
                         renderProceduralCosmicWave(w, h, time, posX, posY, scale);
                     }
                 } else if (clip.type === 'image') {
                     const imgEl = mediaCache.get(clip.id);
                     if (imgEl && imgEl.complete && (imgEl.naturalWidth > 0 || imgEl.width > 0)) {
-                        renderTransformedMedia(imgEl, w, h, posX, posY, scale);
+                        renderTransformedMedia(imgEl, clip, w, h, posX, posY, scale);
                     } else {
                         // Carga asíncrona reactiva si existe clip.src o asset en IndexedDB
                         if (clip.src && !mediaCache.has(clip.id)) {
@@ -2677,9 +2699,27 @@
                     }
                 } else if (clip.type === 'text') {
                     renderTextLayer(clip, w, h, time);
+                } else if (clip.type === 'sticker') {
+                    renderStickerLayer(clip, w, h, time);
                 }
 
                 ctx.restore();
+            }
+
+            // Drift Cut Transitions
+            if (projectState.activeTransition && projectState.activeTransition !== 'none') {
+                const vidClips = projectState.clips.filter(c => c.track === 'track-video1').sort((a,b) => a.start - b.start);
+                const transDur = projectState.transitionDuration || 0.6;
+                const half = transDur / 2;
+                for (let i = 0; i < vidClips.length - 1; i++) {
+                    const cA = vidClips[i];
+                    const cutTime = cA.start + cA.duration;
+                    if (time >= cutTime - half && time <= cutTime + half) {
+                        const progress = (time - (cutTime - half)) / transDur;
+                        renderTransitionEffect(projectState.activeTransition, progress, w, h, time);
+                        break;
+                    }
+                }
             }
 
             applyColorFilter(w, h);
@@ -2695,10 +2735,23 @@
             }
         }
 
-        function renderTransformedMedia(mediaEl, w, h, posX, posY, scale, fitMode = 'contain') {
+        function renderTransformedMedia(mediaEl, clip, w, h, posX, posY, scale, fitMode = 'contain') {
             const natW = mediaEl.videoWidth || mediaEl.naturalWidth || mediaEl.width || w;
             const natH = mediaEl.videoHeight || mediaEl.naturalHeight || mediaEl.height || h;
-            const aspect = natW / (natH || 1);
+            
+            // 1. Recorte normalizado según arquitectura Drift (normalizedSourceFrame 0..1)
+            const crop = (clip && clip.crop) ? clip.crop : { x: 0, y: 0, w: 1, h: 1 };
+            const cropX = Math.max(0, Math.min(0.95, crop.x || 0));
+            const cropY = Math.max(0, Math.min(0.95, crop.y || 0));
+            const cropW = Math.max(0.05, Math.min(1.0 - cropX, crop.w || 1));
+            const cropH = Math.max(0.05, Math.min(1.0 - cropY, crop.h || 1));
+
+            const srcX = cropX * natW;
+            const srcY = cropY * natH;
+            const srcW = cropW * natW;
+            const srcH = cropH * natH;
+
+            const aspect = srcW / (srcH || 1);
             const canvasAspect = w / (h || 1);
 
             let dw, dh;
@@ -2722,10 +2775,129 @@
 
             const dx = (w - dw) / 2 + posX;
             const dy = (h - dh) / 2 + posY;
+
+            ctx.save();
+
+            // 2. Fundidos suaves (Fade In / Fade Out de Drift)
+            if (clip) {
+                const curTime = projectState.currentTime;
+                const timeInClip = curTime - clip.start;
+                const timeRemaining = (clip.start + clip.duration) - curTime;
+                let fadeAlpha = 1.0;
+                if (clip.fadeIn && clip.fadeIn > 0 && timeInClip < clip.fadeIn) {
+                    fadeAlpha *= Math.max(0, Math.min(1, timeInClip / clip.fadeIn));
+                }
+                if (clip.fadeOut && clip.fadeOut > 0 && timeRemaining < clip.fadeOut) {
+                    fadeAlpha *= Math.max(0, Math.min(1, timeRemaining / clip.fadeOut));
+                }
+                const baseOpacity = clip.opacity !== undefined ? clip.opacity : 1.0;
+                ctx.globalAlpha = Math.max(0, Math.min(1, baseOpacity * fadeAlpha));
+            }
+
+            // 3. Volteo en espejo (Horizontal / Vertical)
+            if (clip && (clip.flipH || clip.flipV)) {
+                ctx.translate(dx + dw / 2, dy + dh / 2);
+                ctx.scale(clip.flipH ? -1 : 1, clip.flipV ? -1 : 1);
+                ctx.translate(-(dx + dw / 2), -(dy + dh / 2));
+            }
+
+            // 4. Graduación de color y ajustes profesionales (Drift adjust: brightness, contrast, sat, hue, blur)
+            const adj = (clip && clip.adjustments) ? clip.adjustments : {};
+            const filterParts = [];
+            if (adj.brightness && adj.brightness !== 0) {
+                filterParts.push(`brightness(${Math.round((1 + adj.brightness) * 100)}%)`);
+            }
+            if (adj.contrast && adj.contrast !== 0) {
+                filterParts.push(`contrast(${Math.round((1 + adj.contrast) * 100)}%)`);
+            }
+            if (adj.saturation && adj.saturation !== 0) {
+                filterParts.push(`saturate(${Math.round((1 + adj.saturation) * 100)}%)`);
+            }
+            if (adj.hue && adj.hue !== 0) {
+                filterParts.push(`hue-rotate(${Math.round(adj.hue)}deg)`);
+            }
+            if (adj.blur && adj.blur > 0) {
+                filterParts.push(`blur(${adj.blur}px)`);
+            }
+            if (filterParts.length > 0) {
+                ctx.filter = filterParts.join(' ');
+            }
+
+            // 5. Renderizado acelerado de la región recortada
             try {
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = 'high';
-                ctx.drawImage(mediaEl, dx, dy, dw, dh);
+                ctx.drawImage(mediaEl, srcX, srcY, srcW, srcH, dx, dy, dw, dh);
+            } catch(e) {}
+            ctx.filter = 'none';
+
+            // 6. Temperatura / Calidez (Cálido dorado / Frío cine)
+            if (adj.temperature && adj.temperature !== 0) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'soft-light';
+                ctx.fillStyle = adj.temperature > 0 
+                    ? `rgba(255, 140, 0, ${Math.min(0.45, Math.abs(adj.temperature) * 0.45)})`
+                    : `rgba(0, 160, 255, ${Math.min(0.45, Math.abs(adj.temperature) * 0.45)})`;
+                ctx.fillRect(dx, dy, dw, dh);
+                ctx.restore();
+            }
+
+            // 7. Viñeta fotográfica cinematográfica
+            if (adj.vignette && adj.vignette > 0) {
+                ctx.save();
+                const vig = ctx.createRadialGradient(
+                    dx + dw / 2, dy + dh / 2, Math.min(dw, dh) * 0.25,
+                    dx + dw / 2, dy + dh / 2, Math.max(dw, dh) * 0.70
+                );
+                vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+                vig.addColorStop(1, `rgba(0, 0, 0, ${Math.min(0.9, adj.vignette * 0.85)})`);
+                ctx.fillStyle = vig;
+                ctx.fillRect(dx, dy, dw, dh);
+                ctx.restore();
+            }
+
+            // 8. Croma Key en tiempo real (Pantalla verde / azul de Drift)
+            if (clip && clip.chromaKey && clip.chromaKey.enabled) {
+                applyChromaKeyPass(dx, dy, dw, dh, clip.chromaKey.color, clip.chromaKey.tolerance || 0.35);
+            }
+
+            ctx.restore();
+        }
+
+        // Filtro Chroma Key en tiempo real para superposición de fondos
+        function applyChromaKeyPass(dx, dy, dw, dh, keyColor = 'green', tolerance = 0.35) {
+            try {
+                const rx = Math.max(0, Math.floor(dx));
+                const ry = Math.max(0, Math.floor(dy));
+                const rw = Math.min(canvas.width - rx, Math.floor(dw));
+                const rh = Math.min(canvas.height - ry, Math.floor(dh));
+                if (rw <= 0 || rh <= 0) return;
+
+                const imgData = ctx.getImageData(rx, ry, rw, rh);
+                const d = imgData.data;
+                const isGreen = (keyColor === 'green' || !keyColor);
+                const isBlue = (keyColor === 'blue');
+
+                for (let i = 0; i < d.length; i += 4) {
+                    const r = d[i], g = d[i+1], b = d[i+2];
+                    if (isGreen) {
+                        // Hue / ratio de verde predominante
+                        if (g > 70 && g > r * 1.25 && g > b * 1.25) {
+                            const diff = (g - Math.max(r, b)) / 255;
+                            if (diff > (0.45 - tolerance * 0.3)) {
+                                d[i+3] = 0; // Transparente
+                            }
+                        }
+                    } else if (isBlue) {
+                        if (b > 70 && b > r * 1.25 && b > g * 1.25) {
+                            const diff = (b - Math.max(r, g)) / 255;
+                            if (diff > (0.45 - tolerance * 0.3)) {
+                                d[i+3] = 0;
+                            }
+                        }
+                    }
+                }
+                ctx.putImageData(imgData, rx, ry);
             } catch(e) {}
         }
 
@@ -2964,6 +3136,48 @@
 
                 ctx.fillStyle = '#000000';
                 ctx.fillText(text, cx, cy);
+            } else if (clip.style === 'typewriter') {
+                const timeInClip = Math.max(0, t - clip.start);
+                const chars = Math.min(text.length, Math.floor(timeInClip * 16));
+                const dispText = text.substring(0, chars) + (chars < text.length && Math.floor(t * 4) % 2 === 0 ? '_' : '');
+                ctx.font = `800 ${fontSize}px 'Courier New', monospace`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = clip.color || '#00e5ff';
+                ctx.fillText(dispText, cx, cy);
+            } else if (clip.style === 'karaoke') {
+                ctx.font = `900 ${fontSize}px 'Montserrat', sans-serif`;
+                const words = text.split(/\s+/);
+                const totalDur = clip.duration || 4.0;
+                const timeInClip = Math.max(0, Math.min(totalDur, t - clip.start));
+                const activeWordIdx = Math.min(words.length - 1, Math.floor((timeInClip / totalDur) * words.length));
+
+                let totalW = 0;
+                const wordWidths = words.map(w => {
+                    const m = ctx.measureText(w + ' ').width;
+                    totalW += m;
+                    return m;
+                });
+                let startX = cx - totalW / 2;
+
+                for (let i = 0; i < words.length; i++) {
+                    const wStr = words[i];
+                    const wW = wordWidths[i];
+                    ctx.save();
+                    const isCur = i === activeWordIdx;
+                    if (isCur) {
+                        ctx.fillStyle = '#feb504';
+                        ctx.shadowColor = '#feb504';
+                        ctx.shadowBlur = 14;
+                    } else if (i < activeWordIdx) {
+                        ctx.fillStyle = '#ffffff';
+                    } else {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    }
+                    ctx.fillText(wStr, startX + wW / 2, cy);
+                    ctx.restore();
+                    startX += wW;
+                }
             } else if (clip.style === 'neon') {
                 ctx.font = `800 ${fontSize}px 'Montserrat', sans-serif`;
                 ctx.shadowColor = '#00e5ff';
@@ -3032,7 +3246,10 @@
                 if (mediaEl && (mediaEl.naturalWidth || mediaEl.videoWidth || mediaEl.width)) {
                     const natW = mediaEl.videoWidth || mediaEl.naturalWidth || mediaEl.width || w;
                     const natH = mediaEl.videoHeight || mediaEl.naturalHeight || mediaEl.height || h;
-                    if (natH > 0) aspect = natW / natH;
+                    const crop = clip.crop || { x: 0, y: 0, w: 1, h: 1 };
+                    const srcW = Math.max(10, (crop.w || 1) * natW);
+                    const srcH = Math.max(10, (crop.h || 1) * natH);
+                    if (srcH > 0) aspect = srcW / srcH;
                 }
                 const canvasAspect = w / (h || 1);
                 if (aspect > canvasAspect) {
@@ -3105,14 +3322,12 @@
 
             ctx.save();
 
-            // 1. Guías magnéticas de alineación central
+            // 1. Guías magnéticas sutiles de alineación central
             if (transformState.snappedX) {
                 ctx.save();
-                ctx.strokeStyle = '#feb504';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([14, 10]);
-                ctx.shadowColor = 'rgba(254, 181, 4, 0.9)';
-                ctx.shadowBlur = 12;
+                ctx.strokeStyle = 'rgba(254, 181, 4, 0.85)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([12, 8]);
                 ctx.beginPath();
                 ctx.moveTo(w / 2, 0);
                 ctx.lineTo(w / 2, h);
@@ -3122,11 +3337,9 @@
 
             if (transformState.snappedY) {
                 ctx.save();
-                ctx.strokeStyle = '#feb504';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([14, 10]);
-                ctx.shadowColor = 'rgba(254, 181, 4, 0.9)';
-                ctx.shadowBlur = 12;
+                ctx.strokeStyle = 'rgba(254, 181, 4, 0.85)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([12, 8]);
                 ctx.beginPath();
                 ctx.moveTo(0, cy);
                 ctx.lineTo(w, cy);
@@ -3134,17 +3347,17 @@
                 ctx.restore();
             }
 
-            // 2. Marco exterior delimitador
-            ctx.shadowColor = 'rgba(0, 229, 255, 0.55)';
-            ctx.shadowBlur = 16;
+            // 2. Marco delimitador delgado y elegante (sin elementos que tapen el video)
+            ctx.shadowColor = 'rgba(0, 229, 255, 0.4)';
+            ctx.shadowBlur = 8;
             ctx.strokeStyle = '#00e5ff';
-            ctx.lineWidth = 3.5;
-            ctx.setLineDash([12, 8]);
+            ctx.lineWidth = 2;
+            ctx.setLineDash([8, 6]);
             ctx.strokeRect(bx, by, bw, bh);
             ctx.setLineDash([]);
 
-            // 3. 4 Manijas redondas prominentes en las esquinas
-            const handleRadius = 22;
+            // 3. 4 Manijas sutiles en las esquinas
+            const handleRadius = 14;
             const corners = [
                 { key: 'tl', x: bx, y: by },
                 { key: 'tr', x: bx + bw, y: by },
@@ -3154,9 +3367,9 @@
 
             corners.forEach(c => {
                 ctx.save();
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-                ctx.shadowBlur = 12;
-                ctx.shadowOffsetY = 3;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 6;
+                ctx.shadowOffsetY = 1;
 
                 // Base blanca
                 ctx.fillStyle = '#ffffff';
@@ -3164,56 +3377,18 @@
                 ctx.arc(c.x, c.y, handleRadius, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Anillo exterior cian o dorado si se está redimensionando esa manija
-                ctx.lineWidth = 5;
+                // Anillo exterior cian o dorado si se está redimensionando
+                ctx.lineWidth = 3;
                 ctx.strokeStyle = (transformState.mode === 'resize' && transformState.handle === c.key) ? '#feb504' : '#00e5ff';
                 ctx.stroke();
 
-                // Centro oscuro de precisión
+                // Punto central oscuro
                 ctx.fillStyle = '#06070a';
                 ctx.beginPath();
                 ctx.arc(c.x, c.y, handleRadius * 0.35, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             });
-
-            // 4. Badge HUD flotante sobre la parte superior
-            ctx.save();
-            const badgeH = 46;
-            let badgeText = '';
-            if (clip.type === 'text') {
-                const isSub = clip.style === 'subtitle';
-                badgeText = `${isSub ? '💬 Subtítulo' : '🔤 Texto'} • ${clip.fontSize || 46}px`;
-            } else if (clip.type === 'image') {
-                const sc = Math.round((clip.scale !== undefined ? clip.scale : 0.5) * 100);
-                badgeText = `🖼 Imagen • ${sc}%`;
-            } else {
-                const sc = Math.round((clip.scale !== undefined ? clip.scale : 1.0) * 100);
-                badgeText = `🎬 Video • ${sc}%`;
-            }
-
-            ctx.font = "700 24px 'Montserrat', sans-serif";
-            const badgeMetrics = ctx.measureText(badgeText);
-            const badgeW = badgeMetrics.width + 40;
-            const badgeX = cx - badgeW / 2;
-            const badgeY = Math.max(20, by - badgeH - 18);
-
-            ctx.fillStyle = 'rgba(11, 14, 28, 0.92)';
-            ctx.strokeStyle = '#00e5ff';
-            ctx.lineWidth = 2.5;
-            ctx.shadowColor = 'rgba(0, 229, 255, 0.5)';
-            ctx.shadowBlur = 12;
-            ctx.beginPath();
-            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 23);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.shadowBlur = 0;
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(badgeText, cx, badgeY + badgeH / 2);
-            ctx.restore();
 
             ctx.restore();
         }
@@ -3564,6 +3739,67 @@
                 ctx.globalCompositeOperation = 'difference';
                 ctx.fillStyle = 'rgba(255, 120, 0, 0.45)';
                 ctx.fillRect(0, 0, w, h);
+            } else if (s === 'super8_film') {
+                ctx.fillStyle = 'rgba(180, 110, 30, 0.14)';
+                ctx.globalCompositeOperation = 'color';
+                ctx.fillRect(0, 0, w, h);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.fillStyle = 'rgba(20, 20, 20, 0.35)';
+                for (let i = 0; i < 40; i++) {
+                    ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, Math.random() * 8);
+                }
+                const vig = ctx.createRadialGradient(w/2, h/2, w*0.3, w/2, h/2, w*0.8);
+                vig.addColorStop(0, 'rgba(0,0,0,0)');
+                vig.addColorStop(1, 'rgba(10,10,10,0.75)');
+                ctx.fillStyle = vig;
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'light_leak') {
+                const leakGrad = ctx.createRadialGradient(
+                    w * (0.2 + Math.sin(t * 1.5) * 0.2), 
+                    h * (0.2 + Math.cos(t * 1.2) * 0.2), 
+                    15, 
+                    w * 0.3, 
+                    h * 0.3, 
+                    w * 0.75
+                );
+                leakGrad.addColorStop(0, 'rgba(255, 140, 20, 0.45)');
+                leakGrad.addColorStop(0.5, 'rgba(255, 50, 120, 0.22)');
+                leakGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = leakGrad;
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'duotone') {
+                ctx.globalCompositeOperation = 'screen';
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.22)';
+                ctx.fillRect(0, 0, w, h);
+                ctx.globalCompositeOperation = 'multiply';
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.4)';
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'edge_neon') {
+                ctx.globalCompositeOperation = 'difference';
+                ctx.fillStyle = 'rgba(0, 229, 255, 0.6)';
+                ctx.fillRect(0, 0, w, h);
+            } else if (s === 'pixelate') {
+                const psize = 12;
+                const pw = Math.max(1, Math.floor(w / psize));
+                const ph = Math.max(1, Math.floor(h / psize));
+                ctx.imageSmoothingEnabled = false;
+                ctx.drawImage(canvas, 0, 0, pw, ph);
+                ctx.drawImage(canvas, 0, 0, pw, ph, 0, 0, w, h);
+                ctx.imageSmoothingEnabled = true;
+            } else if (s === 'strobe_flash') {
+                if (Math.sin(t * 16) > 0.8) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                    ctx.globalCompositeOperation = 'screen';
+                    ctx.fillRect(0, 0, w, h);
+                }
+            } else if (s === 'shockwave') {
+                const ringR = ((t * 2) % 1.5) * (w * 0.5);
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
+                ctx.beginPath();
+                ctx.arc(w/2, h/2, ringR, 0, Math.PI * 2);
+                ctx.stroke();
             } else if (s === 'bw_noir') {
                 ctx.globalCompositeOperation = 'color';
                 ctx.fillStyle = '#000000';
@@ -4559,10 +4795,130 @@
                         </div>
                     </div>
                 `;
+            } else if (tool === 'transitions') {
+                title.innerHTML = '<i class="fa-solid fa-arrows-split-up-and-left" style="color: #00e5ff;"></i> Transiciones Profesionales (Drift)';
+                const transList = [
+                    { id: 'none', name: 'Corte Limpio', icon: 'fa-ban', color: '#94a3b8' },
+                    { id: 'crossfade', name: 'Disolución', icon: 'fa-circle-half-stroke', color: '#00e5ff' },
+                    { id: 'dip_black', name: 'Fundido Negro', icon: 'fa-moon', color: '#a855f7' },
+                    { id: 'dip_white', name: 'Flash Blanco', icon: 'fa-sun', color: '#feb504' },
+                    { id: 'wipe_left', name: 'Barrido Izq', icon: 'fa-arrow-left', color: '#10b981' },
+                    { id: 'wipe_right', name: 'Barrido Der', icon: 'fa-arrow-right', color: '#10b981' },
+                    { id: 'zoom_in', name: 'Impact Zoom', icon: 'fa-magnifying-glass-plus', color: '#ec4899' },
+                    { id: 'vhs_glitch', name: 'Glitch VHS', icon: 'fa-tv', color: '#f59e0b' },
+                    { id: 'push_left', name: 'Empuje Slide', icon: 'fa-angles-left', color: '#38bdf8' },
+                    { id: 'radial_blur', name: 'Giro Spin', icon: 'fa-rotate', color: '#e879f9' }
+                ];
+                const curTrans = projectState.activeTransition || 'none';
+                const curDur = projectState.transitionDuration || 0.6;
+
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 229, 255, 0.08); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 12px; padding: 10px 14px;">
+                            <span style="font-size: 0.76rem; font-weight: 700; color: #fff;">
+                                <i class="fa-solid fa-clock" style="color: #00e5ff;"></i> Duración de Transición:
+                            </span>
+                            <span id="transDurVal" style="font-size: 0.78rem; font-weight: 800; color: #00e5ff;">${curDur.toFixed(1)}s</span>
+                        </div>
+                        <input type="range" min="2" max="20" value="${Math.round(curDur * 10)}" style="width: 100%; accent-color: #00e5ff;" oninput="updateTransitionDuration(this.value / 10)">
+
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(255,255,255,0.08); color: #fff; font-size: 0.76rem; padding: 8px;" onclick="splitClipAtPlayhead(); showToast('✂️ Clip dividido para unir con transición');">
+                                <i class="fa-solid fa-scissors" style="color: #feb504;"></i> Dividir en Cursor
+                            </button>
+                            <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(0,229,255,0.15); color: #00e5ff; font-size: 0.76rem; padding: 8px;" onclick="previewActiveTransition()">
+                                <i class="fa-solid fa-play"></i> Probar Transición
+                            </button>
+                        </div>
+
+                        <div class="drawer-cards-grid">
+                            ${transList.map(t => `
+                                <div class="drawer-item-card ${curTrans === t.id ? 'active' : ''}" onclick="selectTransition('${t.id}')">
+                                    <i class="fa-solid ${t.icon}" style="color: ${t.color};"></i>
+                                    <span>${t.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'stickers') {
+                title.innerHTML = '<i class="fa-solid fa-icons" style="color: #feb504;"></i> Stickers y Badges Virales';
+                const stickerList = [
+                    { id: 'fire', emoji: '🔥', title: 'Fuego Viral', text: 'TENDENCIA' },
+                    { id: 'like', emoji: '👍', title: 'Like & Share', text: 'DALE LIKE' },
+                    { id: 'sub', emoji: '🔔', title: 'Suscríbete', text: 'SUSCRIBIRSE' },
+                    { id: 'star', emoji: '⭐', title: 'Destacado', text: 'TOP 10' },
+                    { id: 'rocket', emoji: '🚀', title: 'Boost Viral', text: 'VIRAL' },
+                    { id: 'target', emoji: '🎯', title: 'Exacto Pro', text: '100% PRO' },
+                    { id: 'bolt', emoji: '⚡', title: 'Impacto Flash', text: 'ENERGÍA' },
+                    { id: 'laugh', emoji: '😂', title: 'Risas LOL', text: 'LOL' },
+                    { id: 'mindblown', emoji: '🤯', title: 'Impactante', text: 'INCREÍBLE' },
+                    { id: 'heart', emoji: '❤️', title: 'Love Corazón', text: 'ME ENCANTA' },
+                    { id: 'arrow_right', emoji: '👉', title: 'Mira Aquí', text: 'ATENCIÓN' },
+                    { id: 'arrow_down', emoji: '⬇️', title: 'Link Abajo', text: 'COMENTARIOS' },
+                    { id: 'warning', emoji: '⚠️', title: 'Alerta Warning', text: 'CUIDADO' },
+                    { id: 'check', emoji: '✅', title: 'Truco Aprobado', text: 'FUNCIONA' },
+                    { id: 'rec', emoji: '🔴', title: 'REC Cine', text: 'GRABANDO' },
+                    { id: 'magic', emoji: '✨', title: 'Magia Glow', text: 'BRILLO' }
+                ];
+
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc;">
+                            Toca un sticker para insertarlo en la pantalla. Puedes moverlo, agrandarlo y acomodarlo libremente:
+                        </div>
+                        <div class="drawer-cards-grid">
+                            ${stickerList.map(stk => `
+                                <div class="drawer-item-card" onclick="addStickerToTimeline('${stk.id}')">
+                                    <span style="font-size: 1.6rem; line-height: 1;">${stk.emoji}</span>
+                                    <span style="font-size: 0.68rem; font-weight: 700; color: #fff;">${stk.text}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'speed_curve') {
+                title.innerHTML = '<i class="fa-solid fa-chart-line" style="color: #feb504;"></i> Rampa de Velocidad (Drift Speed Curve)';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc;">
+                            Aplica cambios dinámicos de ritmo y aceleración cinematográfica al clip seleccionado:
+                        </div>
+                        <div class="drawer-cards-grid">
+                            <div class="drawer-item-card" onclick="setSpeedRamp('normal')">
+                                <i class="fa-solid fa-gauge"></i>
+                                <span>Normal (1.0x)</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="setSpeedRamp('flash')">
+                                <i class="fa-solid fa-bolt" style="color: #00e5ff;"></i>
+                                <span>⚡ Flash In (2.5x)</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="setSpeedRamp('slowmo')">
+                                <i class="fa-solid fa-snowflake" style="color: #60a5fa;"></i>
+                                <span>🐌 Slow-Mo (0.5x)</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="setSpeedRamp('heroic')">
+                                <i class="fa-solid fa-film" style="color: #feb504;"></i>
+                                <span>🎬 Heroico (0.7x)</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="setSpeedRamp('timelapse')">
+                                <i class="fa-solid fa-forward-fast" style="color: #ec4899;"></i>
+                                <span>⏩ Hyper (3.5x)</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             } else if (tool === 'effects') {
                 title.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles" style="color: #a855f7;"></i> Efectos Visuales';
                 const fxList = [
                     { id: 'none', name: 'Ninguno', icon: 'fa-ban', color: '#94a3b8' },
+                    { id: 'super8_film', name: 'Super 8mm', icon: 'fa-film', color: '#feb504' },
+                    { id: 'light_leak', name: 'Fuga Luz', icon: 'fa-sun', color: '#f97316' },
+                    { id: 'duotone', name: 'Duotone', icon: 'fa-circle-half-stroke', color: '#00e5ff' },
+                    { id: 'edge_neon', name: 'Neon Tron', icon: 'fa-lightbulb', color: '#a855f7' },
+                    { id: 'pixelate', name: 'Pixel 8-bit', icon: 'fa-cubes', color: '#10b981' },
+                    { id: 'strobe_flash', name: 'Strobe Beat', icon: 'fa-bolt', color: '#ec4899' },
+                    { id: 'shockwave', name: 'Shockwave', icon: 'fa-circle-dot', color: '#38bdf8' },
                     { id: 'vhs', name: 'Glitch VHS', icon: 'fa-tv', color: '#feb504' },
                     { id: 'neon_glow', name: 'Neon Cyber', icon: 'fa-lightbulb', color: '#00e5ff' },
                     { id: 'rgb_split', name: 'Aberración 3D', icon: 'fa-eye', color: '#a855f7' },
@@ -4588,13 +4944,66 @@
                     </div>
                 `;
             } else if (tool === 'audio') {
-                title.innerHTML = '<i class="fa-solid fa-music" style="color: #10b981;"></i> Pista de Audio & Música';
+                title.innerHTML = '<i class="fa-solid fa-music" style="color: #10b981;"></i> Pista de Audio, Voz & SFX';
                 body.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- SECCIÓN GRABACIÓN DE VOZ EN OFF (DRIFT RECORDER) -->
+                        <div style="background: rgba(236, 72, 153, 0.08); border: 1px solid rgba(236, 72, 153, 0.25); border-radius: 12px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div style="font-size: 0.8rem; font-weight: 800; color: #ec4899; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fa-solid fa-microphone"></i> Grabador de Voz en Off:
+                                </div>
+                                <span id="voiceRecTimer" style="font-size: 0.78rem; font-weight: 800; color: #f43f5e; font-family: monospace; display: none;">🔴 00:00.0</span>
+                            </div>
+                            <div id="voiceRecControls" style="display: flex; gap: 8px;">
+                                <button type="button" id="btnStartVoiceRec" class="topbar-export-btn" style="flex: 1; justify-content: center; background: #ec4899; color: #fff; padding: 10px;" onclick="startVoiceoverRecording()">
+                                    <i class="fa-solid fa-circle-dot"></i> Iniciar Grabación de Voz
+                                </button>
+                                <button type="button" id="btnStopVoiceRec" class="topbar-export-btn" style="flex: 1; justify-content: center; background: #10b981; color: #000; padding: 10px; display: none;" onclick="stopVoiceoverRecording()">
+                                    <i class="fa-solid fa-check"></i> Finalizar y Guardar
+                                </button>
+                                <button type="button" id="btnCancelVoiceRec" class="topbar-export-btn" style="background: rgba(255,255,255,0.1); color: #fff; padding: 10px; display: none;" onclick="cancelVoiceoverRecording()">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- EFECTOS DE SONIDO VIRALES (SFX EN MEMORIA) -->
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-top: 2px;">EFECTOS DE SONIDO (SFX VIRALES):</div>
+                        <div class="drawer-cards-grid">
+                            <div class="drawer-item-card" onclick="addSfxClip('swoosh')">
+                                <i class="fa-solid fa-wind" style="color: #00e5ff;"></i>
+                                <span>💥 Swoosh</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addSfxClip('bell')">
+                                <i class="fa-solid fa-bell" style="color: #feb504;"></i>
+                                <span>🔔 Notificación</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addSfxClip('pop')">
+                                <i class="fa-solid fa-circle-dot" style="color: #10b981;"></i>
+                                <span>Pop Burbuja</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addSfxClip('camera')">
+                                <i class="fa-solid fa-camera" style="color: #ec4899;"></i>
+                                <span>📸 Obturador</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addSfxClip('bass_drop')">
+                                <i class="fa-solid fa-bolt" style="color: #f43f5e;"></i>
+                                <span>⚡ Bass Drop</span>
+                            </div>
+                            <div class="drawer-item-card" onclick="addSfxClip('coin')">
+                                <i class="fa-solid fa-coins" style="color: #eab308;"></i>
+                                <span>🎯 Moneda 8-Bit</span>
+                            </div>
+                        </div>
+
+                        <!-- IMPORTAR MÚSICA PROPIA -->
                         <button type="button" class="topbar-export-btn" style="background: #10b981; color: #000; justify-content: center; padding: 10px;" onclick="document.getElementById('fileInputAudio').click()">
                             <i class="fa-solid fa-plus"></i> Importar Canción / Audio Propio
                         </button>
-                        <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-top: 4px;">BIBLIOTECA LIBRE DE DERECHOS:</div>
+
+                        <!-- BIBLIOTECA LIBRE DE DERECHOS -->
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-top: 2px;">MÚSICA LIBRE DE DERECHOS:</div>
                         <div class="drawer-cards-grid">
                             <div class="drawer-item-card" onclick="addPresetAudio('Lofi Chill Beat')">
                                 <i class="fa-solid fa-headphones" style="color: #10b981;"></i>
@@ -4620,16 +5029,25 @@
                 body.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <input type="text" id="customTextInput" placeholder="Escribe tu texto aquí..." value="🔥 TÍTULO VIRAL" style="width: 100%; padding: 10px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid var(--vs-border); color: #fff; font-size: 0.85rem; font-weight: 700; outline: none;">
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="drawer-item-card active" style="flex: 1;" onclick="addTextToTimeline('viral')">
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #94a3b8;">ESTILOS Y ANIMACIONES VIRALES:</div>
+                        <div class="drawer-cards-grid">
+                            <button type="button" class="drawer-item-card active" onclick="addTextToTimeline('viral')">
                                 <i class="fa-solid fa-box" style="color: #feb504;"></i>
                                 <span>Estilo Viral</span>
                             </button>
-                            <button type="button" class="drawer-item-card" style="flex: 1;" onclick="addTextToTimeline('neon')">
+                            <button type="button" class="drawer-item-card" onclick="addTextToTimeline('neon')">
                                 <i class="fa-solid fa-wand-magic-sparkles" style="color: #00e5ff;"></i>
                                 <span>Neón Glow</span>
                             </button>
-                            <button type="button" class="drawer-item-card" style="flex: 1;" onclick="addTextToTimeline('minimal')">
+                            <button type="button" class="drawer-item-card" onclick="addTextToTimeline('typewriter')">
+                                <i class="fa-solid fa-keyboard" style="color: #00e5ff;"></i>
+                                <span>Typewriter</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" onclick="addTextToTimeline('karaoke')">
+                                <i class="fa-solid fa-microphone-lines" style="color: #feb504;"></i>
+                                <span>Karaoke Pop</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" onclick="addTextToTimeline('minimal')">
                                 <i class="fa-solid fa-heading"></i>
                                 <span>Minimalista</span>
                             </button>
@@ -4727,12 +5145,1032 @@
                         <input type="range" min="0" max="100" value="${curVol}" style="width: 100%; accent-color: #10b981;" oninput="updateActiveClipVolume(this.value)">
                     </div>
                 `;
+            } else if (tool === 'crop') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const crop = (clip && clip.crop) ? clip.crop : { x: 0, y: 0, w: 1, h: 1 };
+                const cx = Math.round((crop.x || 0) * 100);
+                const cy = Math.round((crop.y || 0) * 100);
+                const cw = Math.round((crop.w || 1) * 100);
+                const ch = Math.round((crop.h || 1) * 100);
+
+                title.innerHTML = '<i class="fa-solid fa-crop" style="color: #00e5ff;"></i> Recortar Imagen / Video';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <!-- PRESETS DE FORMATO DE RECORTE (DRIFT RATIOS) -->
+                        <div>
+                            <div style="font-size: 0.76rem; font-weight: 700; color: #a5b4fc; margin-bottom: 8px;">
+                                <i class="fa-solid fa-shapes"></i> Proporciones de Recorte (Drift Presets):
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                <button type="button" class="drawer-item-card" onclick="setCropPreset('free')" title="Recorte libre">
+                                    <i class="fa-solid fa-crop-simple" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.7rem;">Libre</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="setCropPreset('9:16')" title="9:16 Vertical">
+                                    <i class="fa-solid fa-mobile-screen" style="color: #feb504;"></i>
+                                    <span style="font-size: 0.7rem;">9:16 (Shorts)</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="setCropPreset('16:9')" title="16:9 Horizontal">
+                                    <i class="fa-solid fa-tv" style="color: #10b981;"></i>
+                                    <span style="font-size: 0.7rem;">16:9 (YouTube)</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="setCropPreset('1:1')" title="1:1 Cuadrado">
+                                    <i class="fa-regular fa-square" style="color: #a855f7;"></i>
+                                    <span style="font-size: 0.7rem;">1:1 (Post)</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="setCropPreset('4:5')" title="4:5 Retrato">
+                                    <i class="fa-regular fa-image" style="color: #ec4899;"></i>
+                                    <span style="font-size: 0.7rem;">4:5 (Feed)</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="resetCrop()" title="Restablecer original">
+                                    <i class="fa-solid fa-rotate-left" style="color: #94a3b8;"></i>
+                                    <span style="font-size: 0.7rem;">Restablecer</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CONTROLES DESLIZANTES DE MÁRGENES DE RECORTE -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            <div style="font-size: 0.76rem; font-weight: 700; color: #fff; margin-bottom: 10px;">
+                                <i class="fa-solid fa-sliders" style="color: #00e5ff;"></i> Ajuste Fino de Recorte:
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                    <span>Margen Izquierdo (X)</span>
+                                    <span id="cropValX" style="color: #00e5ff;">${cx}%</span>
+                                </div>
+                                <input type="range" min="0" max="80" value="${cx}" style="width: 100%; accent-color: #00e5ff;" oninput="updateCropParam('x', this.value)">
+
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                    <span>Margen Superior (Y)</span>
+                                    <span id="cropValY" style="color: #00e5ff;">${cy}%</span>
+                                </div>
+                                <input type="range" min="0" max="80" value="${cy}" style="width: 100%; accent-color: #00e5ff;" oninput="updateCropParam('y', this.value)">
+
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                    <span>Ancho Visible (W)</span>
+                                    <span id="cropValW" style="color: #feb504;">${cw}%</span>
+                                </div>
+                                <input type="range" min="20" max="100" value="${cw}" style="width: 100%; accent-color: #feb504;" oninput="updateCropParam('w', this.value)">
+
+                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                    <span>Alto Visible (H)</span>
+                                    <span id="cropValH" style="color: #feb504;">${ch}%</span>
+                                </div>
+                                <input type="range" min="20" max="100" value="${ch}" style="width: 100%; accent-color: #feb504;" oninput="updateCropParam('h', this.value)">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="topbar-export-btn" style="flex: 1; justify-content: center; background: rgba(0, 229, 255, 0.18); border: 1px solid #00e5ff; color: #fff; padding: 10px;" onclick="closeDrawer(); showToast('✓ Recorte aplicado con éxito');">
+                                <i class="fa-solid fa-check"></i> Aplicar Recorte
+                            </button>
+                            <button type="button" class="topbar-export-btn" style="background: rgba(255,255,255,0.08); color: #94a3b8; box-shadow: none; padding: 10px;" onclick="resetCrop()">
+                                <i class="fa-solid fa-rotate-left"></i> Restablecer
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'adjust') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const adj = (clip && clip.adjustments) ? clip.adjustments : {};
+                const bri = Math.round((adj.brightness || 0) * 100);
+                const con = Math.round((adj.contrast || 0) * 100);
+                const sat = Math.round((adj.saturation || 0) * 100);
+                const temp = Math.round((adj.temperature || 0) * 100);
+                const hue = Math.round(adj.hue || 0);
+                const vig = Math.round((adj.vignette || 0) * 100);
+                const blur = Math.round(adj.blur || 0);
+
+                title.innerHTML = '<i class="fa-solid fa-sliders" style="color: #feb504;"></i> Graduación de Color y Ajustes';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <!-- PRESETS DE COLOR RÁPIDOS -->
+                        <div>
+                            <div style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc; margin-bottom: 8px;">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Estilos Preestablecidos (Drift Looks):
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;">
+                                <button type="button" class="drawer-item-card" onclick="applyColorGradePreset('vibrant')" title="Colores vívidos y saturados">
+                                    <i class="fa-solid fa-bolt" style="color: #feb504;"></i>
+                                    <span style="font-size: 0.68rem;">Vibrante</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="applyColorGradePreset('warm')" title="Tono cálido atardecer">
+                                    <i class="fa-solid fa-sun" style="color: #f97316;"></i>
+                                    <span style="font-size: 0.68rem;">Cálido</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="applyColorGradePreset('cold')" title="Tono frío cinematográfico">
+                                    <i class="fa-solid fa-snowflake" style="color: #00e5ff;"></i>
+                                    <span style="font-size: 0.68rem;">Frío Cine</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="applyColorGradePreset('noir')" title="Blanco y negro de alto contraste">
+                                    <i class="fa-solid fa-circle-half-stroke" style="color: #ffffff;"></i>
+                                    <span style="font-size: 0.68rem;">Noir B&W</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="applyColorGradePreset('vintage')" title="Estilo vintage retro">
+                                    <i class="fa-solid fa-film" style="color: #a855f7;"></i>
+                                    <span style="font-size: 0.68rem;">Vintage</span>
+                                </button>
+                                <button type="button" class="drawer-item-card" onclick="resetAdjustments()" title="Restablecer valores">
+                                    <i class="fa-solid fa-rotate-left" style="color: #94a3b8;"></i>
+                                    <span style="font-size: 0.68rem;">Normal</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CONTROLES FINOS -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-sun" style="color: #feb504;"></i> Brillo (Brightness)</span>
+                                <span id="adjVal_brightness" style="color: #feb504;">${bri > 0 ? '+' + bri : bri}%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="${bri}" style="width: 100%; accent-color: #feb504;" oninput="updateAdjustmentParam('brightness', this.value / 100)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-circle-half-stroke" style="color: #00e5ff;"></i> Contraste (Contrast)</span>
+                                <span id="adjVal_contrast" style="color: #00e5ff;">${con > 0 ? '+' + con : con}%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="${con}" style="width: 100%; accent-color: #00e5ff;" oninput="updateAdjustmentParam('contrast', this.value / 100)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-palette" style="color: #ec4899;"></i> Saturación (Saturation)</span>
+                                <span id="adjVal_saturation" style="color: #ec4899;">${sat > 0 ? '+' + sat : sat}%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="${sat}" style="width: 100%; accent-color: #ec4899;" oninput="updateAdjustmentParam('saturation', this.value / 100)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-temperature-half" style="color: #f97316;"></i> Temperatura / Calidez</span>
+                                <span id="adjVal_temperature" style="color: #f97316;">${temp > 0 ? '+' + temp : temp}%</span>
+                            </div>
+                            <input type="range" min="-100" max="100" value="${temp}" style="width: 100%; accent-color: #f97316;" oninput="updateAdjustmentParam('temperature', this.value / 100)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-droplet" style="color: #a855f7;"></i> Tinte / Hue</span>
+                                <span id="adjVal_hue" style="color: #a855f7;">${hue}°</span>
+                            </div>
+                            <input type="range" min="-180" max="180" value="${hue}" style="width: 100%; accent-color: #a855f7;" oninput="updateAdjustmentParam('hue', parseInt(this.value))">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-bullseye" style="color: #94a3b8;"></i> Viñeta Cinematográfica</span>
+                                <span id="adjVal_vignette" style="color: #94a3b8;">${vig}%</span>
+                            </div>
+                            <input type="range" min="0" max="100" value="${vig}" style="width: 100%; accent-color: #94a3b8;" oninput="updateAdjustmentParam('vignette', this.value / 100)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-eye-slash" style="color: #64748b;"></i> Desenfoque (Blur)</span>
+                                <span id="adjVal_blur" style="color: #64748b;">${blur}px</span>
+                            </div>
+                            <input type="range" min="0" max="20" value="${blur}" style="width: 100%; accent-color: #64748b;" oninput="updateAdjustmentParam('blur', parseInt(this.value))">
+                        </div>
+
+                        <button type="button" class="topbar-export-btn" style="justify-content: center; background: rgba(255,255,255,0.08); color: #fff; box-shadow: none; padding: 10px;" onclick="resetAdjustments()">
+                            <i class="fa-solid fa-rotate-left"></i> Restablecer Ajustes de Color
+                        </button>
+                    </div>
+                `;
+            } else if (tool === 'fade') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const fi = clip ? (clip.fadeIn || 0) : 0;
+                const fo = clip ? (clip.fadeOut || 0) : 0;
+
+                title.innerHTML = '<i class="fa-solid fa-water" style="color: #a855f7;"></i> Fundido (Fade In / Fade Out)';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700;">
+                                <span><i class="fa-solid fa-arrow-right-to-bracket" style="color: #a855f7;"></i> Fundido de Entrada (Fade In)</span>
+                                <span id="fadeInVal" style="color: #a855f7;">${fi.toFixed(1)}s</span>
+                            </div>
+                            <input type="range" min="0" max="25" value="${Math.round(fi * 10)}" style="width: 100%; accent-color: #a855f7;" oninput="updateFadeParam('in', this.value / 10)">
+
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 700; margin-top: 6px;">
+                                <span><i class="fa-solid fa-arrow-right-from-bracket" style="color: #ec4899;"></i> Fundido de Salida (Fade Out)</span>
+                                <span id="fadeOutVal" style="color: #ec4899;">${fo.toFixed(1)}s</span>
+                            </div>
+                            <input type="range" min="0" max="25" value="${Math.round(fo * 10)}" style="width: 100%; accent-color: #ec4899;" oninput="updateFadeParam('out', this.value / 10)">
+                        </div>
+
+                        <div style="font-size: 0.72rem; font-weight: 700; color: #a5b4fc; margin-bottom: 2px;">
+                            Presets Rápidos de Fundido:
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="drawer-item-card" style="flex: 1; padding: 10px;" onclick="applyFadePreset(0, 0)">
+                                <span style="font-size: 0.72rem;">Sin fundido</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" style="flex: 1; padding: 10px;" onclick="applyFadePreset(0.4, 0.4)">
+                                <span style="font-size: 0.72rem;">Rápido 0.4s</span>
+                            </button>
+                            <button type="button" class="drawer-item-card" style="flex: 1; padding: 10px;" onclick="applyFadePreset(1.0, 1.0)">
+                                <span style="font-size: 0.72rem;">Cine 1.0s</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'chroma') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const ck = (clip && clip.chromaKey) ? clip.chromaKey : { enabled: false, color: 'green', tolerance: 0.35 };
+
+                title.innerHTML = '<i class="fa-solid fa-mask" style="color: #10b981;"></i> Croma Key (Pantalla Verde / Quitar Fondo)';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <!-- ACTIVAR / DESACTIVAR -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                <i class="fa-solid fa-wand-magic-sparkles" style="color: #10b981;"></i> Activar Quitar Fondo Croma
+                            </div>
+                            <input type="checkbox" id="ckEnabled" ${ck.enabled ? 'checked' : ''} style="width: 22px; height: 22px; accent-color: #10b981; cursor: pointer;" onchange="toggleChromaKey(this.checked)">
+                        </div>
+
+                        <!-- SELECTOR DE COLOR CLAVE -->
+                        <div>
+                            <div style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc; margin-bottom: 8px;">
+                                Color de Fondo a Eliminar:
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="drawer-item-card ${ck.color === 'green' ? 'active' : ''}" style="flex: 1; border-color: ${ck.color === 'green' ? '#10b981' : 'transparent'};" onclick="setChromaColor('green')">
+                                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #00ff00; margin: 0 auto 4px auto; box-shadow: 0 0 10px rgba(0,255,0,0.5);"></div>
+                                    <span style="font-size: 0.7rem;">Verde</span>
+                                </button>
+                                <button type="button" class="drawer-item-card ${ck.color === 'blue' ? 'active' : ''}" style="flex: 1; border-color: ${ck.color === 'blue' ? '#00e5ff' : 'transparent'};" onclick="setChromaColor('blue')">
+                                    <div style="width: 20px; height: 20px; border-radius: 50%; background: #0088ff; margin: 0 auto 4px auto; box-shadow: 0 0 10px rgba(0,136,255,0.5);"></div>
+                                    <span style="font-size: 0.7rem;">Azul</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- TOLERANCIA -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 700; margin-bottom: 6px;">
+                                <span>Tolerancia de Color</span>
+                                <span id="ckTolVal" style="color: #10b981;">${Math.round((ck.tolerance || 0.35) * 100)}%</span>
+                            </div>
+                            <input type="range" min="10" max="80" value="${Math.round((ck.tolerance || 0.35) * 100)}" style="width: 100%; accent-color: #10b981;" oninput="updateChromaTolerance(this.value / 100)">
+                        </div>
+                    </div>
+                `;
+            } else if (tool === 'voice') {
+                const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+                const curVoice = clip ? (clip.voiceEffect || 'none') : 'none';
+
+                title.innerHTML = '<i class="fa-solid fa-microphone-lines" style="color: #ec4899;"></i> Efectos de Voz y Audio';
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="font-size: 0.74rem; font-weight: 700; color: #a5b4fc;">
+                            Moduladores y Filtros de Audio (Drift Audio FX):
+                        </div>
+                        <div class="drawer-cards-grid">
+                            <div class="drawer-item-card ${curVoice === 'none' ? 'active' : ''}" onclick="setVoiceEffect('none')">
+                                <i class="fa-solid fa-microphone"></i>
+                                <span>Original</span>
+                            </div>
+                            <div class="drawer-item-card ${curVoice === 'chipmunk' ? 'active' : ''}" onclick="setVoiceEffect('chipmunk')">
+                                <i class="fa-solid fa-bolt" style="color: #feb504;"></i>
+                                <span>Ardilla (Agudo)</span>
+                            </div>
+                            <div class="drawer-item-card ${curVoice === 'deep' ? 'active' : ''}" onclick="setVoiceEffect('deep')">
+                                <i class="fa-solid fa-volume-low" style="color: #6366f1;"></i>
+                                <span>Voz Grave</span>
+                            </div>
+                            <div class="drawer-item-card ${curVoice === 'robot' ? 'active' : ''}" onclick="setVoiceEffect('robot')">
+                                <i class="fa-solid fa-robot" style="color: #00e5ff;"></i>
+                                <span>Robot Metálico</span>
+                            </div>
+                            <div class="drawer-item-card ${curVoice === 'megaphone' ? 'active' : ''}" onclick="setVoiceEffect('megaphone')">
+                                <i class="fa-solid fa-bullhorn" style="color: #f97316;"></i>
+                                <span>Megáfono / Radio</span>
+                            </div>
+                            <div class="drawer-item-card ${curVoice === 'echo' ? 'active' : ''}" onclick="setVoiceEffect('echo')">
+                                <i class="fa-solid fa-water" style="color: #ec4899;"></i>
+                                <span>Eco Espacial</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
             }
         }
 
         function closeDrawer() {
             document.getElementById('drawerSheet').classList.remove('open');
             currentDrawerTab = null;
+        }
+
+        // =========================================================================
+        // FUNCIONES PROFESIONALES DE RECORTE, COLOR, AUDIO Y CLIP (ARQUITECTURA DRIFT)
+        // =========================================================================
+        function setCropPreset(preset) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            if (preset === 'free') {
+                // Mantener proporción libre
+            } else if (preset === '16:9') {
+                clip.crop = { x: 0, y: 0.22, w: 1.0, h: 0.56 };
+            } else if (preset === '9:16') {
+                clip.crop = { x: 0.22, y: 0, w: 0.56, h: 1.0 };
+            } else if (preset === '1:1') {
+                clip.crop = { x: 0.15, y: 0.15, w: 0.70, h: 0.70 };
+            } else if (preset === '4:5') {
+                clip.crop = { x: 0.1, y: 0, w: 0.8, h: 1.0 };
+            }
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('crop');
+        }
+
+        function updateCropParam(param, val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            if (!clip.crop) clip.crop = { x: 0, y: 0, w: 1, h: 1 };
+            const num = Math.round(val) / 100;
+            clip.crop[param] = num;
+            const label = document.getElementById(`cropVal${param.toUpperCase()}`);
+            if (label) label.innerText = `${Math.round(val)}%`;
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+        }
+
+        function resetCrop() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            clip.crop = { x: 0, y: 0, w: 1, h: 1 };
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('crop');
+            showToast('↺ Recorte restablecido al tamaño original');
+        }
+
+        function updateAdjustmentParam(key, val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            if (!clip.adjustments) clip.adjustments = {};
+            clip.adjustments[key] = val;
+            const label = document.getElementById(`adjVal_${key}`);
+            if (label) {
+                if (key === 'hue') label.innerText = `${val}°`;
+                else if (key === 'blur') label.innerText = `${val}px`;
+                else {
+                    const pct = Math.round(val * 100);
+                    label.innerText = `${pct > 0 ? '+' + pct : pct}%`;
+                }
+            }
+            renderFrame(projectState.currentTime);
+            saveProjectToDB();
+        }
+
+        function applyColorGradePreset(preset) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            if (preset === 'vibrant') {
+                clip.adjustments = { brightness: 0.05, contrast: 0.25, saturation: 0.35, temperature: 0.1, hue: 0, vignette: 0.1, blur: 0 };
+            } else if (preset === 'warm') {
+                clip.adjustments = { brightness: 0.05, contrast: 0.1, saturation: 0.15, temperature: 0.45, hue: 0, vignette: 0.2, blur: 0 };
+            } else if (preset === 'cold') {
+                clip.adjustments = { brightness: 0.0, contrast: 0.2, saturation: -0.1, temperature: -0.45, hue: 0, vignette: 0.25, blur: 0 };
+            } else if (preset === 'noir') {
+                clip.adjustments = { brightness: 0.05, contrast: 0.4, saturation: -1.0, temperature: 0, hue: 0, vignette: 0.4, blur: 0 };
+            } else if (preset === 'vintage') {
+                clip.adjustments = { brightness: 0.08, contrast: -0.1, saturation: -0.2, temperature: 0.3, hue: -10, vignette: 0.35, blur: 0 };
+            }
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('adjust');
+            showToast(`🎨 Estilo aplicado: ${preset}`);
+        }
+
+        function resetAdjustments() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            clip.adjustments = { brightness: 0, contrast: 0, saturation: 0, temperature: 0, hue: 0, vignette: 0, blur: 0 };
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('adjust');
+            showToast('↺ Ajustes de color restablecidos');
+        }
+
+        function updateFadeParam(dir, val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            if (dir === 'in') {
+                clip.fadeIn = val;
+                const el = document.getElementById('fadeInVal');
+                if (el) el.innerText = `${val.toFixed(1)}s`;
+            } else {
+                clip.fadeOut = val;
+                const el = document.getElementById('fadeOutVal');
+                if (el) el.innerText = `${val.toFixed(1)}s`;
+            }
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+        }
+
+        function applyFadePreset(fi, fo) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            clip.fadeIn = fi;
+            clip.fadeOut = fo;
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('fade');
+        }
+
+        function toggleChromaKey(enabled) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            if (!clip.chromaKey) clip.chromaKey = { enabled: false, color: 'green', tolerance: 0.35 };
+            clip.chromaKey.enabled = enabled;
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+        }
+
+        function setChromaColor(col) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            if (!clip.chromaKey) clip.chromaKey = { enabled: true, color: 'green', tolerance: 0.35 };
+            clip.chromaKey.color = col;
+            clip.chromaKey.enabled = true;
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            openDrawer('chroma');
+        }
+
+        function updateChromaTolerance(val) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            if (!clip.chromaKey) clip.chromaKey = { enabled: true, color: 'green', tolerance: 0.35 };
+            clip.chromaKey.tolerance = val;
+            const el = document.getElementById('ckTolVal');
+            if (el) el.innerText = `${Math.round(val * 100)}%`;
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+        }
+
+        function setVoiceEffect(fx) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            clip.voiceEffect = fx;
+            if (fx === 'chipmunk') clip.speed = 1.35;
+            else if (fx === 'deep') clip.speed = 0.85;
+            else if (fx === 'none' && (clip.speed === 1.35 || clip.speed === 0.85)) clip.speed = 1.0;
+
+            pushHistory();
+            saveProjectToDB();
+            openDrawer('voice');
+            renderTimelineClips();
+            renderFrame(projectState.currentTime);
+            showToast(`🎙️ Efecto de voz: ${fx}`);
+        }
+
+        function freezeFrameAtPlayhead() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') {
+                showToast('⚠️ Selecciona un clip de video o imagen para congelar');
+                return;
+            }
+            const t = projectState.currentTime;
+            if (t < clip.start || t > (clip.start + clip.duration)) {
+                showToast('⚠️ Mueve el cursor sobre el clip para congelar');
+                return;
+            }
+
+            const freezeDuration = 2.0; // 2 segundos congelado
+            const originalDuration = clip.duration;
+            const splitPoint = t - clip.start;
+
+            // Reducir clip original hasta el playhead
+            clip.duration = Math.max(0.2, Math.round(splitPoint * 10) / 10);
+
+            // Crear clip congelado como imagen o snapshot
+            const freezeClip = {
+                id: `clip_freeze_${Date.now()}`,
+                track: clip.track,
+                type: clip.type,
+                title: `${clip.title || 'Clip'} (Congelado)`,
+                start: clip.start + clip.duration,
+                duration: freezeDuration,
+                speed: 1.0,
+                scale: clip.scale,
+                x: clip.x,
+                y: clip.y,
+                crop: clip.crop ? { ...clip.crop } : undefined,
+                adjustments: clip.adjustments ? { ...clip.adjustments } : undefined,
+                color: '#00e5ff',
+                src: clip.src,
+                assetId: clip.assetId
+            };
+
+            // Crear continuación del clip si queda tiempo
+            const remainingTime = originalDuration - splitPoint;
+            const continuationClips = [];
+            if (remainingTime > 0.2) {
+                const afterClip = {
+                    ...clip,
+                    id: `clip_cont_${Date.now() + 1}`,
+                    start: freezeClip.start + freezeDuration,
+                    duration: Math.round(remainingTime * 10) / 10
+                };
+                continuationClips.push(afterClip);
+            }
+
+            projectState.clips.push(freezeClip, ...continuationClips);
+            projectState.duration += freezeDuration;
+            pushHistory();
+            saveProjectToDB();
+            renderTimelineClips();
+            selectClip(freezeClip.id);
+            renderFrame(projectState.currentTime);
+            showToast('❄️ Fotograma congelado insertado (2s)');
+        }
+
+        function toggleFlipActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'audio') return;
+            clip.flipH = !clip.flipH;
+            pushHistory();
+            saveProjectToDB();
+            renderFrame(projectState.currentTime);
+            showToast(clip.flipH ? '🪞 Espejo horizontal activado' : '🪞 Orientación normal');
+        }
+
+        // =========================================================================
+        // MOTOR DE TRANSICIONES PROFESIONALES ENTRE CORTES (ARQUITECTURA DRIFT)
+        // =========================================================================
+        function selectTransition(type) {
+            projectState.activeTransition = type;
+            pushHistory();
+            saveProjectToDB();
+            const names = {
+                none: 'Corte Limpio (Sin transición)',
+                crossfade: 'Disolución Suave',
+                dip_black: 'Fundido a Negro',
+                dip_white: 'Flash Blanco',
+                wipe_left: 'Barrido Izquierda',
+                wipe_right: 'Barrido Derecha',
+                zoom_in: 'Impact Zoom In',
+                vhs_glitch: 'Glitch VHS',
+                push_left: 'Empuje Slide',
+                radial_blur: 'Giro Desenfoque'
+            };
+            showToast(`🎬 Transición: ${names[type] || type}`);
+            renderFrame(projectState.currentTime);
+            if (currentDrawerTab === 'transitions') openDrawer('transitions');
+        }
+
+        function updateTransitionDuration(val) {
+            projectState.transitionDuration = Math.max(0.2, Math.min(2.0, parseFloat(val) || 0.6));
+            const el = document.getElementById('transDurVal');
+            if (el) el.innerText = `${projectState.transitionDuration.toFixed(1)}s`;
+        }
+
+        function previewActiveTransition() {
+            const origTime = projectState.currentTime;
+            const dur = projectState.transitionDuration || 0.6;
+            const startT = Math.max(0, origTime - dur / 2);
+            seekTime(startT);
+            startPlayback();
+            setTimeout(() => {
+                pausePlayback();
+                seekTime(origTime);
+            }, (dur + 0.3) * 1000);
+        }
+
+        function renderTransitionEffect(type, progress, w, h, time) {
+            if (!type || type === 'none') return;
+            ctx.save();
+            const p = Math.max(0, Math.min(1, progress));
+
+            if (type === 'crossfade') {
+                ctx.globalAlpha = 1.0 - Math.abs(p - 0.5) * 0.4;
+            } else if (type === 'dip_black') {
+                const blackAlpha = 1.0 - Math.abs(p - 0.5) * 2;
+                ctx.fillStyle = '#000000';
+                ctx.globalAlpha = Math.max(0, Math.min(1, blackAlpha));
+                ctx.fillRect(0, 0, w, h);
+            } else if (type === 'dip_white') {
+                const whiteAlpha = Math.sin(p * Math.PI);
+                ctx.fillStyle = '#ffffff';
+                ctx.globalAlpha = Math.max(0, Math.min(1, whiteAlpha));
+                ctx.fillRect(0, 0, w, h);
+            } else if (type === 'wipe_left') {
+                const edge = (1 - p) * w;
+                ctx.fillStyle = '#05060b';
+                ctx.fillRect(edge, 0, w - edge, h);
+            } else if (type === 'wipe_right') {
+                const edge = p * w;
+                ctx.fillStyle = '#05060b';
+                ctx.fillRect(0, 0, edge, h);
+            } else if (type === 'zoom_in') {
+                const zoom = 1.0 + Math.sin(p * Math.PI) * 0.28;
+                const zw = w * zoom, zh = h * zoom;
+                ctx.globalAlpha = Math.sin(p * Math.PI) * 0.45;
+                ctx.drawImage(canvas, (w - zw) / 2, (h - zh) / 2, zw, zh);
+            } else if (type === 'vhs_glitch') {
+                if (p > 0.15 && p < 0.85) {
+                    ctx.fillStyle = 'rgba(0, 229, 255, 0.22)';
+                    ctx.fillRect(0, 0, w, h);
+                    for (let y = 0; y < h; y += 8) {
+                        const shiftX = (Math.random() - 0.5) * 45;
+                        ctx.drawImage(canvas, 0, y, w, 8, shiftX, y, w, 8);
+                    }
+                }
+            } else if (type === 'push_left') {
+                const shift = Math.sin(p * Math.PI) * 60;
+                ctx.drawImage(canvas, -shift, 0, w, h);
+            } else if (type === 'radial_blur') {
+                const angle = (p - 0.5) * 0.25;
+                ctx.translate(w / 2, h / 2);
+                ctx.rotate(angle);
+                ctx.translate(-w / 2, -h / 2);
+                ctx.drawImage(canvas, 0, 0, w, h);
+            }
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // MOTOR DE STICKERS Y BADGES VIRALES (ARQUITECTURA DRIFT)
+        // =========================================================================
+        function renderStickerLayer(clip, w, h, time) {
+            ctx.save();
+            const cx = w * (0.5 + (clip.x || 0));
+            const cy = h * (0.5 + (clip.y || 0));
+            const timeInClip = Math.max(0, time - clip.start);
+            const popScale = timeInClip < 0.25 ? (0.6 + Math.sin((timeInClip / 0.25) * Math.PI * 0.5) * 0.5) : 1.0;
+            const floatY = Math.sin(time * 3.5) * 4;
+            const scale = (clip.scale !== undefined ? clip.scale : 0.85) * popScale;
+
+            ctx.translate(cx, cy + floatY);
+            ctx.scale(scale, scale);
+
+            const emoji = clip.emoji || '🔥';
+            const text = clip.badgeText || clip.title || 'STICKER';
+            const color = clip.badgeColor || '#f59e0b';
+
+            ctx.font = "900 18px 'Montserrat', -apple-system, sans-serif";
+            const textMetrics = ctx.measureText(text);
+            const badgeW = textMetrics.width + 68;
+            const badgeH = 46;
+            const bx = -badgeW / 2;
+            const by = -badgeH / 2;
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+            ctx.shadowBlur = 14;
+            ctx.shadowOffsetY = 4;
+
+            ctx.beginPath();
+            ctx.roundRect(bx, by, badgeW, badgeH, 23);
+            ctx.fillStyle = 'rgba(11, 15, 25, 0.9)';
+            ctx.fill();
+
+            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+
+            ctx.font = "26px -apple-system, sans-serif";
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, bx + 28, 0);
+
+            ctx.font = "900 16px 'Montserrat', -apple-system, sans-serif";
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(text, bx + 52, 1);
+
+            ctx.restore();
+        }
+
+        function addStickerToTimeline(stickerId) {
+            const stickersMap = {
+                fire: { emoji: '🔥', title: 'Fuego Viral', text: 'TENDENCIA', color: '#f59e0b' },
+                like: { emoji: '👍', title: 'Like & Share', text: 'DALE LIKE', color: '#3b82f6' },
+                sub: { emoji: '🔔', title: 'Suscríbete', text: 'SUSCRIBIRSE', color: '#ef4444' },
+                star: { emoji: '⭐', title: 'Destacado', text: 'TOP 10', color: '#eab308' },
+                rocket: { emoji: '🚀', title: 'Boost Viral', text: 'VIRAL', color: '#8b5cf6' },
+                target: { emoji: '🎯', title: 'Exacto Pro', text: '100% PRO', color: '#10b981' },
+                bolt: { emoji: '⚡', title: 'Impacto Flash', text: 'ENERGÍA', color: '#00e5ff' },
+                laugh: { emoji: '😂', title: 'Risas LOL', text: 'LOL', color: '#f97316' },
+                mindblown: { emoji: '🤯', title: 'Impactante', text: 'INCREÍBLE', color: '#ec4899' },
+                heart: { emoji: '❤️', title: 'Love Corazón', text: 'ME ENCANTA', color: '#f43f5e' },
+                arrow_right: { emoji: '👉', title: 'Mira Aquí', text: 'ATENCIÓN', color: '#06b6d4' },
+                arrow_down: { emoji: '⬇️', title: 'Link Abajo', text: 'COMENTARIOS', color: '#14b8a6' },
+                warning: { emoji: '⚠️', title: 'Alerta Warning', text: 'CUIDADO', color: '#f59e0b' },
+                check: { emoji: '✅', title: 'Truco Aprobado', text: 'FUNCIONA', color: '#22c55e' },
+                rec: { emoji: '🔴', title: 'REC Cine', text: 'GRABANDO', color: '#dc2626' },
+                magic: { emoji: '✨', title: 'Magia Glow', text: 'BRILLO', color: '#d946ef' }
+            };
+
+            const def = stickersMap[stickerId] || { emoji: '⭐', title: 'Sticker', text: 'VIRAL', color: '#feb504' };
+            const newStickerClip = {
+                id: 'clip_stk_' + Date.now(),
+                track: 'track-overlay',
+                type: 'sticker',
+                title: def.title,
+                emoji: def.emoji,
+                badgeText: def.text,
+                badgeColor: def.color,
+                start: projectState.currentTime,
+                duration: 3.5,
+                x: 0,
+                y: -0.15,
+                scale: 0.85,
+                opacity: 1.0
+            };
+
+            projectState.clips.push(newStickerClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newStickerClip.id);
+            renderFrame(projectState.currentTime);
+            closeDrawer();
+            showToast(`⭐ Sticker añadido: ${def.emoji} ${def.text}`);
+        }
+
+        // =========================================================================
+        // MOTOR DE GRABACIÓN DE VOZ EN OFF (DRIFT RECORDER PANEL)
+        // =========================================================================
+        let voiceMediaRecorder = null;
+        let voiceAudioChunks = [];
+        let voiceRecordStartTime = 0;
+        let voiceRecordTimerInterval = null;
+
+        async function startVoiceoverRecording() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    showToast('⚠️ Grabación de micrófono no soportada en este navegador');
+                    return;
+                }
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                voiceAudioChunks = [];
+                voiceMediaRecorder = new MediaRecorder(stream);
+                voiceMediaRecorder.ondataavailable = e => {
+                    if (e.data.size > 0) voiceAudioChunks.push(e.data);
+                };
+                voiceMediaRecorder.onstop = () => {
+                    stream.getTracks().forEach(t => t.stop());
+                    const audioBlob = new Blob(voiceAudioChunks, { type: 'audio/webm' });
+                    saveRecordedVoiceoverClip(audioBlob);
+                };
+
+                pausePlayback();
+                voiceMediaRecorder.start();
+                voiceRecordStartTime = performance.now();
+
+                updateVoiceRecorderUI(true);
+                showToast('🎙️ Grabando voz en off... Habla ahora');
+            } catch (err) {
+                console.error('Error al iniciar grabación:', err);
+                showToast('❌ Acceso al micrófono denegado');
+            }
+        }
+
+        function stopVoiceoverRecording() {
+            if (voiceMediaRecorder && voiceMediaRecorder.state === 'recording') {
+                voiceMediaRecorder.stop();
+                updateVoiceRecorderUI(false);
+            }
+        }
+
+        function cancelVoiceoverRecording() {
+            if (voiceMediaRecorder && voiceMediaRecorder.state === 'recording') {
+                voiceMediaRecorder.ondataavailable = null;
+                voiceMediaRecorder.onstop = () => {
+                    if (voiceMediaRecorder.stream) {
+                        voiceMediaRecorder.stream.getTracks().forEach(t => t.stop());
+                    }
+                };
+                voiceMediaRecorder.stop();
+                updateVoiceRecorderUI(false);
+                showToast('Grabación cancelada');
+            }
+        }
+
+        function updateVoiceRecorderUI(isRecording) {
+            const btnStart = document.getElementById('btnStartVoiceRec');
+            const btnStop = document.getElementById('btnStopVoiceRec');
+            const btnCancel = document.getElementById('btnCancelVoiceRec');
+            const timer = document.getElementById('voiceRecTimer');
+
+            if (isRecording) {
+                if (btnStart) btnStart.style.display = 'none';
+                if (btnStop) btnStop.style.display = 'flex';
+                if (btnCancel) btnCancel.style.display = 'flex';
+                if (timer) {
+                    timer.style.display = 'inline-block';
+                    timer.innerText = '🔴 00:00.0';
+                    if (voiceRecordTimerInterval) clearInterval(voiceRecordTimerInterval);
+                    voiceRecordTimerInterval = setInterval(() => {
+                        const elapsed = (performance.now() - voiceRecordStartTime) / 1000;
+                        const m = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                        const s = (elapsed % 60).toFixed(1).padStart(4, '0');
+                        timer.innerText = `🔴 ${m}:${s}`;
+                    }, 100);
+                }
+            } else {
+                if (btnStart) btnStart.style.display = 'flex';
+                if (btnStop) btnStop.style.display = 'none';
+                if (btnCancel) btnCancel.style.display = 'none';
+                if (timer) timer.style.display = 'none';
+                if (voiceRecordTimerInterval) {
+                    clearInterval(voiceRecordTimerInterval);
+                    voiceRecordTimerInterval = null;
+                }
+            }
+        }
+
+        function saveRecordedVoiceoverClip(blob) {
+            const recordedSecs = Math.max(0.5, (performance.now() - voiceRecordStartTime) / 1000);
+            const blobUrl = URL.createObjectURL(blob);
+            const newClip = {
+                id: 'clip_rec_' + Date.now(),
+                track: 'track-audio1',
+                type: 'audio',
+                title: `🎙️ Voz en Off (${recordedSecs.toFixed(1)}s)`,
+                src: blobUrl,
+                start: projectState.currentTime,
+                duration: Math.max(1.0, recordedSecs),
+                volume: 1.0,
+                voiceEffect: 'none'
+            };
+
+            getOrCreateAudioElement(newClip);
+            projectState.clips.push(newClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newClip.id);
+            closeDrawer();
+            showToast('✅ Voz en off agregada exitosamente a la pista de audio');
+        }
+
+        // =========================================================================
+        // MOTOR DE EFECTOS DE SONIDO SFX (SÍNTESIS EN MEMORIA ULTRA-RÁPIDA)
+        // =========================================================================
+        function generateSfxBlob(sfxType) {
+            const sampleRate = 44100;
+            let duration = 0.4;
+            if (sfxType === 'swoosh') duration = 0.5;
+            else if (sfxType === 'bell') duration = 0.8;
+            else if (sfxType === 'pop') duration = 0.15;
+            else if (sfxType === 'camera') duration = 0.25;
+            else if (sfxType === 'bass_drop') duration = 1.0;
+            else if (sfxType === 'coin') duration = 0.4;
+
+            const numSamples = Math.floor(sampleRate * duration);
+            const samples = new Float32Array(numSamples);
+
+            for (let i = 0; i < numSamples; i++) {
+                const t = i / sampleRate;
+                const progress = i / numSamples;
+                let val = 0;
+
+                if (sfxType === 'swoosh') {
+                    const noise = (Math.random() * 2 - 1);
+                    const env = Math.sin(progress * Math.PI);
+                    val = noise * env * 0.7;
+                } else if (sfxType === 'bell') {
+                    const env = Math.exp(-progress * 4.5);
+                    val = (Math.sin(2 * Math.PI * 880 * t) * 0.6 + Math.sin(2 * Math.PI * 1760 * t) * 0.4) * env * 0.7;
+                } else if (sfxType === 'pop') {
+                    const freq = 900 - progress * 750;
+                    const env = Math.sin(progress * Math.PI);
+                    val = Math.sin(2 * Math.PI * freq * t) * env * 0.85;
+                } else if (sfxType === 'camera') {
+                    const isClick1 = progress < 0.15;
+                    const isClick2 = progress > 0.4 && progress < 0.55;
+                    if (isClick1 || isClick2) {
+                        val = (Math.random() * 2 - 1) * 0.8;
+                    }
+                } else if (sfxType === 'bass_drop') {
+                    const freq = Math.max(32, 160 * Math.exp(-progress * 3.2));
+                    const env = Math.exp(-progress * 2.0);
+                    val = Math.sin(2 * Math.PI * freq * t) * env * 0.9;
+                } else if (sfxType === 'coin') {
+                    const freq = progress < 0.35 ? 987.77 : 1318.51;
+                    const env = Math.exp(-((progress % 0.5) * 5));
+                    val = (Math.sin(2 * Math.PI * freq * t) > 0 ? 0.5 : -0.5) * env * 0.6;
+                }
+
+                samples[i] = Math.max(-1, Math.min(1, val));
+            }
+
+            const buffer = new ArrayBuffer(44 + numSamples * 2);
+            const view = new DataView(buffer);
+
+            function writeString(offset, string) {
+                for (let j = 0; j < string.length; j++) {
+                    view.setUint8(offset + j, string.charCodeAt(j));
+                }
+            }
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + numSamples * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true); // PCM
+            view.setUint16(22, 1, true); // Mono
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * 2, true);
+            view.setUint16(32, 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, numSamples * 2, true);
+
+            let offset = 44;
+            for (let i = 0; i < numSamples; i++, offset += 2) {
+                const s = Math.max(-1, Math.min(1, samples[i]));
+                view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+            }
+
+            return new Blob([buffer], { type: 'audio/wav' });
+        }
+
+        function addSfxClip(sfxType) {
+            unlockAudioEngine();
+            const blob = generateSfxBlob(sfxType);
+            const blobUrl = URL.createObjectURL(blob);
+            const names = {
+                swoosh: '💥 SFX Swoosh',
+                bell: '🔔 SFX Notificación',
+                pop: 'Pop Burbuja',
+                camera: '📸 SFX Cámara',
+                bass_drop: '⚡ Bass Drop Impacto',
+                coin: '🎯 Moneda 8-Bit'
+            };
+            const durs = { swoosh: 0.5, bell: 0.8, pop: 0.2, camera: 0.25, bass_drop: 1.0, coin: 0.4 };
+            const dur = durs[sfxType] || 0.5;
+
+            const newClip = {
+                id: 'clip_sfx_' + Date.now(),
+                track: 'track-audio1',
+                type: 'audio',
+                title: names[sfxType] || 'SFX Sonido',
+                src: blobUrl,
+                start: projectState.currentTime,
+                duration: dur,
+                volume: 0.95
+            };
+
+            getOrCreateAudioElement(newClip);
+            projectState.clips.push(newClip);
+            recalculateProjectDuration();
+            pushHistory();
+            renderTimelineClips();
+            selectClip(newClip.id);
+            closeDrawer();
+            showToast(`✅ Sonido añadido: ${names[sfxType] || sfxType}`);
+        }
+
+        // =========================================================================
+        // CONTROL RÁPIDO DE AUDIO Y VELOCIDAD DE CLIP (ARQUITECTURA DRIFT)
+        // =========================================================================
+        function toggleMuteActiveClip() {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip) return;
+            if (clip.volume === undefined) clip.volume = 1.0;
+            clip.volume = clip.volume === 0 ? 1.0 : 0;
+            const isMuted = clip.volume === 0;
+            const btnIcon = document.getElementById('btnClipMuteIcon');
+            if (btnIcon) {
+                btnIcon.className = isMuted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+                btnIcon.style.color = isMuted ? '#f87171' : '#10b981';
+            }
+            pushHistory();
+            renderTimelineClips();
+            showToast(isMuted ? '🔇 Audio del clip silenciado' : '🔊 Audio del clip activado');
+        }
+
+        function setSpeedRamp(preset) {
+            const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
+            if (!clip || clip.type === 'text') return;
+            if (preset === 'flash') {
+                clip.speed = 2.5;
+                showToast('⚡ Rampa Flash: 2.5x');
+            } else if (preset === 'slowmo') {
+                clip.speed = 0.5;
+                showToast('🐌 Cámara Lenta: 0.5x');
+            } else if (preset === 'heroic') {
+                clip.speed = 0.7;
+                showToast('🎬 Rampa Heroica: 0.7x cinematográfico');
+            } else if (preset === 'timelapse') {
+                clip.speed = 3.5;
+                showToast('⏩ Hyper Timelapse: 3.5x');
+            } else {
+                clip.speed = 1.0;
+                showToast('Normal: 1.0x');
+            }
+            pushHistory();
+            renderTimelineClips();
+            closeDrawer();
         }
 
         function selectShader(s) {
@@ -5798,6 +7236,11 @@
 • \`!MUTE <true|false>\` : Silenciar o activar audio
 • \`!SEEK <segundos>\` : Mover cabezal a un segundo exacto
 • \`!DUPLICATE\` / \`!DELETE\` : Duplicar o borrar clip activo
+• \`!TRANSITION <crossfade|dip_black|dip_white|wipe_left|zoom_in|vhs_glitch>\` : Transición profesional
+• \`!STICKER <fire|like|sub|star|rocket|target|bolt|laugh|mindblown>\` : Añadir sticker viral
+• \`!SFX <sfx_name>\` : Efecto de sonido (swoosh, bell, pop, camera, bass_drop, coin)
+• \`!RECORD_VOICE\` : Iniciar grabador de voz en off
+• \`!RAMP <flash|slowmo|heroic|timelapse|normal>\` : Rampa de velocidad
 • \`!UNDO\` / \`!REDO\` : Deshacer o rehacer cambios
 `;
 
@@ -5964,6 +7407,65 @@
                     return { action: 'redo', rawCmd: str };
                 }
 
+                case 'CROP':
+                case 'RECORTAR': {
+                    const preset = (arg1 || '16:9').toLowerCase();
+                    if (preset === 'reset' || preset === 'original') return { action: 'crop_reset', rawCmd: str };
+                    return { action: 'crop', value: preset, rawCmd: str };
+                }
+
+                case 'COLOR':
+                case 'GRADE':
+                case 'AJUSTES': {
+                    const g = (arg1 || 'vibrant').toLowerCase();
+                    return { action: 'color_grade', value: g, rawCmd: str };
+                }
+
+                case 'FREEZE':
+                case 'CONGELAR': {
+                    return { action: 'freeze', rawCmd: str };
+                }
+
+                case 'FLIP':
+                case 'ESPEJO': {
+                    return { action: 'flip', rawCmd: str };
+                }
+
+                case 'VOICE':
+                case 'VOZ': {
+                    const fx = (arg1 || 'chipmunk').toLowerCase();
+                    return { action: 'voice_fx', value: fx, rawCmd: str };
+                }
+
+                case 'TRANSITION':
+                case 'TRANSICION': {
+                    const transType = (arg1 || 'crossfade').toLowerCase();
+                    return { action: 'transition', value: transType, rawCmd: str };
+                }
+
+                case 'STICKER':
+                case 'PEGATINA': {
+                    const stk = (arg1 || 'fire').toLowerCase();
+                    return { action: 'sticker', value: stk, rawCmd: str };
+                }
+
+                case 'SFX':
+                case 'SONIDO': {
+                    const sfxType = (arg1 || 'swoosh').toLowerCase();
+                    return { action: 'sfx', value: sfxType, rawCmd: str };
+                }
+
+                case 'RECORD_VOICE':
+                case 'GRABAR_VOZ': {
+                    return { action: 'record_voice', rawCmd: str };
+                }
+
+                case 'RAMP':
+                case 'RAMPA': {
+                    const rPreset = (arg1 || 'flash').toLowerCase();
+                    return { action: 'speed_ramp', value: rPreset, rawCmd: str };
+                }
+
                 case 'HELP':
                 case 'AYUDA':
                 case 'COMANDOS': {
@@ -6092,6 +7594,46 @@
                     description = (x === 0 && y === 0) ? 'Encuadre centrado' : `Posición ajustada a (${x}, ${y})`;
                     break;
                 }
+                case 'crop': {
+                    setCropPreset(actionObj.value || '16:9');
+                    description = `Clip recortado a formato ${actionObj.value || '16:9'}`;
+                    actionButtons = [
+                        { label: '📱 9:16 Vertical', action: () => setCropPreset('9:16'), styleClass: 'pill-gold' },
+                        { label: '🖥️ 16:9 Horizontal', action: () => setCropPreset('16:9'), styleClass: 'pill-cyan' },
+                        { label: '↺ Restablecer', action: () => resetCrop() }
+                    ];
+                    break;
+                }
+                case 'crop_reset': {
+                    resetCrop();
+                    description = 'Recorte restablecido al tamaño original';
+                    break;
+                }
+                case 'open_crop': {
+                    openDrawer('crop');
+                    description = 'Herramienta de recorte profesional abierta';
+                    break;
+                }
+                case 'freeze': {
+                    freezeFrameAtPlayhead();
+                    description = 'Fotograma congelado por 2 segundos insertado';
+                    break;
+                }
+                case 'flip': {
+                    toggleFlipActiveClip();
+                    description = 'Efecto espejo horizontal aplicado';
+                    break;
+                }
+                case 'voice_fx': {
+                    setVoiceEffect(actionObj.value || 'chipmunk');
+                    description = `Efecto de voz '${actionObj.value}' aplicado al audio`;
+                    break;
+                }
+                case 'color_grade': {
+                    applyColorGradePreset(actionObj.value || 'vibrant');
+                    description = `Graduación de color '${actionObj.value}' aplicada`;
+                    break;
+                }
                 case 'mute':
                 case 'silenciar': {
                     if (actionObj.value === false) {
@@ -6163,6 +7705,39 @@
                 case 'redo': {
                     redo();
                     description = 'Acción rehecha';
+                    break;
+                }
+                case 'transition': {
+                    const tType = actionObj.value || 'crossfade';
+                    selectTransition(tType);
+                    description = `Transición configurada: ${tType}`;
+                    actionButtons = [
+                        { label: '▶ Probar Transición', action: () => previewActiveTransition(), styleClass: 'pill-gold' },
+                        { label: '✂️ Dividir en Cursor', action: () => splitClipAtPlayhead(), styleClass: 'pill-cyan' }
+                    ];
+                    break;
+                }
+                case 'sticker': {
+                    const stkId = actionObj.value || 'fire';
+                    addStickerToTimeline(stkId);
+                    description = `Sticker viral añadido: ${stkId}`;
+                    break;
+                }
+                case 'sfx': {
+                    const sfxName = actionObj.value || 'swoosh';
+                    addSfxClip(sfxName);
+                    description = `Efecto de sonido añadido: ${sfxName}`;
+                    break;
+                }
+                case 'record_voice': {
+                    startVoiceoverRecording();
+                    description = 'Grabador de voz en off iniciado';
+                    break;
+                }
+                case 'speed_ramp': {
+                    const rPreset = actionObj.value || 'flash';
+                    setSpeedRamp(rPreset);
+                    description = `Rampa de velocidad aplicada: ${rPreset}`;
                     break;
                 }
                 case 'help': {
@@ -6253,6 +7828,15 @@
                 return { action: 'split', response: 'He dividido el clip en la posición actual del cabezal de reproducción.' };
             }
 
+            // 3.5 Rampa de Velocidad Dinámica (Drift Speed Curve)
+            if (/rampa|curva\s+de\s+velocidad/i.test(msg)) {
+                let p = 'flash';
+                if (/lenta|slow/i.test(msg)) p = 'slowmo';
+                else if (/heroic/i.test(msg)) p = 'heroic';
+                else if (/timelapse|hyper/i.test(msg)) p = 'timelapse';
+                return { action: 'speed_ramp', value: p, response: `He aplicado la rampa de velocidad "${p}".` };
+            }
+
             // 4. Velocidad
             if (/acelera|rapido|rápido|velocidad/i.test(msg)) {
                 if (/2x|doble/i.test(msg)) return { action: 'speed', value: 2.0, response: 'Velocidad duplicada a 2.0x.' };
@@ -6321,8 +7905,8 @@
             }
 
             // 8. Texto común
-            const textMatch = msg.match(/(?:texto|título|titulo|escribe|pon)\s+(?:que diga|con|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
-            if (textMatch && textMatch[1].trim().length > 1) {
+            const textMatch = msg.match(/(?:texto|título|titulo|escribe|escribir)\s+(?:que diga|con|de)?\s*["'«“]?([^"'»”\n]+)["'»”]?/i);
+            if (textMatch && textMatch[1].trim().length > 1 && !/filtro|efecto|shader|sonido|audio|sfx|sticker|transici/i.test(textMatch[1])) {
                 const txt = textMatch[1].trim();
                 return { action: 'add_text', text: txt, style: 'viral', response: `He añadido el texto "${txt}" a la pista de títulos.` };
             }
@@ -6360,7 +7944,7 @@
             }
 
             // 12. Navegación
-            if (/inicio|principio|0:00|comienzo|regresa/i.test(msg)) {
+            if (/(?:ir\s+al|regresar?\s+al|volver\s+al|ve\s+al)\s*(?:inicio|principio|comienzo|0:00)|^(?:inicio|principio|0:00|regresa)$/i.test(msg)) {
                 return { action: 'seek', time: 0, response: 'Cabezal regresado al inicio (0:00).' };
             }
 
@@ -6372,7 +7956,109 @@
                 return { action: 'delete', response: 'Clip eliminado del proyecto.' };
             }
 
-            // 14. Ayuda y Comandos
+            // 14. Herramientas Profesionales de Drift (Recorte, Color, Audio FX, Freeze, Flip)
+            if (/recorta(?:r)?|crop/i.test(msg)) {
+                if (/9:16|vertical|reels|shorts|tiktok/i.test(msg)) {
+                    return { action: 'crop', value: '9:16', response: 'He recortado el clip a formato vertical 9:16.' };
+                }
+                if (/16:9|horizontal|youtube/i.test(msg)) {
+                    return { action: 'crop', value: '16:9', response: 'He recortado el clip a formato horizontal 16:9.' };
+                }
+                if (/1:1|cuadrado/i.test(msg)) {
+                    return { action: 'crop', value: '1:1', response: 'He recortado el clip a formato cuadrado 1:1.' };
+                }
+                if (/restablecer|original/i.test(msg)) {
+                    return { action: 'crop_reset', response: 'Recorte restablecido al tamaño original.' };
+                }
+                return { action: 'open_crop', response: 'He abierto la herramienta de recorte profesional.' };
+            }
+
+            if (/congela(?:r)?|freeze|congelar fotograma/i.test(msg)) {
+                return { action: 'freeze', response: 'He congelado el fotograma en la posición actual durante 2 segundos.' };
+            }
+
+            if (/espejo|voltea(?:r)?|flip|invertir/i.test(msg)) {
+                return { action: 'flip', response: 'He aplicado el modo espejo horizontal al clip.' };
+            }
+
+            if (/ardilla|chipmunk/i.test(msg)) {
+                return { action: 'voice_fx', value: 'chipmunk', response: 'Efecto de audio Ardilla (tono agudo) activado.' };
+            }
+            if (/voz grave|grave|voz profunda/i.test(msg)) {
+                return { action: 'voice_fx', value: 'deep', response: 'Efecto de audio Voz Grave cinematográfico activado.' };
+            }
+            if (/robot/i.test(msg)) {
+                return { action: 'voice_fx', value: 'robot', response: 'Efecto de audio Robot metálico activado.' };
+            }
+            if (/meg[aá]fono|radio/i.test(msg)) {
+                return { action: 'voice_fx', value: 'megaphone', response: 'Efecto de audio Megáfono activado.' };
+            }
+            if (/eco|echo/i.test(msg)) {
+                return { action: 'voice_fx', value: 'echo', response: 'Efecto de Eco espacial y reverberación activado.' };
+            }
+
+            if (/graduaci[oó]n|color.*vibrante|colores.*vibrantes/i.test(msg)) {
+                return { action: 'color_grade', value: 'vibrant', response: 'Graduación de color vibrante aplicada.' };
+            }
+            if (/color.*c[aá]lido|atardecer/i.test(msg)) {
+                return { action: 'color_grade', value: 'warm', response: 'Graduación de color cálido atardecer aplicada.' };
+            }
+            if (/color.*fr[ií]o/i.test(msg)) {
+                return { action: 'color_grade', value: 'cold', response: 'Graduación de color frío cinematográfico aplicada.' };
+            }
+
+            // 15. Transiciones Profesionales
+            if (/transici[oó]n|disoluci[oó]n|fundido\s+a\s+negro|flash\s+blanco|barrido|zoom\s+in/i.test(msg)) {
+                let tType = 'crossfade';
+                if (/negro/i.test(msg)) tType = 'dip_black';
+                else if (/blanco|flash/i.test(msg)) tType = 'dip_white';
+                else if (/barrido|wipe/i.test(msg)) tType = 'wipe_left';
+                else if (/zoom/i.test(msg)) tType = 'zoom_in';
+                else if (/vhs|glitch/i.test(msg)) tType = 'vhs_glitch';
+                else if (/ningun|quita.*transici/i.test(msg)) tType = 'none';
+                return { action: 'transition', value: tType, response: `He configurado la transición "${tType}" entre cortes de video.` };
+            }
+
+            // 16. Stickers y Badges Virales
+            if (/sticker|pegatina|emoji|fuego|like|suscrib/i.test(msg)) {
+                let sId = 'fire';
+                if (/like|me\s+gusta/i.test(msg)) sId = 'like';
+                else if (/suscrib/i.test(msg)) sId = 'sub';
+                else if (/estrella|star/i.test(msg)) sId = 'star';
+                else if (/cohete|rocket|boost/i.test(msg)) sId = 'rocket';
+                else if (/blanco|diana|target/i.test(msg)) sId = 'target';
+                else if (/rayo|energia|bolt/i.test(msg)) sId = 'bolt';
+                else if (/corazon|heart|love/i.test(msg)) sId = 'heart';
+                else if (/alerta|cuidado|warning/i.test(msg)) sId = 'warning';
+                return { action: 'sticker', value: sId, response: `He añadido el sticker viral "${sId}" en pantalla.` };
+            }
+
+            // 17. Efectos de Sonido SFX
+            if (/sonido\s+de|sfx|efecto\s+de\s+sonido|swoosh|campanilla|notificaci[oó]n|bass\s+drop/i.test(msg)) {
+                let sfx = 'swoosh';
+                if (/campan|notific/i.test(msg)) sfx = 'bell';
+                else if (/pop|burbuja/i.test(msg)) sfx = 'pop';
+                else if (/c[aá]mara|foto/i.test(msg)) sfx = 'camera';
+                else if (/bass|grave|impacto/i.test(msg)) sfx = 'bass_drop';
+                else if (/moneda|coin|mario/i.test(msg)) sfx = 'coin';
+                return { action: 'sfx', value: sfx, response: `He añadido el efecto de sonido "${sfx}" en el cabezal.` };
+            }
+
+            // 18. Grabación de Voz en Off
+            if (/graba(?:r)?\s+(?:mi\s+)?voz|grabar\s+en\s+off|voz\s+en\s+off/i.test(msg)) {
+                return { action: 'record_voice', response: 'Iniciando el grabador de voz en off...' };
+            }
+
+            // 19. Rampa de Velocidad
+            if (/rampa|curva\s+de\s+velocidad|camara\s+lenta|flash\s+in/i.test(msg)) {
+                let p = 'flash';
+                if (/lenta|slow/i.test(msg)) p = 'slowmo';
+                else if (/heroic/i.test(msg)) p = 'heroic';
+                else if (/timelapse|hyper/i.test(msg)) p = 'timelapse';
+                return { action: 'speed_ramp', value: p, response: `He aplicado la rampa de velocidad "${p}".` };
+            }
+
+            // 20. Ayuda y Comandos
             if (/ayuda|comandos|qu[eé]\s+comandos|qu[eé]\s+haces|instrucciones/i.test(msg)) {
                 return { action: 'help' };
             }

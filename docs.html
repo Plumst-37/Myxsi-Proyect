@@ -1310,10 +1310,10 @@
             <a href="chat.html" class="mode-tab-btn" title="Modo Chat Inteligente">
                 <i class="fa-regular fa-comment"></i> <span>Chat</span>
             </a>
-            <a href="docs.html" class="mode-tab-btn active" title="Google Docs Studio">
+            <a href="docs-home.html" class="mode-tab-btn active" title="Google Docs Studio">
                 <i class="fa-brands fa-google-drive"></i> <span>Docs</span>
             </a>
-            <a href="sheets.html" class="mode-tab-btn" title="Hojas de Cálculo Studio (Excel)">
+            <a href="sheets-home.html" class="mode-tab-btn" title="Hojas de Cálculo Studio (Excel)">
                 <i class="fa-solid fa-table-cells"></i> <span>Sheets</span>
             </a>
             <a href="canva.html" class="mode-tab-btn" title="Canva Studio">
@@ -1810,6 +1810,17 @@
         const templateParam = urlParams.get('template');
         const isCloudDoc = urlParams.get('isCloud') === 'true' || (currentDocId && !currentDocId.startsWith('doc_') && !currentDocId.startsWith('main_'));
 
+        // Si se ingresó sin parámetro docId, redirigir a docs-home.html o restaurar último documento cloud activo
+        if (!currentDocId) {
+            const lastActive = localStorage.getItem('myxsi_last_active_doc_id');
+            if (lastActive && !lastActive.startsWith('doc_') && !lastActive.startsWith('main_')) {
+                window.location.replace(`docs.html?docId=${encodeURIComponent(lastActive)}&isCloud=true`);
+                return;
+            }
+            window.location.replace('docs-home.html');
+            return;
+        }
+
         if (isCloudDoc && currentDocId) {
             window.activeGoogleDocId = currentDocId;
         }
@@ -1820,14 +1831,11 @@
         if (currentDocId) {
             savedContent = localStorage.getItem('smart_doc_content_' + currentDocId) || '';
             savedTitle = localStorage.getItem('smart_doc_title_' + currentDocId) || '';
-        }
-
-        if (!savedContent) {
-            savedContent = localStorage.getItem('smart_doc_content');
+            localStorage.setItem('myxsi_last_active_doc_id', currentDocId);
         }
 
         if (!savedTitle) {
-            savedTitle = localStorage.getItem('smart_doc_title') || 'Documento sin título';
+            savedTitle = 'Documento sin título';
         }
         const titleInputEl = document.getElementById('smartDocTitle');
         if (titleInputEl) titleInputEl.value = savedTitle;
@@ -1840,7 +1848,26 @@
                 if (!token && typeof window.ensureValidToken === 'function') {
                     token = await window.ensureValidToken(false);
                 }
-                if (!token) return;
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    // Si no hay token en este navegador, solicitar conexión sin borrar el archivo
+                    token = await window.ensureValidToken(true);
+                }
+                if (!token) {
+                    console.warn("Sin token de Google Drive para cargar documento cloud:", currentDocId);
+                    if (window.smartDocQuill) {
+                        window.smartDocQuill.root.innerHTML = `
+                            <div style="padding: 2.5rem 1.5rem; text-align: center; background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); border-radius: 12px; margin: 1rem 0;">
+                                <i class="fa-brands fa-google-drive" style="font-size: 2.5rem; color: #60a5fa; margin-bottom: 1rem; display: block;"></i>
+                                <h3 style="margin: 0 0 0.5rem 0; color: #f8fafc; font-size: 1.15rem;">Documento sincronizado en Google Drive</h3>
+                                <p style="margin: 0 0 1.25rem 0; color: #94a3b8; font-size: 0.9rem;">Conecta tu cuenta de Google Drive en este navegador para ver y editar el contenido en tiempo real.</p>
+                                <button onclick="window.ensureValidToken(true).then(() => location.reload())" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; padding: 10px 22px; border-radius: 9999px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                                    <i class="fa-brands fa-google-drive"></i> Conectar Google Drive
+                                </button>
+                            </div>
+                        `;
+                    }
+                    return;
+                }
 
                 try {
                     const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${currentDocId}?fields=id,name,mimeType,description,appProperties`, {
@@ -1856,17 +1883,7 @@
                         }
                     }
 
-                    // 1. Verificar contenido guardado en appProperties de Drive (HTML completo Myxsi)
-                    let cloudAppHtml = null;
-                    if (meta && meta.appProperties && meta.appProperties.myxsi_doc_html) {
-                        try {
-                            cloudAppHtml = decodeURIComponent(meta.appProperties.myxsi_doc_html);
-                        } catch(e) {
-                            cloudAppHtml = meta.appProperties.myxsi_doc_html;
-                        }
-                    }
-
-                    // 2. Exportar desde Google Docs (HTML estándar de Google Docs)
+                    // 1. Exportar desde Google Docs (HTML estándar de Google Docs)
                     let exportedHtml = null;
                     let exportedText = '';
                     const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${currentDocId}/export?mimeType=text/html`, {
@@ -1880,20 +1897,16 @@
                         exportedText = (docDom.body ? (docDom.body.innerText || docDom.body.textContent) : '').trim();
                     }
 
-                    // 3. Revisar borrador local
-                    const localDraft = localStorage.getItem('smart_doc_content_' + currentDocId) || localStorage.getItem('smart_doc_content') || '';
+                    // 2. Revisar borrador local estrictamente vinculado a este documento
+                    const localDraft = localStorage.getItem('smart_doc_content_' + currentDocId) || '';
                     const localDraftClean = localDraft.replace(/<[^>]*>/g, '').trim();
-                    const cloudAppHtmlClean = (cloudAppHtml || '').replace(/<[^>]*>/g, '').trim();
 
                     let bestContent = null;
-                    if (cloudAppHtmlClean.length > 0) {
-                        // appProperties de Drive tiene el HTML formateado exacto
-                        bestContent = cloudAppHtml;
-                    } else if (exportedText.length > 0) {
+                    if (exportedText.length > 0) {
                         // Google Docs tiene texto exportado real
                         bestContent = exportedHtml;
                     } else if (localDraftClean.length > 0) {
-                        // La nube aún está vacía pero localmente teníamos texto: ¡PRESERVAR EL BORRADOR LOCAL!
+                        // La nube aún está vacía pero localmente teníamos texto para este documento: preservar borrador
                         console.log("Drive aún no tiene texto para este doc. Preservando borrador local y sincronizando a Drive...");
                         bestContent = localDraft;
                         setTimeout(() => {
@@ -1910,7 +1923,6 @@
                             if (paperEl) paperEl.innerHTML = bestContent;
                         }
                         localStorage.setItem('smart_doc_content_' + currentDocId, bestContent);
-                        localStorage.setItem('smart_doc_content', bestContent);
                         updateMetrics();
                         updateOutline();
                         if (typeof window.showMyxsiToast === 'function') {
@@ -1919,70 +1931,6 @@
                     }
                 } catch(err) {
                     console.warn("No se pudo cargar el documento desde Google Drive:", err);
-                }
-            })();
-        } else {
-            // Si se abrió sin ID o es local pero hay sesión de Google Drive activa, vincularlo automáticamente
-            (async () => {
-                let token = localStorage.getItem('gdrive_access_token');
-                if (!token && typeof window.ensureValidToken === 'function') {
-                    token = await window.ensureValidToken(false);
-                }
-                if (!token) return;
-                try {
-                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
-                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', token)
-                        : null;
-                    const meta = { name: savedTitle || 'Documento sin título', mimeType: 'application/vnd.google-apps.document' };
-                    if (folderId) meta.parents = [folderId];
-                    const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(meta)
-                    });
-                    if (cr.ok) {
-                        const cData = await cr.json();
-                        window.activeGoogleDocId = cData.id;
-                        const newUrl = new URL(window.location.href);
-                        newUrl.searchParams.set('docId', cData.id);
-                        newUrl.searchParams.set('isCloud', 'true');
-                        window.history.replaceState({}, '', newUrl.toString());
-
-                        // Guardar inmediatamente el contenido y título bajo el nuevo ID
-                        const currentHtml = window.smartDocQuill ? window.smartDocQuill.root.innerHTML : savedContent;
-                        if (currentHtml) {
-                            localStorage.setItem('smart_doc_content_' + cData.id, currentHtml);
-                            localStorage.setItem('smart_doc_title_' + cData.id, savedTitle || 'Documento sin título');
-                        }
-
-                        const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                        let f = localFiles.find(i => i.id === currentDocId || i.id === cData.id);
-                        if (f) {
-                            f.id = cData.id;
-                            f.isCloud = true;
-                            f.isLocal = false;
-                            f.webViewLink = `https://docs.google.com/document/d/${cData.id}/edit`;
-                        } else {
-                            localFiles.unshift({
-                                id: cData.id,
-                                name: savedTitle,
-                                type: 'doc',
-                                isDoc: true,
-                                mimeType: 'application/vnd.google-apps.document',
-                                updatedAt: Date.now(),
-                                isCloud: true,
-                                isLocal: false,
-                                webViewLink: `https://docs.google.com/document/d/${cData.id}/edit`
-                            });
-                        }
-                        localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
-                        const statusEl = document.getElementById('driveExportStatus');
-                        if (statusEl) {
-                            statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Vinculado en tiempo real a Google Drive</span>`;
-                        }
-                    }
-                } catch(err) {
-                    console.warn("Auto-create Drive doc error:", err);
                 }
             })();
         }
@@ -2008,9 +1956,8 @@
 
                 window.smartDocQuill.on('text-change', () => {
                     const html = window.smartDocQuill.root.innerHTML;
-                    const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_' + Date.now();
+                    const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_current';
                     localStorage.setItem('smart_doc_content_' + effectiveId, html);
-                    localStorage.setItem('smart_doc_content', html);
 
                     try {
                         const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -2082,7 +2029,6 @@
 
             const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_current';
             localStorage.setItem('smart_doc_title_' + effectiveId, titleVal);
-            localStorage.setItem('smart_doc_title', titleVal);
 
             try {
                 const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -2108,17 +2054,24 @@
             } catch(e){}
 
             // Si el documento ya está vinculado a Google Drive, renombrarlo inmediatamente en la nube
-            if (window.activeGoogleDocId && localStorage.getItem('gdrive_access_token')) {
-                const token = localStorage.getItem('gdrive_access_token');
-                fetch(`https://www.googleapis.com/drive/v3/files/${window.activeGoogleDocId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name: titleVal })
-                }).then(res => {
-                    if (res.ok) {
+            if (window.activeGoogleDocId) {
+                (async () => {
+                    try {
+                        if (typeof window.renameGoogleDriveFile === 'function') {
+                            await window.renameGoogleDriveFile(window.activeGoogleDocId, titleVal);
+                        } else {
+                            const token = localStorage.getItem('gdrive_access_token');
+                            if (token) {
+                                await fetch(`https://www.googleapis.com/drive/v3/files/${window.activeGoogleDocId}`, {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ name: titleVal })
+                                });
+                            }
+                        }
                         const statusEl = document.getElementById('driveExportStatus');
                         if (statusEl) {
                             statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Nombre actualizado en Drive</span>`;
@@ -2126,8 +2079,10 @@
                                 if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Sincronizado en la Nube (Google Drive)</span>`;
                             }, 2500);
                         }
+                    } catch(err) {
+                        console.warn("Error actualizando nombre en Drive:", err);
                     }
-                }).catch(err => console.warn("Error actualizando nombre en Drive:", err));
+                })();
             }
         };
 
@@ -2345,11 +2300,9 @@
 
         // 1. Respaldo local prioritario en Myxsi Files
         const urlParams = new URLSearchParams(window.location.search);
-        const currentDocId = urlParams.get('docId') || ('doc_' + Date.now());
+        const currentDocId = urlParams.get('docId') || window.activeGoogleDocId || 'doc_current';
         localStorage.setItem('smart_doc_content_' + currentDocId, text);
         localStorage.setItem('smart_doc_title_' + currentDocId, docTitle);
-        localStorage.setItem('smart_doc_content', text);
-        localStorage.setItem('smart_doc_title', docTitle);
 
         try {
             const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -2446,31 +2399,24 @@
         const isUpdate = Boolean(docId);
 
         if (!docId) {
-            // Crear documento nativo en la carpeta Myxsi Documents de Drive
-            let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
-                ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken)
-                : null;
-            const meta = { name: docTitle, mimeType: 'application/vnd.google-apps.document' };
-            if (folderId) meta.parents = [folderId];
-            let createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify(meta)
-            });
-            if (createRes.status === 401 || createRes.status === 403) {
-                const freshToken = await window.ensureValidToken(true);
-                if (freshToken) {
-                    accessToken = freshToken;
-                    createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${freshToken}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(meta)
-                    });
-                }
+            let created = null;
+            if (typeof window.createGoogleDriveDocument === 'function') {
+                created = await window.createGoogleDriveDocument({ title: docTitle, content: html });
+            } else {
+                let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                    ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', accessToken)
+                    : null;
+                const meta = { name: docTitle, mimeType: 'application/vnd.google-apps.document' };
+                if (folderId) meta.parents = [folderId];
+                let createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify(meta)
+                });
+                if (createRes.ok) created = await createRes.json();
             }
-            if (createRes && createRes.ok) {
-                const cData = await createRes.json();
-                docId = cData.id;
+            if (created && created.id) {
+                docId = created.id;
                 window.activeGoogleDocId = docId;
                 try {
                     const newUrl = new URL(window.location.href);
@@ -2484,18 +2430,12 @@
         }
 
         if (docId) {
-            // 1. Actualizar Nombre de archivo y appProperties (con respaldo HTML) en Drive
+            // 1. Actualizar Nombre de archivo y appProperties ligeros en Drive
             const plainTextSnippet = (plainText || '').trim();
-            const safeHtml = html || '';
             const appProps = {
-                myxsi_updated_at: Date.now().toString()
+                myxsi_updated_at: Date.now().toString(),
+                myxsi_doc_title: encodeURIComponent(docTitle).substring(0, 100)
             };
-            if (safeHtml.length < 25000) {
-                appProps.myxsi_doc_html = encodeURIComponent(safeHtml);
-            }
-            if (plainTextSnippet.length > 0) {
-                appProps.myxsi_doc_text = encodeURIComponent(plainTextSnippet.substring(0, 4000));
-            }
 
             const patchBody = {
                 name: docTitle,
@@ -2590,8 +2530,7 @@
                 localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
                 localStorage.setItem('smart_doc_content_' + docId, html);
                 localStorage.setItem('smart_doc_title_' + docId, docTitle);
-                localStorage.setItem('smart_doc_content', html);
-                localStorage.setItem('smart_doc_title', docTitle);
+                localStorage.setItem('myxsi_last_active_doc_id', docId);
             } catch(e){}
 
             if (statusEl) {
@@ -2954,14 +2893,24 @@ Debes responder EXACTAMENTE con estos delimitadores:
     // =========================================================
     // 4. UTILIDADES GENERALES
     // =========================================================
-    window.createNewSmartDoc = function() {
+    window.createNewSmartDoc = async function() {
         if (window.smartDocQuill && window.smartDocQuill.getText().trim().length > 10) {
             if (!confirm("¿Deseas iniciar un documento nuevo en blanco? Los cambios guardados se mantendrán en tu historial.")) {
                 return;
             }
         }
-        const newDocId = 'doc_' + Date.now();
-        window.location.href = `docs.html?docId=${newDocId}`;
+        try {
+            if (typeof window.createGoogleDriveDocument === 'function') {
+                const newDoc = await window.createGoogleDriveDocument({ title: 'Documento sin título', content: '' });
+                if (newDoc && newDoc.id) {
+                    window.location.href = `docs.html?docId=${newDoc.id}&isCloud=true`;
+                    return;
+                }
+            }
+        } catch(e) {
+            console.warn("createGoogleDriveDocument fallback:", e);
+        }
+        window.location.href = 'docs-home.html';
     };
 
     // Insertar Ecuación Matemática LaTeX

@@ -315,114 +315,268 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
     // -------------------------------------------------------------
     // 4.1 SINCRONIZACIÓN DE RACHA Y PERFIL EN LA NUBE (GOOGLE DRIVE & D1)
     // -------------------------------------------------------------
-    let _isSyncingCloudProfile = false;
+    let _activeSyncPromise = null;
+
     async function syncStreakAndProfileWithCloud() {
-        if (_isSyncingCloudProfile) return;
-        _isSyncingCloudProfile = true;
+        if (_activeSyncPromise) {
+            return _activeSyncPromise;
+        }
 
-        try {
-            let token = localStorage.getItem('gdrive_access_token');
-            if (!token && typeof window.ensureValidToken === 'function') {
-                token = await window.ensureValidToken(false);
-            }
+        _activeSyncPromise = (async () => {
+            try {
+                // 1. ESTADO LOCAL
+                const rawLocalStreak = localStorage.getItem('myxsi_duo_streak');
+                let localStreak = parseInt(rawLocalStreak, 10);
+                if (isNaN(localStreak) || localStreak < 0) {
+                    localStreak = 0;
+                    localStorage.setItem('myxsi_duo_streak', '0');
+                }
+                let localXP = parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10);
+                if (isNaN(localXP) || localXP < 0) localXP = 0;
+                let localLevel = parseInt(localStorage.getItem('myxsi_duo_level') || '1', 10);
+                if (isNaN(localLevel) || localLevel < 1) localLevel = 1;
+                let localHearts = parseInt(localStorage.getItem('myxsi_duo_hearts') || '5', 10);
+                if (isNaN(localHearts) || localHearts < 0) localHearts = 5;
+                let localLastDate = localStorage.getItem('myxsi_duo_last_date') || null;
 
-            const localStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
-            const localXP = parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10);
-            const localLevel = parseInt(localStorage.getItem('myxsi_duo_level') || '1', 10);
-            const localLastDate = localStorage.getItem('myxsi_duo_last_date') || new Date().toISOString().split('T')[0];
+                // 2. CONSULTAR CLOUDFLARE D1
+                const user = getStoredUser();
+                let d1Streak = null;
+                let d1XP = null;
+                let d1Level = null;
+                let d1Hearts = null;
+                let d1LastDate = null;
+                let d1Queried = false;
 
-            if (token) {
-                const folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
-                    ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', token)
-                    : null;
+                if (user && (user.uid || user.email)) {
+                    try {
+                        const apiBase = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                        const sRes = await fetch(`${apiBase}/api/getUserData`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'getUserData',
+                                uid: user.uid || '',
+                                email: user.email || ''
+                            })
+                        });
+                        if (sRes.ok) {
+                            const sData = await sRes.json();
+                            d1Queried = true;
+                            const uRec = sData?.data?.userData || sData?.userData;
+                            if (uRec) {
+                                const parsedStreak = parseInt(uRec.duoStreak, 10);
+                                d1Streak = !isNaN(parsedStreak) ? parsedStreak : 0;
+                                d1XP = parseInt(uRec.duoXP, 10) || 0;
+                                d1Level = parseInt(uRec.duoLevel, 10) || 1;
+                                d1Hearts = parseInt(uRec.duoHearts !== undefined ? uRec.duoHearts : 5, 10);
+                                d1LastDate = uRec.duoLastDate || null;
+                            }
+                        }
+                    } catch (d1Err) {
+                        console.warn("Cloudflare D1 streak sync notice:", d1Err);
+                    }
+                }
 
-                const q = `name = '.myxsi_profile.json' and trashed = false` + (folderId ? ` and '${folderId}' in parents` : '');
-                const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&fields=files(id,name,appProperties)&pageSize=1`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                // 3. CONSULTAR GOOGLE DRIVE (.myxsi_profile.json)
+                let token = localStorage.getItem('gdrive_access_token');
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(false);
+                }
 
-                if (res.ok) {
-                    const data = await res.json();
-                    const existingFile = data.files && data.files[0];
+                let driveFileId = null;
+                let driveStreak = null;
+                let driveXP = null;
+                let driveLevel = null;
+                let driveHearts = null;
+                let driveLastDate = null;
+                let driveQueried = false;
 
-                    if (existingFile && existingFile.id) {
-                        const props = existingFile.appProperties || {};
-                        const cloudStreak = parseInt(props.duoStreak || '0', 10);
-                        const cloudXP = parseInt(props.duoXP || '0', 10);
-                        const cloudLevel = parseInt(props.duoLevel || '1', 10);
-                        const cloudLastDate = props.duoLastDate || null;
+                if (token) {
+                    try {
+                        const q = "name = '.myxsi_profile.json' and trashed = false";
+                        const driveSearchUrl = `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(q)}&orderBy=${encodeURIComponent('modifiedTime desc')}&fields=files(id,name,appProperties,parents,modifiedTime)&pageSize=1`;
+                        const res = await fetch(driveSearchUrl, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
 
-                        // Si la nube tiene racha mayor (o si este navegador nuevo tiene 0 pero la nube tiene racha)
-                        if (cloudStreak > localStreak || (cloudStreak > 0 && localStreak === 0)) {
-                            localStorage.setItem('myxsi_duo_streak', cloudStreak.toString());
-                            localStorage.setItem('myxsi_duo_xp', cloudXP.toString());
-                            localStorage.setItem('myxsi_duo_level', cloudLevel.toString());
-                            if (cloudLastDate) localStorage.setItem('myxsi_duo_last_date', cloudLastDate);
-                            renderUserProfile();
-                        } else if (localStreak > cloudStreak) {
-                            // Subir racha local más avanzada a la nube
-                            await fetch(`https://www.googleapis.com/drive/v3/files/${existingFile.id}`, {
+                        if (res.ok) {
+                            const data = await res.json();
+                            driveQueried = true;
+                            const existingFile = data.files && data.files[0];
+                            if (existingFile && existingFile.id) {
+                                driveFileId = existingFile.id;
+                                const props = existingFile.appProperties || {};
+                                const propStreak = parseInt(props.duoStreak, 10);
+                                if (!isNaN(propStreak)) {
+                                    driveStreak = propStreak;
+                                    driveXP = parseInt(props.duoXP, 10) || 0;
+                                    driveLevel = parseInt(props.duoLevel, 10) || 1;
+                                    driveHearts = parseInt(props.duoHearts, 10) || 5;
+                                    driveLastDate = props.duoLastDate || null;
+                                }
+
+                                if (driveStreak === null) {
+                                    try {
+                                        const bodyRes = await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}?alt=media`, {
+                                            headers: { 'Authorization': `Bearer ${token}` }
+                                        });
+                                        if (bodyRes.ok) {
+                                            const bodyJson = await bodyRes.json();
+                                            const bStreak = parseInt(bodyJson.duoStreak, 10);
+                                            driveStreak = !isNaN(bStreak) ? bStreak : 0;
+                                            driveXP = parseInt(bodyJson.duoXP, 10) || 0;
+                                            driveLevel = parseInt(bodyJson.duoLevel, 10) || 1;
+                                            driveHearts = parseInt(bodyJson.duoHearts, 10) || 5;
+                                            driveLastDate = bodyJson.duoLastDate || null;
+                                        }
+                                    } catch (errB) {
+                                        console.warn("Drive profile body read notice:", errB);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (driveErr) {
+                        console.warn("Google Drive streak sync notice:", driveErr);
+                    }
+                }
+
+                // 4. RECONCILIACIÓN DE LA MÁXIMA RACHA Y PROGRESO
+                const candidateStreaks = [localStreak];
+                if (d1Streak !== null && !isNaN(d1Streak)) candidateStreaks.push(d1Streak);
+                if (driveStreak !== null && !isNaN(driveStreak)) candidateStreaks.push(driveStreak);
+                const maxStreak = Math.max(...candidateStreaks);
+
+                let reconciledXP = localXP;
+                if (d1XP !== null && d1XP > reconciledXP) reconciledXP = d1XP;
+                if (driveXP !== null && driveXP > reconciledXP) reconciledXP = driveXP;
+
+                let reconciledLevel = localLevel;
+                if (d1Level !== null && d1Level > reconciledLevel) reconciledLevel = d1Level;
+                if (driveLevel !== null && driveLevel > reconciledLevel) reconciledLevel = driveLevel;
+
+                let reconciledHearts = localHearts;
+                if (d1Hearts !== null) reconciledHearts = d1Hearts;
+                else if (driveHearts !== null) reconciledHearts = driveHearts;
+
+                let reconciledLastDate = localLastDate;
+                if (maxStreak === d1Streak && d1LastDate) reconciledLastDate = d1LastDate;
+                else if (maxStreak === driveStreak && driveLastDate) reconciledLastDate = driveLastDate;
+                if (!reconciledLastDate) reconciledLastDate = new Date().toISOString().split('T')[0];
+
+                // 5. ACTUALIZAR ALMACENAMIENTO LOCAL Y ELEMENTOS DEL DOM
+                localStorage.setItem('myxsi_duo_streak', maxStreak.toString());
+                localStorage.setItem('myxsi_duo_xp', reconciledXP.toString());
+                localStorage.setItem('myxsi_duo_level', reconciledLevel.toString());
+                localStorage.setItem('myxsi_duo_hearts', reconciledHearts.toString());
+                if (reconciledLastDate) localStorage.setItem('myxsi_duo_last_date', reconciledLastDate);
+
+                const headerStreak = document.getElementById('headerStreakCount');
+                const sidebarStreak = document.getElementById('sidebarRachaNum');
+                const rachaDaysCount = document.querySelector('.racha-days-count span:first-child');
+                if (headerStreak) headerStreak.textContent = maxStreak.toString();
+                if (sidebarStreak) sidebarStreak.textContent = maxStreak.toString();
+                if (rachaDaysCount) rachaDaysCount.textContent = maxStreak.toString();
+
+                renderUserProfile();
+
+                // Notificar a todos los escuchadores de la aplicación
+                window.dispatchEvent(new CustomEvent('myxsi_streak_updated', {
+                    detail: {
+                        streak: maxStreak,
+                        xp: reconciledXP,
+                        level: reconciledLevel,
+                        hearts: reconciledHearts,
+                        lastDate: reconciledLastDate
+                    }
+                }));
+
+                // 6. PROPAGAR DE FORMA BIDIRECCIONAL A LAS NUBES DESACTUALIZADAS
+                // A. Actualizar Cloudflare D1 si está por detrás
+                if (user && (user.uid || user.email) && (d1Streak === null || d1Streak < maxStreak || localStreak > (d1Streak || 0))) {
+                    try {
+                        const apiBase = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                        await fetch(`${apiBase}/`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'syncDuoData',
+                                uid: user.uid || '',
+                                email: user.email || '',
+                                duoStreak: maxStreak,
+                                duoXP: reconciledXP,
+                                duoLevel: reconciledLevel,
+                                duoHearts: reconciledHearts,
+                                duoLastDate: reconciledLastDate
+                            })
+                        }).catch(e => console.warn('Sync D1 push failed:', e));
+                    } catch (e) {}
+                }
+
+                // B. Actualizar Google Drive si está por detrás o el archivo aún no existe
+                if (token && driveQueried && (driveStreak === null || driveStreak < maxStreak || localStreak > (driveStreak || 0))) {
+                    try {
+                        const appProps = {
+                            duoStreak: maxStreak.toString(),
+                            duoXP: reconciledXP.toString(),
+                            duoLevel: reconciledLevel.toString(),
+                            duoHearts: reconciledHearts.toString(),
+                            duoLastDate: reconciledLastDate,
+                            updatedAt: Date.now().toString()
+                        };
+
+                        if (driveFileId) {
+                            await fetch(`https://www.googleapis.com/drive/v3/files/${driveFileId}`, {
                                 method: 'PATCH',
                                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
-                                    appProperties: {
-                                        duoStreak: localStreak.toString(),
-                                        duoXP: localXP.toString(),
-                                        duoLevel: localLevel.toString(),
-                                        duoLastDate: localLastDate,
-                                        updatedAt: Date.now().toString()
-                                    }
+                                    appProperties: appProps
                                 })
                             });
-                        }
-                    } else if (folderId) {
-                        // Crear archivo de perfil oculto en Drive para sincronizar entre navegadores
-                        await fetch('https://www.googleapis.com/drive/v3/files', {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                name: '.myxsi_profile.json',
-                                parents: [folderId],
-                                mimeType: 'application/json',
-                                appProperties: {
-                                    duoStreak: localStreak.toString(),
-                                    duoXP: localXP.toString(),
-                                    duoLevel: localLevel.toString(),
-                                    duoLastDate: localLastDate,
-                                    updatedAt: Date.now().toString()
-                                }
-                            })
-                        });
-                    }
-                }
-            }
+                        } else {
+                            const folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                                ? await window.getOrCreateMyxsiDriveFolder('Myxsi Documents', token).catch(() => null)
+                                : null;
 
-            // También sincronizar con backend Cloudflare D1 si hay sesión de usuario
-            const user = getStoredUser();
-            if (user && user.email) {
-                const apiBase = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
-                const sRes = await fetch(`${apiBase}/api/getUserData`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: user.email })
-                });
-                if (sRes.ok) {
-                    const sData = await sRes.json();
-                    if (sData && sData.userData) {
-                        const serverStreak = parseInt(sData.userData.duoStreak || '0', 10);
-                        const curStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
-                        if (serverStreak > curStreak) {
-                            localStorage.setItem('myxsi_duo_streak', serverStreak.toString());
-                            renderUserProfile();
+                            const postObj = {
+                                name: '.myxsi_profile.json',
+                                mimeType: 'application/json',
+                                appProperties: appProps
+                            };
+                            if (folderId) postObj.parents = [folderId];
+
+                            await fetch('https://www.googleapis.com/drive/v3/files', {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify(postObj)
+                            });
                         }
+                    } catch (e) {
+                        console.warn('Sync Drive push failed:', e);
                     }
                 }
+
+                return {
+                    streak: maxStreak,
+                    xp: reconciledXP,
+                    level: reconciledLevel,
+                    hearts: reconciledHearts,
+                    lastDate: reconciledLastDate
+                };
+
+            } catch (err) {
+                console.warn("Cloud streak sync notice:", err);
+                return {
+                    streak: parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10),
+                    xp: parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10),
+                    level: parseInt(localStorage.getItem('myxsi_duo_level') || '1', 10)
+                };
+            } finally {
+                _activeSyncPromise = null;
             }
-        } catch(err) {
-            console.warn("Cloud streak sync notice:", err);
-        } finally {
-            _isSyncingCloudProfile = false;
-        }
+        })();
+
+        return _activeSyncPromise;
     }
     window.syncStreakAndProfileWithCloud = syncStreakAndProfileWithCloud;
 
@@ -950,9 +1104,317 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
     window.saveFileToGoogleDrive = saveFileToGoogleDrive;
 
     // -------------------------------------------------------------
+    // 9.1 GESTOR CENTRALIZADO Y MUTEX DE CREACIÓN/ELIMINACIÓN EN GOOGLE DRIVE
+    // -------------------------------------------------------------
+    window._activeCreationLock = null;
+
+    async function createGoogleDriveDocument({ title = 'Documento sin título', content = '', type = 'blank', template = 'blank', folderName = 'Myxsi Documents' } = {}) {
+        if (window._activeCreationLock) {
+            return await window._activeCreationLock;
+        }
+
+        window._activeCreationLock = (async () => {
+            try {
+                let token = typeof window.ensureValidToken === 'function'
+                    ? await window.ensureValidToken(false)
+                    : localStorage.getItem('gdrive_access_token');
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(true);
+                }
+                if (!token) {
+                    throw new Error("No hay acceso autenticado a Google Drive.");
+                }
+
+                const docTitle = title || 'Documento sin título';
+                let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                    ? await window.getOrCreateMyxsiDriveFolder(folderName, token)
+                    : null;
+
+                const metadata = {
+                    name: docTitle,
+                    mimeType: 'application/vnd.google-apps.document'
+                };
+                if (folderId) metadata.parents = [folderId];
+
+                let res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(metadata)
+                });
+
+                if (res.status === 401 || res.status === 403) {
+                    const freshToken = await window.ensureValidToken(true);
+                    if (freshToken) {
+                        token = freshToken;
+                        res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${freshToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(metadata)
+                        });
+                    }
+                }
+
+                if (!res || !res.ok) {
+                    throw new Error("Error en Google Drive al crear documento: " + (res ? res.status : 'desconocido'));
+                }
+
+                const fileData = await res.json();
+                const docId = fileData.id;
+                const realLink = `https://docs.google.com/document/d/${docId}/edit`;
+
+                // Persistir con clave aislada sin contaminar claves globales
+                localStorage.setItem('smart_doc_title_' + docId, docTitle);
+                localStorage.setItem('smart_doc_content_' + docId, content || '');
+                localStorage.setItem('myxsi_last_active_doc_id', docId);
+
+                // Si hay texto inicial, poblar el documento con Google Docs API batchUpdate
+                const plainText = (content || '').replace(/<[^>]*>/g, '').trim();
+                if (plainText.length > 0) {
+                    try {
+                        await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                requests: [{ insertText: { location: { index: 1 }, text: plainText + '\n' } }]
+                            })
+                        });
+                    } catch(docsErr) {
+                        console.warn("Docs API batchUpdate error on create:", docsErr);
+                    }
+                }
+
+                // Actualizar registro local sincronizado para explorador
+                try {
+                    const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                    const existingIdx = localFiles.findIndex(f => f.id === docId);
+                    const fileObj = {
+                        id: docId,
+                        name: docTitle,
+                        type: 'doc',
+                        isDoc: true,
+                        mimeType: 'application/vnd.google-apps.document',
+                        updatedAt: Date.now(),
+                        isCloud: true,
+                        isLocal: false,
+                        webViewLink: realLink
+                    };
+                    if (existingIdx !== -1) {
+                        localFiles[existingIdx] = fileObj;
+                    } else {
+                        localFiles.unshift(fileObj);
+                    }
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                } catch(e){}
+
+                return {
+                    id: docId,
+                    name: docTitle,
+                    mimeType: 'application/vnd.google-apps.document',
+                    webViewLink: realLink,
+                    isCloud: true
+                };
+            } finally {
+                window._activeCreationLock = null;
+            }
+        })();
+
+        return await window._activeCreationLock;
+    }
+    window.createGoogleDriveDocument = createGoogleDriveDocument;
+
+    async function createGoogleDriveSpreadsheet({ title = 'Libro de cálculo sin título', folderName = 'Myxsi Sheets' } = {}) {
+        if (window._activeCreationLock) {
+            return await window._activeCreationLock;
+        }
+
+        window._activeCreationLock = (async () => {
+            try {
+                let token = typeof window.ensureValidToken === 'function'
+                    ? await window.ensureValidToken(false)
+                    : localStorage.getItem('gdrive_access_token');
+                if (!token && typeof window.ensureValidToken === 'function') {
+                    token = await window.ensureValidToken(true);
+                }
+                if (!token) {
+                    throw new Error("No hay acceso autenticado a Google Drive.");
+                }
+
+                const sheetTitle = title || 'Libro de cálculo sin título';
+                let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                    ? await window.getOrCreateMyxsiDriveFolder(folderName, token)
+                    : null;
+
+                const metadata = {
+                    name: sheetTitle,
+                    mimeType: 'application/vnd.google-apps.spreadsheet'
+                };
+                if (folderId) metadata.parents = [folderId];
+
+                let res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(metadata)
+                });
+
+                if (res.status === 401 || res.status === 403) {
+                    const freshToken = await window.ensureValidToken(true);
+                    if (freshToken) {
+                        token = freshToken;
+                        res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${freshToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(metadata)
+                        });
+                    }
+                }
+
+                if (!res || !res.ok) {
+                    throw new Error("Error en Google Drive al crear hoja: " + (res ? res.status : 'desconocido'));
+                }
+
+                const fileData = await res.json();
+                const sheetId = fileData.id;
+                const realLink = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+
+                localStorage.setItem('sheets_studio_title_' + sheetId, sheetTitle);
+                localStorage.setItem('myxsi_last_active_sheet_id', sheetId);
+
+                // Actualizar registro local sincronizado
+                try {
+                    const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                    const existingIdx = localFiles.findIndex(f => f.id === sheetId);
+                    const fileObj = {
+                        id: sheetId,
+                        name: sheetTitle,
+                        type: 'sheet',
+                        isSheet: true,
+                        mimeType: 'application/vnd.google-apps.spreadsheet',
+                        updatedAt: Date.now(),
+                        isCloud: true,
+                        isLocal: false,
+                        webViewLink: realLink
+                    };
+                    if (existingIdx !== -1) {
+                        localFiles[existingIdx] = fileObj;
+                    } else {
+                        localFiles.unshift(fileObj);
+                    }
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                } catch(e){}
+
+                return {
+                    id: sheetId,
+                    name: sheetTitle,
+                    mimeType: 'application/vnd.google-apps.spreadsheet',
+                    webViewLink: realLink,
+                    isCloud: true
+                };
+            } finally {
+                window._activeCreationLock = null;
+            }
+        })();
+
+        return await window._activeCreationLock;
+    }
+    window.createGoogleDriveSpreadsheet = createGoogleDriveSpreadsheet;
+
+    async function deleteGoogleDriveFile(fileId) {
+        if (!fileId) return false;
+        let token = typeof window.ensureValidToken === 'function'
+            ? await window.ensureValidToken(false)
+            : localStorage.getItem('gdrive_access_token');
+        if (!token && typeof window.ensureValidToken === 'function') {
+            token = await window.ensureValidToken(true);
+        }
+        if (!token) throw new Error("No hay token autenticado para eliminar en Google Drive.");
+
+        let res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            const freshToken = await window.ensureValidToken(true);
+            if (freshToken) {
+                res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${freshToken}` }
+                });
+            }
+        }
+        return res.ok || res.status === 404;
+    }
+    window.deleteGoogleDriveFile = deleteGoogleDriveFile;
+
+    async function renameGoogleDriveFile(fileId, newName) {
+        if (!fileId || !newName) return false;
+        let token = typeof window.ensureValidToken === 'function'
+            ? await window.ensureValidToken(false)
+            : localStorage.getItem('gdrive_access_token');
+        if (!token && typeof window.ensureValidToken === 'function') {
+            token = await window.ensureValidToken(true);
+        }
+        if (!token) throw new Error("No hay token autenticado para renombrar en Google Drive.");
+
+        let res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newName })
+        });
+
+        if (res.status === 401 || res.status === 403) {
+            const freshToken = await window.ensureValidToken(true);
+            if (freshToken) {
+                res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${freshToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+            }
+        }
+        return res.ok;
+    }
+    window.renameGoogleDriveFile = renameGoogleDriveFile;
+
+    // -------------------------------------------------------------
     // 10. AUTO-INICIALIZACIÓN INMEDIATA EN CARGA
     // -------------------------------------------------------------
     function initImmediate() {
+        // Cero archivos locales: Purgar automáticamente borradores locales huérfanos
+        try {
+            let localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+            if (Array.isArray(localFiles)) {
+                const cloudOnly = localFiles.filter(f => f && f.isCloud && !f.isLocal && f.id && !f.id.startsWith('doc_') && !f.id.startsWith('sheet_'));
+                if (cloudOnly.length !== localFiles.length) {
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(cloudOnly));
+                }
+            }
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                if (k && (k.startsWith('smart_doc_content_doc_') || k.startsWith('smart_doc_title_doc_') || k.startsWith('sheets_studio_data_sheet_') || k.startsWith('sheets_studio_title_sheet_'))) {
+                    localStorage.removeItem(k);
+                }
+            }
+        } catch(e){}
+
         ensureUserDetailsModal();
         renderUserProfile();
         updateDriveStatusUI();

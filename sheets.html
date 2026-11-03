@@ -603,10 +603,10 @@
             <a href="chat.html" class="mode-tab-btn" title="Modo Chat Inteligente">
                 <i class="fa-regular fa-comment"></i> <span>Chat</span>
             </a>
-            <a href="docs.html" class="mode-tab-btn" title="Google Docs Studio">
+            <a href="docs-home.html" class="mode-tab-btn" title="Google Docs Studio">
                 <i class="fa-brands fa-google-drive"></i> <span>Docs</span>
             </a>
-            <a href="sheets.html" class="mode-tab-btn active" title="Hojas de Cálculo Studio (Excel)">
+            <a href="sheets-home.html" class="mode-tab-btn active" title="Hojas de Cálculo Studio (Excel)">
                 <i class="fa-solid fa-table-cells"></i> <span>Sheets</span>
             </a>
             <a href="canva.html" class="mode-tab-btn" title="Canva Studio">
@@ -808,6 +808,7 @@
     const ROWS_COUNT = 50;
 
     let gridData = {};
+    window.gridData = gridData;
     let activeCellId = "A1";
     let activeSheet = "Hoja 1";
 
@@ -1103,8 +1104,19 @@
     const templateParam = urlParams.get('template');
     const isCloudSheet = urlParams.get('isCloud') === 'true' || (currentSheetId && !currentSheetId.startsWith('sheet_') && !currentSheetId.startsWith('main_'));
 
+    // Si se ingresó sin sheetId, redirigir a sheets-home.html o restaurar último libro activo
+    if (!currentSheetId) {
+        const lastActive = localStorage.getItem('myxsi_last_active_sheet_id');
+        if (lastActive && !lastActive.startsWith('sheet_') && !lastActive.startsWith('main_')) {
+            window.location.replace(`sheets.html?sheetId=${encodeURIComponent(lastActive)}&isCloud=true`);
+        } else {
+            window.location.replace('sheets-home.html');
+        }
+    }
+
     if (isCloudSheet && currentSheetId) {
         window.activeGoogleSheetId = currentSheetId;
+        localStorage.setItem('myxsi_last_active_sheet_id', currentSheetId);
     }
 
     function parseCSVToGrid(csvText) {
@@ -1210,8 +1222,7 @@
 
         localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
         localStorage.setItem('sheets_studio_title_' + effectiveId, title);
-        localStorage.setItem('sheets_studio_data', JSON.stringify(gridData));
-        localStorage.setItem('sheets_studio_title', title);
+        localStorage.setItem('myxsi_last_active_sheet_id', effectiveId);
 
         try {
             const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -1251,26 +1262,13 @@
             if (saved) {
                 try {
                     gridData = JSON.parse(saved);
+                    window.gridData = gridData;
                     loaded = true;
                 } catch(e) {}
             }
             const title = localStorage.getItem('sheets_studio_title_' + effectiveId);
             if (title) {
                 document.getElementById('sheetBookTitle').value = title;
-            }
-        }
-
-        if (!loaded) {
-            const generalSaved = localStorage.getItem('sheets_studio_data');
-            if (generalSaved && (!templateParam || templateParam === 'blank')) {
-                try {
-                    gridData = JSON.parse(generalSaved);
-                    loaded = true;
-                } catch(e) {}
-            }
-            const generalTitle = localStorage.getItem('sheets_studio_title');
-            if (generalTitle && !effectiveId) {
-                document.getElementById('sheetBookTitle').value = generalTitle;
             }
         }
 
@@ -1295,7 +1293,6 @@
                     const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}?fields=id,name,mimeType,appProperties`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
-                    let cloudAppData = null;
                     if (metaRes.ok) {
                         const meta = await metaRes.json();
                         if (meta.name && !window._userHasModifiedSheetTitle && document.activeElement !== document.getElementById('sheetBookTitle')) {
@@ -1303,24 +1300,45 @@
                             document.title = meta.name + ' — Myxsi Sheets';
                             localStorage.setItem('sheets_studio_title_' + effectiveId, meta.name);
                         }
-                        if (meta.appProperties && meta.appProperties.myxsi_sheet_data) {
-                            try {
-                                cloudAppData = JSON.parse(decodeURIComponent(meta.appProperties.myxsi_sheet_data));
-                            } catch(e){}
-                        }
                     }
 
-                    if (cloudAppData && Object.keys(cloudAppData).length > 0) {
-                        gridData = cloudAppData;
-                        renderGrid();
-                        localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
-                        if (typeof window.showMyxsiToast === 'function') {
-                            window.showMyxsiToast("Libro sincronizado desde Google Drive", "success");
+                    // 1. Cargar celdas directamente desde Google Sheets API v4 (rango A1:Z50 con fórmulas)
+                    try {
+                        const sheetsApiRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${effectiveId}/values/A1:Z50?valueRenderOption=FORMULA`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (sheetsApiRes.ok) {
+                            const valData = await sheetsApiRes.json();
+                            if (valData && valData.values && valData.values.length > 0) {
+                                const newGrid = {};
+                                valData.values.forEach((row, rIdx) => {
+                                    const rNum = rIdx + 1;
+                                    if (rNum <= ROWS_COUNT) {
+                                        row.forEach((val, cIdx) => {
+                                            if (cIdx < COLS.length && val !== undefined && val !== null && String(val).trim() !== '') {
+                                                const col = COLS[cIdx];
+                                                newGrid[`${col}${rNum}`] = { val: evaluateFormula(String(val)), raw: String(val) };
+                                            }
+                                        });
+                                    }
+                                });
+                                if (Object.keys(newGrid).length > 0) {
+                                    gridData = newGrid;
+                                    window.gridData = gridData;
+                                    renderGrid();
+                                    localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+                                    if (typeof window.showMyxsiToast === 'function') {
+                                        window.showMyxsiToast("Libro sincronizado desde Google Sheets", "success");
+                                    }
+                                    return;
+                                }
+                            }
                         }
-                        return;
+                    } catch(apiErr) {
+                        console.warn("Error leyendo celdas via Sheets API v4:", apiErr);
                     }
 
-                    // Exportar contenido CSV oficial de Google Sheets si no vino en appProperties
+                    // 2. Exportar contenido CSV oficial de Google Sheets como fallback
                     const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${effectiveId}/export?mimeType=text/csv`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1334,6 +1352,7 @@
 
                             if (hasCloudData) {
                                 gridData = parsedGrid;
+                                window.gridData = gridData;
                                 renderGrid();
                                 localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
                                 if (typeof window.showMyxsiToast === 'function') {
@@ -1342,6 +1361,7 @@
                             } else if (hasLocalData) {
                                 console.log("Google Sheets en la nube está vacío. Preservando datos locales y sincronizando...");
                                 gridData = localDraftData;
+                                window.gridData = gridData;
                                 renderGrid();
                                 setTimeout(() => {
                                     if (typeof syncSheetToGoogleDrive === 'function') syncSheetToGoogleDrive(true);
@@ -1353,82 +1373,31 @@
                     console.warn("No se pudo cargar la hoja desde Google Drive:", err);
                 }
             })();
-        } else {
-            // Si se abrió sin ID de Google Drive pero hay sesión activa, vincularlo automáticamente
-            (async () => {
-                let token = localStorage.getItem('gdrive_access_token');
-                if (!token && typeof window.ensureValidToken === 'function') {
-                    token = await window.ensureValidToken(false);
-                }
-                if (!token) return;
-                try {
-                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
-                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', token)
-                        : null;
-                    const sheetTitle = document.getElementById('sheetBookTitle')?.value?.trim() || 'Libro de cálculo Myxsi';
-                    const meta = { name: sheetTitle, mimeType: 'application/vnd.google-apps.spreadsheet' };
-                    if (folderId) meta.parents = [folderId];
-                    const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify(meta)
-                    });
-                    if (cr.ok) {
-                        const cData = await cr.json();
-                        window.activeGoogleSheetId = cData.id;
-                        const newUrl = new URL(window.location.href);
-                        newUrl.searchParams.set('sheetId', cData.id);
-                        newUrl.searchParams.set('isCloud', 'true');
-                        window.history.replaceState({}, '', newUrl.toString());
-
-                        const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                        let f = localFiles.find(i => i.id === effectiveId || i.id === cData.id);
-                        if (f) {
-                            f.id = cData.id;
-                            f.isCloud = true;
-                            f.isLocal = false;
-                            f.webViewLink = `https://docs.google.com/spreadsheets/d/${cData.id}/edit`;
-                        } else {
-                            localFiles.unshift({
-                                id: cData.id,
-                                name: sheetTitle,
-                                type: 'sheet',
-                                isSheet: true,
-                                mimeType: 'application/vnd.google-apps.spreadsheet',
-                                updatedAt: Date.now(),
-                                isCloud: true,
-                                isLocal: false,
-                                webViewLink: `https://docs.google.com/spreadsheets/d/${cData.id}/edit`
-                            });
-                        }
-                        localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
-                        const statusEl = document.getElementById('sheetSaveStatus');
-                        if (statusEl) {
-                            statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Vinculado en tiempo real a Google Sheets</span>`;
-                        }
-                    }
-                } catch(err) {
-                    console.warn("Auto-create Drive sheet error:", err);
-                }
-            })();
         }
     }
 
-    function createNewSheetBook() {
+    async function createNewSheetBook() {
         if (confirm("¿Crear un libro de cálculo completamente nuevo?")) {
-            gridData = {};
-            const newTitle = "Libro de cálculo sin título";
-            document.getElementById('sheetBookTitle').value = newTitle;
-            renderGrid();
-            saveSheetData();
+            try {
+                if (typeof window.createGoogleDriveSpreadsheet === 'function') {
+                    const newSheet = await window.createGoogleDriveSpreadsheet({ title: 'Libro de cálculo sin título' });
+                    if (newSheet && newSheet.id) {
+                        window.location.href = `sheets.html?sheetId=${newSheet.id}&isCloud=true`;
+                        return;
+                    }
+                }
+            } catch(e) {
+                console.warn("createGoogleDriveSpreadsheet fallback:", e);
+            }
+            window.location.href = 'sheets-home.html';
         }
     }
 
     function exportToCSV() {
         let csv = "";
-        for (let r = 1; r <= 25; r++) {
+        for (let r = 1; r <= ROWS_COUNT; r++) {
             let rowVals = [];
-            COLS.slice(0, 10).forEach(col => {
+            COLS.forEach(col => {
                 const val = gridData[`${col}${r}`]?.val || "";
                 rowVals.push(`"${val}"`);
             });
@@ -1466,31 +1435,24 @@
 
         try {
             if (!sheetId) {
-                // Crear hoja de cálculo nativa en la carpeta Myxsi Sheets de Drive
-                let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
-                    ? await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', token)
-                    : null;
-                const meta = { name: title, mimeType: 'application/vnd.google-apps.spreadsheet' };
-                if (folderId) meta.parents = [folderId];
-                let createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify(meta)
-                });
-                if (createRes.status === 401 || createRes.status === 403) {
-                    const freshToken = await window.ensureValidToken(true);
-                    if (freshToken) {
-                        token = freshToken;
-                        createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${freshToken}`, 'Content-Type': 'application/json' },
-                            body: JSON.stringify(meta)
-                        });
-                    }
+                let created = null;
+                if (typeof window.createGoogleDriveSpreadsheet === 'function') {
+                    created = await window.createGoogleDriveSpreadsheet({ title });
+                } else {
+                    let folderId = typeof window.getOrCreateMyxsiDriveFolder === 'function'
+                        ? await window.getOrCreateMyxsiDriveFolder('Myxsi Sheets', token)
+                        : null;
+                    const meta = { name: title, mimeType: 'application/vnd.google-apps.spreadsheet' };
+                    if (folderId) meta.parents = [folderId];
+                    let createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(meta)
+                    });
+                    if (createRes.ok) created = await createRes.json();
                 }
-                if (createRes && createRes.ok) {
-                    const cData = await createRes.json();
-                    sheetId = cData.id;
+                if (created && created.id) {
+                    sheetId = created.id;
                     window.activeGoogleSheetId = sheetId;
                     try {
                         const newUrl = new URL(window.location.href);
@@ -1504,18 +1466,14 @@
             }
 
             if (sheetId) {
-                // 1. Actualizar Nombre de la hoja y appProperties en Drive
-                const safeGridData = JSON.stringify(gridData);
+                // 1. Actualizar Nombre de la hoja y appProperties ligeros en Drive
                 const patchBody = {
                     name: title,
                     appProperties: {
-                        myxsi_sheet_title: encodeURIComponent(title),
+                        myxsi_sheet_title: encodeURIComponent(title).substring(0, 100),
                         myxsi_updated_at: Date.now().toString()
                     }
                 };
-                if (safeGridData.length < 25000) {
-                    patchBody.appProperties.myxsi_sheet_data = encodeURIComponent(safeGridData);
-                }
 
                 let patchRes = await fetch(`https://www.googleapis.com/drive/v3/files/${sheetId}`, {
                     method: 'PATCH',
@@ -1534,11 +1492,11 @@
                     }
                 }
 
-                // 2. Actualizar Celdas directamente con Google Sheets API v4
+                // 2. Actualizar Celdas directamente con Google Sheets API v4 (rango A1:Z50)
                 const rows = [];
-                for (let r = 1; r <= 35; r++) {
+                for (let r = 1; r <= ROWS_COUNT; r++) {
                     const rowVals = [];
-                    COLS.slice(0, 15).forEach(col => {
+                    COLS.forEach(col => {
                         const raw = gridData[`${col}${r}`]?.raw || gridData[`${col}${r}`]?.val || "";
                         rowVals.push(raw !== undefined && raw !== null ? String(raw) : "");
                     });
@@ -1546,14 +1504,14 @@
                 }
 
                 try {
-                    let putRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:O35?valueInputOption=USER_ENTERED`, {
+                    let putRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z50?valueInputOption=USER_ENTERED`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            range: "A1:O35",
+                            range: "A1:Z50",
                             majorDimension: "ROWS",
                             values: rows
                         })
@@ -1562,14 +1520,14 @@
                         const freshToken = await window.ensureValidToken(true);
                         if (freshToken) {
                             token = freshToken;
-                            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:O35?valueInputOption=USER_ENTERED`, {
+                            await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/A1:Z50?valueInputOption=USER_ENTERED`, {
                                 method: 'PUT',
                                 headers: {
                                     'Authorization': `Bearer ${freshToken}`,
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    range: "A1:O35",
+                                    range: "A1:Z50",
                                     majorDimension: "ROWS",
                                     values: rows
                                 })
@@ -1612,6 +1570,7 @@
                     localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
                     localStorage.setItem('sheets_studio_data_' + sheetId, JSON.stringify(gridData));
                     localStorage.setItem('sheets_studio_title_' + sheetId, title);
+                    localStorage.setItem('myxsi_last_active_sheet_id', sheetId);
                 } catch(e){}
 
                 if (statusEl) {
@@ -1648,6 +1607,8 @@
     window.exportSheetToGoogleDriveSilent = async function() {
         await syncSheetToGoogleDrive(true);
     };
+    window.syncSheetToGoogleDrive = syncSheetToGoogleDrive;
+    window.setCellValue = setCellValue;
 
     let sheetAutosaveTimeout = null;
     window.triggerSheetAutosave = function() {

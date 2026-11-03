@@ -1,7 +1,7 @@
 name = "myxsi-backend"
 main = "js/cloudflare.js"
 compatibility_date = "2026-05-18"
-# account_id = "TU_CLOUDFLARE_ACCOUNT_ID"
+account_id = "f1d31fd8eb8c585f616b2ea43eb7e103"
 
 # Las claves sensibles (GROQ_KEYS, ADMIN_SECRET) se configuran de forma segura vía:
 # npx wrangler secret put GROQ_KEYS
@@ -9,5 +9,4 @@ compatibility_date = "2026-05-18"
 [[d1_databases]]
 binding = "DB"
 database_name = "myxsi-db"
-database_id = "TU_D1_DATABASE_ID"
-
+database_id = "2f929b51-814c-45cb-af7a-866bd6166a21"

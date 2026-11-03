@@ -1788,19 +1788,8 @@
                 updateDriveStatusUI(false);
             }
 
-            // Always combine with local files safely
-            const localFiles = getLocalFilesList(folderId);
-            const cloudIds = new Set(cloudFiles.map(f => f.id));
-            const cloudNames = new Set(cloudFiles.map(f => (f.name || '').replace('.folder', '').trim().toLowerCase()));
-
-            const uniqueLocal = localFiles.filter(f => {
-                if (cloudIds.has(f.id)) return false;
-                const cleanLocalName = (f.name || '').replace('.folder', '').trim().toLowerCase();
-                if (cloudNames.has(cleanLocalName)) return false;
-                return true;
-            });
-
-            allFolderFiles = [...cloudFiles, ...uniqueLocal];
+            // Cero archivos locales: Únicamente archivos 100% de la nube de Google Drive
+            allFolderFiles = [...cloudFiles];
 
             // Poblar myxsi_local_files para que las otras páginas (docs-home, sheets-home) tengan los archivos al iniciar sesión en otra PC
             if (cloudFiles.length > 0) {
@@ -1878,80 +1867,28 @@
             return [];
         }
 
-        // Escanear e indexar todos los documentos y hojas de cálculo creados en otras páginas de Myxsi
+        // Purgar de raíz cualquier archivo local o huérfano (Cero archivos locales)
         function syncAndIndexAllLocalArtifacts() {
-            let localFiles = [];
             try {
-                localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                if (!Array.isArray(localFiles)) localFiles = [];
-            } catch(e) { localFiles = []; }
-
-            const existingIds = new Set(localFiles.map(f => f.id));
-
-            try {
-                for (let i = 0; i < localStorage.length; i++) {
+                let localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
+                if (Array.isArray(localFiles)) {
+                    localFiles = localFiles.filter(f => f && f.isCloud && !f.isLocal && f.id && !f.id.startsWith('doc_') && !f.id.startsWith('sheet_'));
+                    localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
+                }
+                for (let i = localStorage.length - 1; i >= 0; i--) {
                     const key = localStorage.key(i);
-                    if (!key) continue;
-
-                    // 1. Documentos de Myxsi Docs
-                    if (key.startsWith('smart_doc_title_')) {
-                        const docId = key.replace('smart_doc_title_', '');
-                        if (docId && docId !== 'main_smart_doc' && docId !== 'doc_current' && !existingIds.has(docId)) {
-                            const title = localStorage.getItem(key) || 'Documento Myxsi';
-                            localFiles.unshift({
-                                id: docId,
-                                name: title,
-                                mimeType: 'application/vnd.google-apps.document',
-                                type: 'doc',
-                                isDoc: true,
-                                updatedAt: Date.now(),
-                                isLocal: true,
-                                isCloud: false
-                            });
-                            existingIds.add(docId);
-                        }
-                    }
-
-                    // 2. Hojas de cálculo de Myxsi Sheets
-                    if (key.startsWith('sheets_studio_title_')) {
-                        const sheetId = key.replace('sheets_studio_title_', '');
-                        if (sheetId && sheetId !== 'main_sheets_doc' && !existingIds.has(sheetId)) {
-                            const title = localStorage.getItem(key) || 'Hoja de Cálculo Myxsi';
-                            localFiles.unshift({
-                                id: sheetId,
-                                name: title,
-                                mimeType: 'application/vnd.google-apps.spreadsheet',
-                                type: 'sheet',
-                                isSheet: true,
-                                updatedAt: Date.now(),
-                                isLocal: true,
-                                isCloud: false
-                            });
-                            existingIds.add(sheetId);
-                        }
+                    if (key && (key.startsWith('smart_doc_content_doc_') || key.startsWith('smart_doc_title_doc_') || key.startsWith('sheets_studio_data_sheet_') || key.startsWith('sheets_studio_title_sheet_'))) {
+                        localStorage.removeItem(key);
                     }
                 }
-                localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
             } catch(e) {}
-            return localFiles;
+            return [];
         }
 
-        // Obtener Archivos Locales Guardados
+        // Obtener Archivos Locales Guardados (Retorna vacío para forzar 100% nube)
         function getLocalFilesList(folderId = 'root') {
             syncAndIndexAllLocalArtifacts();
-            let stored = [];
-            try {
-                stored = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
-                stored = stored.filter(f => f.id !== 'f1' && f.id !== 'f2' && f.id !== 'f3');
-            } catch(e){}
-
-            return stored.filter(f => {
-                if (folderId === 'root') {
-                    return !f.parentFolderId || f.parentFolderId === 'root';
-                } else {
-                    return f.parentFolderId === folderId;
-                }
-            });
+            return [];
         }
 
         // Aplicar Filtros y Renderizar (Soporte local + nube completa)

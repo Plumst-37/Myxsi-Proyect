@@ -147,6 +147,23 @@ export default {
         }
       }
 
+      // ACCIÓN: ENRUTAMIENTO /api/getUserData O action === 'getUserData'
+      let isGetUserData = false;
+      try {
+        const reqUrl = new URL(request.url);
+        if (reqUrl.pathname === '/api/getUserData' || reqUrl.pathname.endsWith('/api/getUserData')) {
+          isGetUserData = true;
+          if (!requestData || typeof requestData !== 'object') {
+            requestData = {};
+          }
+          requestData.action = 'getUserData';
+          const urlEmail = reqUrl.searchParams.get('email');
+          const urlUid = reqUrl.searchParams.get('uid');
+          if (urlEmail && !requestData.email) requestData.email = urlEmail;
+          if (urlUid && !requestData.uid) requestData.uid = urlUid;
+        }
+      } catch (urlErr) {}
+
       // ACCIÓN: PING
       if (requestData && requestData.action === 'ping') {
         return new Response(JSON.stringify({ success: true, message: 'pong', time: Date.now() }), {
@@ -247,10 +264,11 @@ function detectSuspiciousActivity(payloadStr) {
  */
 async function handleD1Database(data, env, securityHeaders) {
   const action = data.action;
-  const uid = data.uid;
+  const uid = data.uid || '';
+  const email = (data.email || '').trim().toLowerCase();
 
-  if (!uid && action !== 'test' && action !== 'getAllUsers') {
-    return new Response(JSON.stringify({ success: false, error: 'Identificador de usuario (UID) requerido.' }), {
+  if (!uid && !email && action !== 'test' && action !== 'getAllUsers') {
+    return new Response(JSON.stringify({ success: false, error: 'Identificador de usuario (UID o Email) requerido.' }), {
       headers: { ...securityHeaders, 'Content-Type': 'application/json' }
     });
   }
@@ -375,6 +393,40 @@ async function handleD1Database(data, env, securityHeaders) {
         }
       }
 
+      // OBTENER DATOS DE USUARIO (D1 SQL)
+      case 'getUserData': {
+        const queryUid = uid || '';
+        const queryEmail = email || '';
+
+        const userRecord = await env.DB.prepare(`
+          SELECT uid, email, name, createdAt, lastAccess, duoXP, duoHearts, duoStreak, duoLevel, duoLastDate
+          FROM users
+          WHERE (uid = ? AND uid != '') OR (email = ? AND email != '')
+          ORDER BY lastAccess DESC
+          LIMIT 1
+        `)
+          .bind(queryUid, queryEmail)
+          .first();
+
+        if (userRecord) {
+          return new Response(JSON.stringify({
+            success: true,
+            data: {
+              exists: true,
+              userData: userRecord
+            }
+          }), { headers: { ...securityHeaders, 'Content-Type': 'application/json' } });
+        } else {
+          return new Response(JSON.stringify({
+            success: true,
+            data: {
+              exists: false,
+              userData: null
+            }
+          }), { headers: { ...securityHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
+
       // SINCRONIZACIÓN DE PROGRESO Y RACHAS
       case 'syncDuoData': {
         const xp = Math.max(0, parseInt(data.duoXP || 0, 10));
@@ -383,8 +435,12 @@ async function handleD1Database(data, env, securityHeaders) {
         const level = Math.max(1, parseInt(data.duoLevel || 1, 10));
         const lastDate = data.duoLastDate || null;
         
-        await env.DB.prepare("UPDATE users SET duoXP = ?, duoHearts = ?, duoStreak = ?, duoLevel = ?, duoLastDate = ? WHERE uid = ?")
-          .bind(xp, hearts, streak, level, lastDate, uid)
+        await env.DB.prepare(`
+          UPDATE users 
+          SET duoXP = ?, duoHearts = ?, duoStreak = ?, duoLevel = ?, duoLastDate = ? 
+          WHERE (uid = ? AND uid IS NOT NULL AND uid != '') OR (email = ? AND email IS NOT NULL AND email != '')
+        `)
+          .bind(xp, hearts, streak, level, lastDate, uid, email)
           .run();
           
         return new Response(JSON.stringify({

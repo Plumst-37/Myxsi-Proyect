@@ -580,7 +580,7 @@
                                     </div>
                                 </div>
                                 <!-- Sheets Studio Pro Card -->
-                                <div class="ai-tool-card" id="btnSheetsStudioCard" onclick="window.location.href='sheets.html'" style="display: flex; gap: 12px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                                <div class="ai-tool-card" id="btnSheetsStudioCard" onclick="window.location.href='sheets-home.html'" style="display: flex; gap: 12px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                                     <div style="background: rgba(16, 185, 129, 0.1); color: #059669; width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                                         <i class="fa-solid fa-table-cells" style="font-size: 16px;"></i>
                                     </div>
@@ -738,7 +738,7 @@
                                 onfocus="this.style.borderColor='var(--mx-border-strong)'; this.style.background='rgba(255,255,255,0.04)';"
                                 onblur="this.style.borderColor='transparent'; this.style.background='transparent'; saveSmartDocTitle(this.value);" oninput="triggerSmartDocAutosave()">
                             <button class="docs-star-btn" onclick="this.classList.toggle('active'); this.style.color=this.classList.contains('active')?'#f59e0b':'rgba(255,255,255,0.4)';" style="background:none; border:none; color: rgba(255,255,255,0.4); cursor:pointer; font-size: 0.9rem; padding: 0; outline:none; transition: color 0.2s;" title="Destacar"><i class="fa-regular fa-star"></i></button>
-                            <button onclick="window.location.href='docs.html'" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); color: #60a5fa; padding: 4px 10px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-left: 6px;"><i class="fa-solid fa-expand"></i> Pantalla Completa Docs</button>
+                            <button onclick="if(window.activeGoogleDocId){window.location.href='docs.html?docId='+encodeURIComponent(window.activeGoogleDocId)+'&isCloud=true';}else{window.location.href='docs-home.html';}" style="background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(96, 165, 250, 0.3); color: #60a5fa; padding: 4px 10px; border-radius: 8px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-left: 6px;"><i class="fa-solid fa-expand"></i> Pantalla Completa Docs</button>
                         </div>
                         <!-- Menu Bar -->
                         <div class="docs-menu-bar" style="display: flex; gap: 12px; font-size: 0.76rem; color: rgba(255,255,255,0.5); padding: 2px 6px 0 6px; user-select: none;">
