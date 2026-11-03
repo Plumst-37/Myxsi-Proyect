@@ -534,38 +534,82 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
     }
     window.validateTokenWithGoogle = validateTokenWithGoogle;
 
-    async function ensureValidToken(forceRefresh = false) {
+    let inFlightAuthPromise = null;
+
+    async function ensureValidToken(requireUserPrompt = false) {
         let token = localStorage.getItem('gdrive_access_token');
         
-        if (!forceRefresh && token) {
-            const isValid = await validateTokenWithGoogle(token);
-            if (isValid) {
-                updateDriveStatusUI(true);
-                return token;
-            }
-            console.warn("El token de Google Drive actual ha expirado. Se solicitará renovación.");
-        }
-
-        try {
-            if (window.auth && window.googleProvider && window.signInWithPopup) {
-                const provider = window.googleProvider;
-                if (typeof provider.setCustomParameters === 'function') {
-                    provider.setCustomParameters({ prompt: 'select_account' });
-                }
-                const result = await window.signInWithPopup(window.auth, provider);
-                const credential = window.GoogleAuthProvider.credentialFromResult(result);
-                if (credential && credential.accessToken) {
-                    token = credential.accessToken;
-                    localStorage.setItem('gdrive_access_token', token);
-                    localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
+        // 1. Verificación silenciosa (sin popup)
+        if (!requireUserPrompt) {
+            if (token) {
+                const isValid = await validateTokenWithGoogle(token);
+                if (isValid) {
                     updateDriveStatusUI(true);
                     return token;
                 }
             }
-        } catch(e) {
-            console.warn("Auth token prompt cancelado o rechazado:", e);
+            // Si no se requirió interacción del usuario y no hay token válido, terminar sin molestar con popups
+            return null;
         }
-        return null;
+
+        // 2. Interacción requerida por el usuario (clic explícito en "Conectar Drive" o acción manual)
+        if (inFlightAuthPromise) {
+            return inFlightAuthPromise;
+        }
+
+        inFlightAuthPromise = (async () => {
+            try {
+                if (window.auth && window.googleProvider && window.signInWithPopup) {
+                    const provider = window.googleProvider;
+                    // Asegurar todos los scopes requeridos para una sola sesión definitiva
+                    if (typeof provider.addScope === 'function') {
+                        provider.addScope('https://www.googleapis.com/auth/drive');
+                        provider.addScope('https://www.googleapis.com/auth/drive.file');
+                        provider.addScope('https://www.googleapis.com/auth/drive.readonly');
+                        provider.addScope('https://www.googleapis.com/auth/documents');
+                        provider.addScope('https://www.googleapis.com/auth/spreadsheets');
+                    }
+                    if (typeof provider.setCustomParameters === 'function') {
+                        provider.setCustomParameters({});
+                    }
+
+                    const result = await window.signInWithPopup(window.auth, provider);
+                    const credential = window.GoogleAuthProvider.credentialFromResult(result);
+                    if (credential && credential.accessToken) {
+                        token = credential.accessToken;
+                        localStorage.setItem('gdrive_access_token', token);
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
+                        
+                        if (result.user) {
+                            const userData = {
+                                uid: result.user.uid,
+                                email: result.user.email,
+                                displayName: result.user.displayName || (result.user.email ? result.user.email.split('@')[0] : 'Usuario'),
+                                photoURL: result.user.photoURL || null,
+                                emailVerified: Boolean(result.user.emailVerified),
+                                metadata: { creationTime: result.user.metadata?.creationTime }
+                            };
+                            localStorage.setItem('myxsi_user', JSON.stringify(userData));
+                            if (result.user.email) localStorage.setItem('myxsi_user_email', result.user.email);
+                            if (userData.displayName) sessionStorage.setItem('myxsi_user_name', userData.displayName);
+                            renderUserProfile(userData);
+                        }
+
+                        updateDriveStatusUI(true);
+                        return token;
+                    }
+                }
+            } catch(e) {
+                if (e?.code !== 'auth/popup-closed-by-user') {
+                    console.warn("Auth token prompt cancelado o rechazado:", e);
+                }
+            } finally {
+                inFlightAuthPromise = null;
+            }
+            return null;
+        })();
+
+        return inFlightAuthPromise;
     }
     window.ensureValidToken = ensureValidToken;
 

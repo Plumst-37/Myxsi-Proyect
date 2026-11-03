@@ -833,15 +833,15 @@
         </nav>
 
         <!-- Right Side Actions -->
-        <div class="nav-right-actions">
+        <div class="nav-right-actions" id="indexNavActions">
             <a href="https://github.com/Plumst-37/Myxsi-Proyect" target="_blank" rel="noopener noreferrer" class="btn-github-pill" title="Código Abierto en GitHub">
                 <i class="fa-brands fa-github"></i>
                 <span>GitHub</span>
             </a>
-            <button class="btn-login-pill" onclick="window.openLoginModal()">
+            <button class="btn-login-pill" onclick="window.openLoginModal()" id="btnIndexNavLogin">
                 Iniciar sesión
             </button>
-            <a href="registro.html" class="btn-start-gradient">
+            <a href="registro.html" class="btn-start-gradient" id="btnIndexNavRegister">
                 <span>Comenzar gratis</span>
                 <i class="fa-solid fa-arrow-right"></i>
             </a>
@@ -1034,8 +1034,12 @@
 
         const googleProvider = new GoogleAuthProvider();
         googleProvider.addScope('https://www.googleapis.com/auth/drive');
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
         googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
-        googleProvider.setCustomParameters({ prompt: 'select_account' });
+        googleProvider.addScope('https://www.googleapis.com/auth/documents');
+        googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
 
         const alertBox = document.getElementById('alertBox');
         function showAlert(msg, isErr = true) {
@@ -1112,6 +1116,7 @@
                 btnGoogle.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Conectando...';
 
                 try {
+                    await setPersistence(auth, browserLocalPersistence);
                     const result = await signInWithPopup(auth, googleProvider);
                     const credential = GoogleAuthProvider.credentialFromResult(result);
                     if (credential?.accessToken) {
@@ -1131,6 +1136,7 @@
                     };
                     localStorage.setItem('myxsi_user', JSON.stringify(userData));
                     localStorage.setItem('myxsi_user_email', result.user.email);
+                    if (userData.displayName) sessionStorage.setItem('myxsi_user_name', userData.displayName);
                     window.location.href = 'chat.html';
                 } catch (err) {
                     console.error("Google sign in error:", err);
@@ -1162,11 +1168,34 @@
                 };
                 localStorage.setItem('myxsi_user', JSON.stringify(userData));
                 localStorage.setItem('myxsi_user_email', user.email);
+                if (userData.displayName) sessionStorage.setItem('myxsi_user_name', userData.displayName);
+
+                // Si ya tiene sesión activa y no proviene de un logout intencional, entrar directo
+                if (!window.location.search.includes('logout=true')) {
+                    window.location.replace('chat.html');
+                }
             }
             if (sessionStorage.getItem('logging_out')) {
                 sessionStorage.removeItem('logging_out');
             }
         });
+
+        function syncIndexUserUI() {
+            try {
+                const storedUser = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
+                if (storedUser) {
+                    const loginBtn = document.getElementById('btnIndexNavLogin');
+                    const registerBtn = document.getElementById('btnIndexNavRegister');
+                    if (loginBtn) loginBtn.style.display = 'none';
+                    if (registerBtn) {
+                        registerBtn.href = 'chat.html';
+                        const name = storedUser.displayName || 'Chat';
+                        registerBtn.innerHTML = `<span>Entrar al Chat (${name.split(' ')[0]})</span> <i class="fa-solid fa-arrow-right"></i>`;
+                    }
+                }
+            } catch(e){}
+        }
+        syncIndexUserUI();
 
         // Cierre con ESC
         document.addEventListener('keydown', (e) => {

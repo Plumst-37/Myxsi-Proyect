@@ -16,6 +16,8 @@
         googleProvider.addScope('https://www.googleapis.com/auth/drive');
         googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
         googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+        googleProvider.addScope('https://www.googleapis.com/auth/documents');
+        googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
         googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
         googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
         window.auth = auth;
@@ -41,6 +43,7 @@
                     const credential = GoogleAuthProvider.credentialFromResult(result);
                     if (credential && credential.accessToken) {
                         localStorage.setItem('gdrive_access_token', credential.accessToken);
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
                     }
                     const userData = {
                         uid: result.user.uid,
@@ -50,6 +53,8 @@
                         emailVerified: true
                     };
                     localStorage.setItem('myxsi_user', JSON.stringify(userData));
+                    if (result.user.email) localStorage.setItem('myxsi_user_email', result.user.email);
+                    if (userData.displayName) sessionStorage.setItem('myxsi_user_name', userData.displayName);
                     personalizeWelcomeUI();
                     await callAPI('createUser').catch(() => {});
                     await loadChats();
@@ -77,8 +82,12 @@
                     const credential = GoogleAuthProvider.credentialFromResult(result);
                     if (credential && credential.accessToken) {
                         localStorage.setItem('gdrive_access_token', credential.accessToken);
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
                     }
                     personalizeWelcomeUI();
+                    if (typeof window.updateDriveStatusUI === 'function') {
+                        window.updateDriveStatusUI(true);
+                    }
                     alert("🎉 ¡Google Drive conectado y sincronizado con éxito!");
                 }
             } catch(e) {

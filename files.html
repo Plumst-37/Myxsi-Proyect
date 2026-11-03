@@ -16,9 +16,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- CSS Base Myxsi -->
-    <link rel="stylesheet" href="css/chat.css?v=4.7.0">
+    <link rel="stylesheet" href="css/chat.css?v=5.7.0">
     <script src="js/config.js"></script>
     <script src="js/config.local.js" onerror="this.remove()"></script>
+    <script type="module" src="js/auth-shared.js"></script>
 
     <script>
         // Sincronización inmediata de tema antes de renderizar para evitar destellos (MODO OSCURO POR DEFECTO)
@@ -1418,18 +1419,25 @@
 
     <!-- JAVASCRIPT ENGINE & GOOGLE DRIVE INTEGRATION -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = window.__MYXSI_FIREBASE_CONFIG__;
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const googleProvider = new GoogleAuthProvider();
-        googleProvider.addScope('https://www.googleapis.com/auth/drive');
-        googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
-        googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
-        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
-        googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+        const app = getApps().length > 0 ? getApp() : (firebaseConfig ? initializeApp(firebaseConfig) : null);
+        const auth = app ? getAuth(app) : (window.auth || null);
+        let googleProvider = window.googleProvider;
+        if (!googleProvider && window.GoogleAuthProvider) {
+            googleProvider = new window.GoogleAuthProvider();
+        } else if (!googleProvider) {
+            googleProvider = new GoogleAuthProvider();
+            googleProvider.addScope('https://www.googleapis.com/auth/drive');
+            googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
+            googleProvider.addScope('https://www.googleapis.com/auth/drive.readonly');
+            googleProvider.addScope('https://www.googleapis.com/auth/documents');
+            googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+            googleProvider.addScope('https://www.googleapis.com/auth/userinfo.email');
+            googleProvider.addScope('https://www.googleapis.com/auth/userinfo.profile');
+        }
 
         window.auth = auth;
         window.googleProvider = googleProvider;
@@ -1599,7 +1607,10 @@
 
         // User Profile Render
         function renderUserProfile(user) {
-            const name = user?.displayName || sessionStorage.getItem('myxsi_user_name') || user?.email?.split('@')[0] || 'Usuario';
+            const u = user || (function() {
+                try { return JSON.parse(localStorage.getItem('myxsi_user')); } catch(e) { return null; }
+            })();
+            const name = u?.displayName || sessionStorage.getItem('myxsi_user_name') || u?.email?.split('@')[0] || 'Usuario';
             
             const nameDisplay = document.getElementById('userNameDisplay');
             if (nameDisplay) nameDisplay.textContent = name;
@@ -1611,10 +1622,10 @@
             if (modalName) modalName.textContent = name;
 
             const modalEmail = document.getElementById('modalUserEmail');
-            if (modalEmail) modalEmail.textContent = user?.email || '-';
+            if (modalEmail) modalEmail.textContent = u?.email || '-';
 
             const modalJoined = document.getElementById('modalUserJoined');
-            if (modalJoined) modalJoined.textContent = user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : 'Reciente';
+            if (modalJoined) modalJoined.textContent = u?.metadata?.creationTime ? new Date(u.metadata.creationTime).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : 'Reciente';
 
             const avatarBtn = document.getElementById('btnUserDetails');
             const modalAvatarChar = document.getElementById('modalUserAvatarChar');
@@ -1622,13 +1633,15 @@
             if (modalAvatarChar) modalAvatarChar.textContent = initial;
 
             if (avatarBtn) {
-                if (user?.photoURL) {
-                    avatarBtn.innerHTML = `<img src="${user.photoURL}" alt="User Profile" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                avatarBtn.title = `Perfil: ${name} (${u?.email || 'Conectado'})`;
+                if (u?.photoURL) {
+                    avatarBtn.innerHTML = `<img src="${u.photoURL}" alt="User Profile" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;">`;
                 } else {
                     avatarBtn.innerHTML = `<div class="user-initial" style="width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #a78bfa 0%, #6d28d9 100%); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 800; font-size: 0.95rem;">${initial}</div>`;
                 }
             }
         }
+        window.renderUserProfile = renderUserProfile;
 
         // Streak Sync
         function syncStreakData(userData) {
@@ -1642,9 +1655,13 @@
         }
 
         // Token Auto-refresh & Retrieval
-        async function ensureValidToken(forceRefresh = false) {
+        async function ensureValidToken(requireUserPrompt = false) {
+            if (typeof window.ensureValidToken === 'function' && window.ensureValidToken !== ensureValidToken) {
+                return await window.ensureValidToken(requireUserPrompt);
+            }
             let token = localStorage.getItem('gdrive_access_token');
-            if (!forceRefresh && token) return token;
+            if (token) return token;
+            if (!requireUserPrompt) return null;
 
             try {
                 if (window.auth && window.googleProvider && window.signInWithPopup) {
@@ -1653,6 +1670,7 @@
                     if (credential && credential.accessToken) {
                         token = credential.accessToken;
                         localStorage.setItem('gdrive_access_token', token);
+                        localStorage.setItem('gdrive_token_expires_at', String(Date.now() + 3500 * 1000));
                         accessToken = token;
                         updateDriveStatusUI(true);
                         return token;
@@ -1669,9 +1687,12 @@
         window.handleGDriveAuthClick = async function() {
             try {
                 showToast("Conectando con Google Drive...", "info");
-                const token = await ensureValidToken(true);
+                const token = typeof window.ensureValidToken === 'function' && window.ensureValidToken !== ensureValidToken
+                    ? await window.ensureValidToken(true)
+                    : await ensureValidToken(true);
                 if (token) {
                     accessToken = token;
+                    localStorage.setItem('gdrive_access_token', token);
                     updateDriveStatusUI(true);
                     await loadCurrentFolder(currentFolderId);
                     showToast("🎉 ¡Google Drive conectado y sincronizado con éxito!", "success");
@@ -1682,6 +1703,12 @@
                 console.error("GDrive auth click error:", e);
                 showToast("Error de conexión: " + (e.message || e), "error");
             }
+        };
+
+        window.onGDriveConnected = function(token) {
+            accessToken = token;
+            updateDriveStatusUI(true);
+            loadCurrentFolder(currentFolderId).catch(() => {});
         };
 
         // Cargar Carpeta Principal
@@ -1896,9 +1923,6 @@
             } else if (activeCategoryFilter === 'cloud') {
                 files = files.filter(f => f.isCloud);
             }
-
-            renderFilesDisplay(files);
-        }
 
             renderFilesDisplay(files);
         }
@@ -2763,30 +2787,44 @@
         })();
 
         // Auth Observer
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            loadSidebarChats();
-            if (user) {
-                renderUserProfile(user);
+        if (auth && typeof onAuthStateChanged === 'function') {
+            onAuthStateChanged(auth, async (user) => {
+                currentUser = user;
+                loadSidebarChats();
+                if (user) {
+                    const userData = {
+                        uid: user.uid,
+                        email: user.email,
+                        displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Usuario'),
+                        photoURL: user.photoURL || null,
+                        emailVerified: Boolean(user.emailVerified),
+                        metadata: { creationTime: user.metadata?.creationTime }
+                    };
+                    localStorage.setItem('myxsi_user', JSON.stringify(userData));
+                    if (user.email) localStorage.setItem('myxsi_user_email', user.email);
+                    if (userData.displayName) sessionStorage.setItem('myxsi_user_name', userData.displayName);
 
-                const storedToken = localStorage.getItem('gdrive_access_token');
-                if (storedToken) {
-                    accessToken = storedToken;
-                    updateDriveStatusUI(true);
-                }
+                    renderUserProfile(userData);
 
-                try {
-                    const userRes = await callAPI('createUser');
-                    if (userRes && userRes.success && userRes.data && userRes.data.userData) {
-                        syncStreakData(userRes.data.userData);
+                    const storedToken = localStorage.getItem('gdrive_access_token');
+                    if (storedToken) {
+                        accessToken = storedToken;
+                        updateDriveStatusUI(true);
                     }
-                } catch(e){}
-            }
-            loadCurrentFolder(currentFolderId).catch(() => {});
-        });
 
-        // INICIALIZACIÓN INMEDIATA (Carga archivos instantáneamente sin esperar Firebase)
-        document.addEventListener('DOMContentLoaded', () => {
+                    try {
+                        const userRes = await callAPI('createUser');
+                        if (userRes && userRes.success && userRes.data && userRes.data.userData) {
+                            syncStreakData(userRes.data.userData);
+                        }
+                    } catch(e){}
+                }
+                loadCurrentFolder(currentFolderId).catch(() => {});
+            });
+        }
+
+        // INICIALIZACIÓN INMEDIATA (Carga perfil, token y archivos instantáneamente sin esperar Firebase)
+        function initFilesPage() {
             try {
                 const cachedUser = JSON.parse(localStorage.getItem('myxsi_user') || 'null');
                 if (cachedUser) renderUserProfile(cachedUser);
@@ -2799,7 +2837,17 @@
             } else {
                 updateDriveStatusUI(false);
             }
-            loadCurrentFolder(currentFolderId);
+            loadCurrentFolder(currentFolderId).catch(() => {});
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFilesPage);
+        } else {
+            initFilesPage();
+        }
+
+        window.addEventListener('focus', () => {
+            loadCurrentFolder(currentFolderId).catch(() => {});
         });
     </script>
 </body>
