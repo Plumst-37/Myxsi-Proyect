@@ -17,6 +17,7 @@ module.exports = defineConfig({
   },
   use: {
     baseURL: 'http://localhost:8080',
+    serviceWorkers: 'block',
     trace: 'on-first-retry',
     headless: true,
     viewport: { width: 1280, height: 800 },

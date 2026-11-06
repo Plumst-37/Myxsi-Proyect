@@ -23,10 +23,10 @@
     <script src="js/config.local.js" onerror="this.remove()"></script>
     <script type="module" src="js/auth-shared.js"></script>
 
-    <!-- Redirección inteligente al Editor Myxsi adaptado para Móvil si corresponde -->
+    <!-- Redirección inteligente al Editor Myxsi adaptado para Móvil si corresponde (Breakpoint 900px) -->
     <script>
         (function() {
-            const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isMobile = window.innerWidth <= 900 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             const forceDesktop = new URLSearchParams(window.location.search).get('desktop') === '1';
             if (isMobile && !forceDesktop) {
                 window.location.replace('video-mobile.html' + window.location.search);
@@ -2440,7 +2440,7 @@
 
         <div class="topbar-right" style="display: flex; align-items: center; gap: 8px;">
             <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
-            <a href="video-mobile.html" class="btn-topbar-tool" id="btnToggleMyxsiMobile" title="Abrir versión móvil dedicada estilo Myxsi">
+            <a href="video-mobile.html?mobile=1" class="btn-topbar-tool" id="btnToggleMyxsiMobile" title="Abrir versión móvil dedicada estilo Myxsi">
                 <i class="fa-solid fa-mobile-screen"></i> Versión Móvil Myxsi
             </a>
             <button class="btn-topbar-tool" onclick="saveProjectToLocal()" title="Guardar proyecto">
@@ -4942,11 +4942,13 @@
         }
 
         function setGlobalTransition(transName) {
-            projectState.activeTransition = transName;
+            const valid = (typeof transName === 'string' && transName.trim().length > 0) ? transName.trim() : 'none';
+            projectState.activeTransition = valid;
             document.querySelectorAll('#tab-trans .fx-preset-btn').forEach(b => b.classList.remove('active'));
             if (typeof event !== 'undefined' && event && event.currentTarget) event.currentTarget.classList.add('active');
             pushHistoryState();
             autoSaveProject();
+            return valid;
         }
 
         function setDriftTransition(transName) {

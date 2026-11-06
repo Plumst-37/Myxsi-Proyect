@@ -751,6 +751,9 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
                     
                     renderUserProfile(userData);
                     updateDriveStatusUI();
+
+                    // Sincronizar racha de estudio desde la nube al detectar inicio de sesión
+                    syncStreakAndProfileWithCloud().catch(e => console.warn("Sync streak on auth state change:", e));
                 } else {
                     // Si no hay user en Firebase pero hay sesión guardada en localStorage, mantenerla visible
                     const stored = getStoredUser();
@@ -866,6 +869,10 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
                         }
 
                         updateDriveStatusUI(true);
+
+                        // Sincronizar racha de estudio desde la nube al iniciar sesión con Google Popup
+                        await syncStreakAndProfileWithCloud().catch(e => console.warn("Sync streak on popup login:", e));
+
                         return token;
                     }
                 }
@@ -882,6 +889,14 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
         return inFlightAuthPromise;
     }
     window.ensureValidToken = ensureValidToken;
+
+    // Helper unificado para iniciar sesión con Google y sincronizar perfil
+    async function handleGoogleSignIn() {
+        const token = await ensureValidToken(true);
+        await syncStreakAndProfileWithCloud().catch(e => console.warn("handleGoogleSignIn sync notice:", e));
+        return token;
+    }
+    window.handleGoogleSignIn = handleGoogleSignIn;
 
     // Gestor Global de Carpetas en Google Drive (Myxsi Documents, Myxsi Sheets, etc.)
     const driveFolderCache = {};
@@ -1136,14 +1151,48 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
                 };
                 if (folderId) metadata.parents = [folderId];
 
-                let res = await fetch('https://www.googleapis.com/drive/v3/files', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(metadata)
-                });
+                // Crear el documento con cuerpo HTML inicial para que Google Drive lo convierta directamente a Google Doc nativo
+                const initialHtml = (content && content.trim().length > 0)
+                    ? content
+                    : `<h1>${docTitle}</h1><p>Comienza a redactar tu documento inteligente aquí...</p>`;
+
+                const boundary = '-------myxsiDriveDocBoundary' + Date.now();
+                const delimiter = "\r\n--" + boundary + "\r\n";
+                const close_delim = "\r\n--" + boundary + "--";
+
+                const multipartBody =
+                    delimiter +
+                    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+                    JSON.stringify(metadata) +
+                    delimiter +
+                    'Content-Type: text/html; charset=UTF-8\r\n\r\n' +
+                    initialHtml +
+                    close_delim;
+
+                let res = null;
+                try {
+                    res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': `multipart/related; boundary=${boundary}`
+                        },
+                        body: multipartBody
+                    });
+                } catch(uploadErr) {
+                    console.warn("Multipart create error, fallback to standard POST:", uploadErr);
+                }
+
+                if (!res || !res.ok) {
+                    res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(metadata)
+                    });
+                }
 
                 if (res.status === 401 || res.status === 403) {
                     const freshToken = await window.ensureValidToken(true);
@@ -1439,9 +1488,12 @@ import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signO
     // 11. SINCRONIZACIÓN REACTIVA ENTRE PESTAÑAS (MULTI-TAB SYNC)
     // -------------------------------------------------------------
     window.addEventListener('storage', (event) => {
-        if (!event.key || event.key === 'myxsi_user' || event.key === 'gdrive_access_token' || event.key === 'myxsi_local_files') {
+        if (!event.key || event.key === 'myxsi_user' || event.key === 'gdrive_access_token' || event.key === 'myxsi_local_files' || event.key === 'myxsi_duo_streak' || (typeof event.key === 'string' && event.key.startsWith('myxsi_duo_'))) {
             renderUserProfile();
             updateDriveStatusUI();
+            if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                window.syncStreakAndProfileWithCloud();
+            }
             if (typeof window.loadCurrentFolder === 'function') {
                 window.loadCurrentFolder(window.currentFolderId || 'root');
             }

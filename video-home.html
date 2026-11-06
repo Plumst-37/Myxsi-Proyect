@@ -1437,6 +1437,17 @@
                     <i class="fa-regular fa-folder" style="font-size: 0.85rem; width: 16px; text-align: center; color: #f59e0b;"></i> <span>Archivos</span>
                 </a>
             </nav>
+
+            <!-- Widget de Racha en Barra Lateral -->
+            <div class="sidebar-racha-box" id="sidebarRachaWidget" style="padding: 10px 14px; margin: 14px 12px 10px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 18px;">🔥</span>
+                    <div>
+                        <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">Racha de Estudio</div>
+                        <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24;"><span id="sidebarRachaNum">0</span> días</div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- ESCENARIO DE VISTA Y CONTENIDO -->
@@ -1466,6 +1477,11 @@
 
                 <div class="header-right-actions">
                     <div id="topbarDriveStatus" style="display: inline-flex; align-items: center;"></div>
+                    <!-- Racha diaria (Header Badge) -->
+                    <div class="mx-streak" id="headerStreakBadge" title="Racha de estudio diaria" style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 9999px;">
+                        <span style="display: inline-flex; align-items: center; justify-content: center; font-size: 14px; filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));">🔥</span>
+                        <span id="headerStreakCount" style="color: #fbbf24; font-weight: 800; font-size: 0.85rem; letter-spacing: -0.01em;">0</span>
+                    </div>
                     <button class="btn-header-new-video" onclick="openFormatModal()">
                         <i class="fa-solid fa-plus"></i> <span>Nuevo Video</span>
                     </button>
@@ -2035,11 +2051,33 @@
             loadRecentProjects();
         }
 
+        // Sincronización Inmediata y Reactiva de Racha
+        function syncVideoHomeStreak() {
+            try {
+                const streak = localStorage.getItem('myxsi_duo_streak') || '0';
+                const headerStreak = document.getElementById('headerStreakCount');
+                const sidebarStreak = document.getElementById('sidebarRachaNum');
+                if (headerStreak) headerStreak.textContent = streak;
+                if (sidebarStreak) sidebarStreak.textContent = streak;
+                if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                    window.syncStreakAndProfileWithCloud();
+                } else if (typeof window.renderUserProfile === 'function') {
+                    window.renderUserProfile();
+                }
+            } catch(e) {}
+        }
+
         // Iniciar
         document.addEventListener('DOMContentLoaded', () => {
+            syncVideoHomeStreak();
             loadRecentProjects();
             startTimecodeTicker();
         });
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'myxsi_duo_streak') syncVideoHomeStreak();
+        });
+        window.addEventListener('myxsi_streak_updated', () => syncVideoHomeStreak());
+        syncVideoHomeStreak();
     </script>
 </body>
 </html>

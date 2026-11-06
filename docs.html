@@ -23,6 +23,8 @@
     <link href="css/chat.css?v=5.7.0" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <script>
+      window.saveSmartDocTitle = window.saveSmartDocTitle || function(v) {};
+      window.handleDocTitleInput = window.handleDocTitleInput || function(v) {};
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -1914,7 +1916,7 @@
                         }, 500);
                     }
 
-                    if (bestContent && bestContent.trim()) {
+                    if (typeof bestContent === 'string' && bestContent.trim()) {
                         savedContent = bestContent;
                         if (window.smartDocQuill) {
                             window.smartDocQuill.root.innerHTML = bestContent;
@@ -1946,7 +1948,7 @@
                     placeholder: 'Comienza a redactar tu documento inteligente aquí...'
                 });
 
-                if (savedContent && savedContent.trim() !== '') {
+                if (typeof savedContent === 'string' && savedContent.trim() !== '') {
                     window.smartDocQuill.root.innerHTML = savedContent;
                 } else if (templateParam && typeof window.loadTemplate === 'function') {
                     window.loadTemplate(templateParam);
@@ -1994,7 +1996,7 @@
                 });
             } else if (!window.smartDocQuill && document.getElementById('editorQuillStandalone')) {
                 const editorEl = document.getElementById('editorQuillStandalone');
-                if (editorEl && savedContent && savedContent.trim() !== '' && !editorEl.innerHTML) {
+                if (editorEl && typeof savedContent === 'string' && savedContent.trim() !== '' && !editorEl.innerHTML) {
                     editorEl.innerHTML = savedContent;
                 }
                 setTimeout(tryInitQuill, 100);
@@ -2487,11 +2489,21 @@
                         reqs.push({ insertText: { location: { index: 1 }, text: plainText.trim() + '\n' } });
                     }
                     if (reqs.length > 0) {
-                        await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
+                        const batchRes = await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
                             body: JSON.stringify({ requests: reqs })
                         });
+                        if (!batchRes.ok && reqs.length > 1) {
+                            console.warn("Docs batchUpdate falló con deleteContentRange, intentando fallback de insertText:", await batchRes.text().catch(() => ''));
+                            await fetch(`https://docs.googleapis.com/v1/documents/${docId}:batchUpdate`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    requests: [{ insertText: { location: { index: 1 }, text: plainText.trim() + '\n' } }]
+                                })
+                            });
+                        }
                     }
                 }
             } catch(docsErr) {

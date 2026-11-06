@@ -3881,6 +3881,10 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
         };
 
         function updateDailyStreak() {
+            if (window.duoLastDate !== undefined) duoLastDate = window.duoLastDate;
+            const curLocalStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
+            if (curLocalStreak > duoStreak) duoStreak = curLocalStreak;
+
             const today = new Date().toISOString().split('T')[0];
 
             if (duoLastDate !== today) {
@@ -3893,10 +3897,10 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                     if (diffDays === 1) {
                         duoStreak += 1;
                     } else if (diffDays > 1) {
-                        duoStreak = 1;
+                        duoStreak = curLocalStreak > 0 ? curLocalStreak : 1;
                     }
                 } else {
-                    duoStreak = 1;
+                    duoStreak = curLocalStreak > 0 ? curLocalStreak : 1;
                 }
 
                 duoLastDate = today;
@@ -3912,9 +3916,28 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                     duoLastDate: today
                 }).catch(e => console.warn('Sync streak to server failed:', e));
 
+                if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                    window.syncStreakAndProfileWithCloud().catch(() => {});
+                }
+
                 updateDuolingoUI();
             }
         }
+        window.updateDailyStreak = updateDailyStreak;
+
+        window.addEventListener('storage', (e) => {
+            if (!e.key || e.key === 'myxsi_duo_streak') {
+                const s = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
+                duoStreak = s;
+                updateDuolingoUI();
+            }
+        });
+        window.addEventListener('myxsi_streak_updated', (e) => {
+            if (e.detail && e.detail.streak !== undefined) {
+                duoStreak = parseInt(e.detail.streak, 10);
+                updateDuolingoUI();
+            }
+        });
 
         function selectInteractiveOption(letter, element, gridId) {
             const grid = document.getElementById(gridId);
@@ -5184,12 +5207,17 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
         window.createNewSmartDoc = createNewSmartDoc;
 
         function triggerSmartDocAutosave() {
+            if (typeof window.syncDocumentToGoogleDrive === 'function') {
+                window.syncDocumentToGoogleDrive(true);
+                return;
+            }
             const saveStatus = document.getElementById('smartDocSaveStatus');
             const driveStatus = document.getElementById('driveExportStatus');
             if (saveStatus) {
                 saveStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #f59e0b;"></i> Guardando...`;
             }
-            if (driveStatus && localStorage.getItem('gdrive_access_token') && activeGoogleDocId) {
+            const currentDocId = window.activeGoogleDocId || activeGoogleDocId;
+            if (driveStatus && localStorage.getItem('gdrive_access_token') && currentDocId) {
                 driveStatus.innerHTML = `<i class="fa-solid fa-spinner fa-spin" style="color: #f59e0b;"></i> Guardando en Drive...`;
             }
 
@@ -5214,9 +5242,10 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
 
                     let accessToken = localStorage.getItem('gdrive_access_token');
                     const expiresAt = parseInt(localStorage.getItem('gdrive_token_expires_at') || '0', 10);
-                    if (accessToken && Date.now() < expiresAt && activeGoogleDocId) {
+                    const docIdToSync = window.activeGoogleDocId || activeGoogleDocId;
+                    if (accessToken && Date.now() < expiresAt && docIdToSync) {
                         await exportDocToGoogleDriveSilent();
-                    } else if (activeGoogleDocId) {
+                    } else if (docIdToSync) {
                         if (driveStatus) {
                             driveStatus.innerHTML = `<i class="fa-solid fa-cloud-arrow-up" style="color: #f59e0b;"></i> Cambios locales sin sincronizar en Drive`;
                         }
@@ -5227,16 +5256,20 @@ DIRECTRICES DE INTELIGENCIA Y DIRECTITUD (RESPUESTAS MEJORES, INTELIGENTES Y PER
                         saveStatus.innerHTML = `<i class="fa-solid fa-circle-xmark" style="color: #ef4444;"></i> Error al guardar`;
                     }
                 }
-            }, 1500);
+            }, 500);
         }
-        window.triggerSmartDocAutosave = triggerSmartDocAutosave;
+        if (!window.triggerSmartDocAutosave || !window.location.pathname.includes('docs.html')) {
+            window.triggerSmartDocAutosave = triggerSmartDocAutosave;
+        }
 
         function saveSmartDocTitle(val) {
-            const title = val.trim() || 'Documento sin título';
+            const title = (val || '').trim() || 'Documento sin título';
             localStorage.setItem('smart_doc_title', title);
             triggerSmartDocAutosave();
         }
-        window.saveSmartDocTitle = saveSmartDocTitle;
+        if (!window.saveSmartDocTitle || !window.location.pathname.includes('docs.html')) {
+            window.saveSmartDocTitle = saveSmartDocTitle;
+        }
 
         function openSmartDocModal() {
             const modal = document.getElementById('smartDocModal');

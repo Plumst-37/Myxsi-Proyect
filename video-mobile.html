@@ -15,6 +15,16 @@
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <!-- Redirección Responsiva Inteligente: Escritorio vs Móvil (Breakpoint 900px) -->
+    <script>
+        (function() {
+            const forceMobile = new URLSearchParams(window.location.search).get('mobile') === '1';
+            if (window.innerWidth > 900 && !forceMobile) {
+                window.location.replace('video.html' + window.location.search);
+            }
+        })();
+    </script>
+
     <!-- Motor de Almacenamiento Local Myxsi Video (IndexedDB) -->
     <script src="js/video-db.js"></script>
 
@@ -1780,7 +1790,7 @@
         <div class="ai-quick-chips-wrapper">
             <button type="button" class="ai-chip-btn" onclick="startVoiceSubtitleRecording()" style="background:rgba(239,68,68,0.22);border-color:rgba(239,68,68,0.5);color:#fca5a5;" title="Escuchar voz del usuario y crear subtítulo sincronizado">🎙️ Subtítulo con Voz</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!RECORD_VOICE')" style="background:rgba(236,72,153,0.2);border-color:rgba(236,72,153,0.5);color:#f472b6;" title="Grabar voz en off">🎙️ Grabar Voz</button>
-            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!TRANSITION crossfade')" style="background:rgba(0,229,255,0.18);border-color:rgba(0,229,255,0.45);color:#67e8f9;" title="Transición de disolución suave">🎬 Transición</button>
+            <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!TRANSITION crossfade')" style="background:rgba(0,229,255,0.18);border-color:rgba(0,229,255,0.45);color:#67e8f9;" title="Transición de disolución suave">🎬 Disolver</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!STICKER fire')" style="background:rgba(245,158,11,0.2);border-color:rgba(245,158,11,0.5);color:#fde047;" title="Sticker de fuego viral">🔥 Sticker Fuego</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!SFX swoosh')" style="background:rgba(16,185,129,0.2);border-color:rgba(16,185,129,0.5);color:#6ee7b7;" title="Efecto de sonido swoosh">💥 SFX Swoosh</button>
             <button type="button" class="ai-chip-btn" onclick="sendQuickCommand('!RAMP flash')" style="background:rgba(254,181,4,0.18);border-color:rgba(254,181,4,0.45);color:#feb504;" title="Rampa de aceleración flash">⚡ Rampa Vel</button>
@@ -2029,7 +2039,7 @@
     </nav>
 
     <!-- 5. DRAWER / HOJA FLOTANTE DINÁMICA -->
-    <div class="vstudio-drawer-sheet" id="drawerSheet">
+    <div class="vstudio-drawer-sheet vstudio-drawer" id="vstudioDrawer">
         <div class="drawer-pull-bar"></div>
         <div class="drawer-header">
             <h3 class="drawer-title" id="drawerTitle"><i class="fa-solid fa-sliders"></i> Herramienta</h3>
@@ -2153,6 +2163,7 @@
                 }
             ]
         };
+        window.projectState = projectState;
 
         const mediaCache = new Map();
         const historyStack = [];
@@ -4584,6 +4595,7 @@
             if (typeof updateTransformHUD === 'function') updateTransformHUD();
             renderFrame(projectState.currentTime);
         }
+        window.renderTimelineClips = renderTimelineClips;
 
         function deselectActiveClip() {
             projectState.activeClipId = null;
@@ -4594,6 +4606,7 @@
             if (typeof updateTransformHUD === 'function') updateTransformHUD();
             renderFrame(projectState.currentTime);
         }
+        window.renderTimelineClips = renderTimelineClips;
 
         function handleRootEditClick() {
             const clip = projectState.clips.find(c => projectState.currentTime >= c.start && projectState.currentTime <= (c.start + c.duration));
@@ -4697,11 +4710,11 @@
         // =========================================================================
         function openDrawer(tool) {
             currentDrawerTab = tool;
-            const drawer = document.getElementById('drawerSheet');
+            const drawer = document.getElementById('vstudioDrawer') || document.getElementById('drawerSheet');
             const title = document.getElementById('drawerTitle');
             const body = document.getElementById('drawerBody');
 
-            drawer.classList.add('open');
+            if (drawer) drawer.classList.add('open');
 
             if (tool === 'transform') {
                 const clip = projectState.clips.find(c => c.id === projectState.activeClipId);
@@ -4798,16 +4811,16 @@
             } else if (tool === 'transitions') {
                 title.innerHTML = '<i class="fa-solid fa-arrows-split-up-and-left" style="color: #00e5ff;"></i> Transiciones Profesionales (Drift)';
                 const transList = [
-                    { id: 'none', name: 'Corte Limpio', icon: 'fa-ban', color: '#94a3b8' },
                     { id: 'crossfade', name: 'Disolución', icon: 'fa-circle-half-stroke', color: '#00e5ff' },
-                    { id: 'dip_black', name: 'Fundido Negro', icon: 'fa-moon', color: '#a855f7' },
-                    { id: 'dip_white', name: 'Flash Blanco', icon: 'fa-sun', color: '#feb504' },
                     { id: 'wipe_left', name: 'Barrido Izq', icon: 'fa-arrow-left', color: '#10b981' },
                     { id: 'wipe_right', name: 'Barrido Der', icon: 'fa-arrow-right', color: '#10b981' },
                     { id: 'zoom_in', name: 'Impact Zoom', icon: 'fa-magnifying-glass-plus', color: '#ec4899' },
+                    { id: 'dip_black', name: 'Fundido Negro', icon: 'fa-moon', color: '#a855f7' },
+                    { id: 'dip_white', name: 'Flash Blanco', icon: 'fa-sun', color: '#feb504' },
                     { id: 'vhs_glitch', name: 'Glitch VHS', icon: 'fa-tv', color: '#f59e0b' },
                     { id: 'push_left', name: 'Empuje Slide', icon: 'fa-angles-left', color: '#38bdf8' },
-                    { id: 'radial_blur', name: 'Giro Spin', icon: 'fa-rotate', color: '#e879f9' }
+                    { id: 'radial_blur', name: 'Giro Spin', icon: 'fa-rotate', color: '#e879f9' },
+                    { id: 'none', name: 'Sin transición', icon: 'fa-ban', color: '#94a3b8' }
                 ];
                 const curTrans = projectState.activeTransition || 'none';
                 const curDur = projectState.transitionDuration || 0.6;
@@ -4833,7 +4846,7 @@
 
                         <div class="drawer-cards-grid">
                             ${transList.map(t => `
-                                <div class="drawer-item-card ${curTrans === t.id ? 'active' : ''}" onclick="selectTransition('${t.id}')">
+                                <div class="drawer-item-card transition-item vstudio-trans-btn ${curTrans === t.id ? 'active' : ''}" data-trans="${t.id}" onclick="setDriftTransition('${t.id}'); selectTransition('${t.id}')">
                                     <i class="fa-solid ${t.icon}" style="color: ${t.color};"></i>
                                     <span>${t.name}</span>
                                 </div>
@@ -5450,7 +5463,8 @@
         }
 
         function closeDrawer() {
-            document.getElementById('drawerSheet').classList.remove('open');
+            const drawer = document.getElementById('vstudioDrawer') || document.getElementById('drawerSheet');
+            if (drawer) drawer.classList.remove('open');
             currentDrawerTab = null;
         }
 
@@ -8280,6 +8294,20 @@ Comandos que dominas exclusivamente:
                 console.warn("Speech recognition error:", e);
             }
         }
+
+        // TRANSICIÓN DRIFT GLOBAL
+        function setDriftTransition(transName) {
+            const valid = (typeof transName === 'string' && transName.trim().length > 0) ? transName.trim() : 'none';
+            if (typeof projectState !== 'undefined') {
+                projectState.activeTransition = valid;
+            }
+            if (window.projectState) {
+                window.projectState.activeTransition = valid;
+            }
+            if (typeof autoSaveProject === 'function') autoSaveProject();
+            return valid;
+        }
+        window.setDriftTransition = setDriftTransition;
 
         // ATAJOS DE TECLADO PARA MYXSI EDIT (CTRL+I / ESC)
         window.addEventListener('keydown', (e) => {

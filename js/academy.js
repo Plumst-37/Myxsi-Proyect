@@ -939,7 +939,7 @@
 
             duoXP = parseInt(localStorage.getItem('myxsi_duo_xp') || '0', 10);
             duoHearts = parseInt(localStorage.getItem('myxsi_duo_hearts') || '5', 10);
-            duoStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '10', 10);
+            duoStreak = parseInt(localStorage.getItem('myxsi_duo_streak') || '0', 10);
             duoLevel = parseInt(localStorage.getItem('myxsi_duo_level') || '1', 10);
             duoLastDate = localStorage.getItem('myxsi_duo_last_date');
 
@@ -1118,6 +1118,9 @@
             }
             localStorage.setItem('myxsi_duo_streak', duoStreak.toString());
             localStorage.setItem('myxsi_duo_last_date', duoLastDate);
+            if (typeof window.syncStreakAndProfileWithCloud === 'function') {
+                window.syncStreakAndProfileWithCloud().catch(()=>{});
+            }
             updateDuolingoUI();
         }
 
