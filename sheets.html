@@ -597,6 +597,11 @@
             <div class="cloud-saved-status" id="sheetSaveStatus" style="font-size: 0.75rem; color: #34d399; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(52, 211, 153, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(52, 211, 153, 0.25);">
                 <i class="fa-solid fa-cloud"></i> <span>Sincronizado en la Nube (Google Drive)</span>
             </div>
+
+            <div id="sheetCollabPresenceBadge" style="display: none; align-items: center; gap: 6px; font-size: 0.72rem; padding: 4px 10px; border-radius: 16px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-weight: 600;">
+                <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+                <span id="sheetCollabPresenceText">Colaborador en vivo</span>
+            </div>
         </div>
 
         <div class="header-mode-selector">
@@ -1251,6 +1256,10 @@
             }
             localStorage.setItem('myxsi_local_files', JSON.stringify(localFiles));
         } catch(e){}
+
+        if (typeof broadcastSheetChange === 'function') {
+            broadcastSheetChange();
+        }
     }
 
     function loadSheetData() {
@@ -1758,6 +1767,239 @@
             });
         }
     }
+
+    // =========================================================
+    // MOTOR DE COLABORACIÓN Y SINCRONIZACIÓN EN TIEMPO REAL
+    // (BroadcastChannel multi-pestaña + Cloudflare Worker Edge + Google Sheets Poller)
+    // =========================================================
+    window._mySheetClientId = window._mySheetClientId || ('client_sheet_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now());
+    window._isRemoteSheetUpdating = false;
+    let lastRemoteSheetUpdateTime = 0;
+    let lastRemoteSheetVersion = 0;
+    let lastKnownSheetDriveModifiedTime = 0;
+    let lastSheetDriveCheckTime = 0;
+    let sheetEdgePushTimer = null;
+    let sheetBroadcastDebounceTimer = null;
+
+    function getCollabSheetId() {
+        return window.activeGoogleSheetId || new URLSearchParams(window.location.search).get('sheetId') || currentSheetId || 'main_sheet';
+    }
+
+    // A. BroadcastChannel para sincronización instantánea entre pestañas
+    try {
+        const sheetIdForChannel = getCollabSheetId();
+        if (typeof BroadcastChannel !== 'undefined' && sheetIdForChannel) {
+            window.sheetBroadcastChannel = new BroadcastChannel('myxsi_sheet_collab_' + sheetIdForChannel);
+            window.sheetBroadcastChannel.onmessage = (event) => {
+                const data = event.data;
+                const activeId = getCollabSheetId();
+                if (!data || data.senderId === window._mySheetClientId || data.sheetId !== activeId) return;
+                if (data.type === 'SHEET_REALTIME_CHANGE' && data.gridData) {
+                    window.applyRemoteSheetUpdate(data.gridData, data.title, 'tab');
+                }
+            };
+        }
+    } catch(bcErr) {
+        console.warn("Sheet BroadcastChannel:", bcErr);
+    }
+
+    // B. Storage Event fallback
+    window.addEventListener('storage', (e) => {
+        const activeId = getCollabSheetId();
+        if (!activeId || window._isRemoteSheetUpdating) return;
+        if (e.key === 'sheets_studio_data_' + activeId && e.newValue) {
+            try {
+                const parsed = JSON.parse(e.newValue);
+                const newTitle = localStorage.getItem('sheets_studio_title_' + activeId) || '';
+                window.applyRemoteSheetUpdate(parsed, newTitle, 'storage');
+            } catch(err){}
+        }
+    });
+
+    // C. Aplicar actualización remota preservando la celda que el usuario esté editando
+    window.applyRemoteSheetUpdate = function(remoteGrid, remoteTitle, source = 'cloud') {
+        if (!remoteGrid || typeof remoteGrid !== 'object') return;
+        const currentJson = JSON.stringify(gridData);
+        const incomingJson = JSON.stringify(remoteGrid);
+        if (currentJson === incomingJson) return;
+
+        const effectiveId = getCollabSheetId();
+        window._isRemoteSheetUpdating = true;
+        try {
+            const isEditing = activeCellId && document.getElementById(`cell_${activeCellId}`)?.classList.contains('editing');
+            const activeVal = isEditing ? gridData[activeCellId] : null;
+
+            gridData = Object.assign({}, remoteGrid);
+            if (isEditing && activeVal) {
+                gridData[activeCellId] = activeVal;
+            }
+            window.gridData = gridData;
+
+            if (effectiveId) {
+                localStorage.setItem('sheets_studio_data_' + effectiveId, JSON.stringify(gridData));
+            }
+
+            if (remoteTitle) {
+                const titleInput = document.getElementById('sheetBookTitle');
+                if (titleInput && titleInput.value !== remoteTitle && document.activeElement !== titleInput) {
+                    titleInput.value = remoteTitle;
+                    document.title = remoteTitle + ' — Myxsi Sheets';
+                    if (effectiveId) {
+                        localStorage.setItem('sheets_studio_title_' + effectiveId, remoteTitle);
+                    }
+                }
+            }
+
+            renderGrid();
+            updateStatusCalcs();
+
+            const statusEl = document.getElementById('sheetSaveStatus');
+            const presenceEl = document.getElementById('sheetCollabPresenceBadge');
+            const presenceText = document.getElementById('sheetCollabPresenceText');
+            const sourceLabel = source === 'drive' ? 'Google Sheets Web' : (source === 'tab' ? 'Pestaña activa' : 'Otro navegador');
+
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fa-solid fa-users" style="color: #10b981;"></i> <span>Sincronizado en tiempo real (${sourceLabel})</span>`;
+                setTimeout(() => {
+                    if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud" style="color: #34d399;"></i> <span>Sincronizado con Google Drive</span>`;
+                }, 3000);
+            }
+
+            if (presenceEl && presenceText) {
+                presenceEl.style.display = 'inline-flex';
+                presenceText.textContent = `${sourceLabel} conectado`;
+            }
+        } finally {
+            setTimeout(() => { window._isRemoteSheetUpdating = false; }, 80);
+        }
+    };
+
+    // D. Transmitir cambios locales al canal y al Edge de Cloudflare
+    function broadcastSheetChange() {
+        if (window._isRemoteSheetUpdating) return;
+        const effectiveId = getCollabSheetId();
+        if (!effectiveId) return;
+        const title = (document.getElementById('sheetBookTitle')?.value || '').trim() || 'Libro de cálculo Myxsi';
+
+        // 1. Multi-Tab Instant Broadcast (debounced 100ms)
+        if (window.sheetBroadcastChannel) {
+            if (sheetBroadcastDebounceTimer) clearTimeout(sheetBroadcastDebounceTimer);
+            sheetBroadcastDebounceTimer = setTimeout(() => {
+                try {
+                    window.sheetBroadcastChannel.postMessage({
+                        type: 'SHEET_REALTIME_CHANGE',
+                        sheetId: effectiveId,
+                        gridData,
+                        title,
+                        senderId: window._mySheetClientId
+                    });
+                } catch(e){}
+            }, 100);
+        }
+
+        // 2. Multi-Browser Edge Push (debounced 300ms)
+        if (sheetEdgePushTimer) clearTimeout(sheetEdgePushTimer);
+        sheetEdgePushTimer = setTimeout(async () => {
+            try {
+                const backendUrl = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'pushDocRealtime',
+                        docId: 'sheet_' + effectiveId,
+                        title,
+                        content: JSON.stringify(gridData),
+                        clientId: window._mySheetClientId
+                    })
+                });
+            } catch(e){}
+        }, 300);
+    }
+
+    // E. Poller en segundo plano para Cloudflare Edge y Google Sheets
+    function startRealtimeSheetCollabPoller() {
+        setInterval(async () => {
+            const activeId = getCollabSheetId();
+            if (!activeId || window._isRemoteSheetUpdating) return;
+
+            // 1. Consultar cambios en Cloudflare Edge (D1 / Worker) cada 1.2s
+            try {
+                const backendUrl = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                const res = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'pollDocRealtime',
+                        docId: 'sheet_' + activeId,
+                        sinceTime: lastRemoteSheetUpdateTime,
+                        sinceVersion: lastRemoteSheetVersion
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.updated && data.doc) {
+                        if (data.doc.updatedBy !== window._mySheetClientId) {
+                            lastRemoteSheetUpdateTime = data.doc.updatedAt;
+                            lastRemoteSheetVersion = data.doc.version;
+                            try {
+                                const parsed = JSON.parse(data.doc.content);
+                                window.applyRemoteSheetUpdate(parsed, data.doc.title, 'cloud');
+                                return;
+                            } catch(pe){}
+                        }
+                    }
+                }
+            } catch(edgeErr) {}
+
+            // 2. Consultar Google Drive cada 4s (cambios originados en Google Sheets web)
+            try {
+                const now = Date.now();
+                if (now - lastSheetDriveCheckTime > 4000) {
+                    lastSheetDriveCheckTime = now;
+                    let token = localStorage.getItem('gdrive_access_token');
+                    if (token && window.activeGoogleSheetId) {
+                        const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${activeId}?fields=modifiedTime`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (metaRes.ok) {
+                            const meta = await metaRes.json();
+                            const remoteModTime = new Date(meta.modifiedTime).getTime();
+                            if (lastKnownSheetDriveModifiedTime === 0) {
+                                lastKnownSheetDriveModifiedTime = remoteModTime;
+                            } else if (remoteModTime > lastKnownSheetDriveModifiedTime + 2000) {
+                                lastKnownSheetDriveModifiedTime = remoteModTime;
+                                const sheetsApiRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${activeId}/values/A1:Z50?valueRenderOption=FORMULA`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (sheetsApiRes.ok) {
+                                    const valData = await sheetsApiRes.json();
+                                    if (valData && valData.values && valData.values.length > 0) {
+                                        const newGrid = {};
+                                        valData.values.forEach((row, rIdx) => {
+                                            const rNum = rIdx + 1;
+                                            if (rNum <= ROWS_COUNT) {
+                                                row.forEach((val, cIdx) => {
+                                                    if (cIdx < COLS.length && val !== undefined && val !== null && String(val).trim() !== '') {
+                                                        const col = COLS[cIdx];
+                                                        newGrid[`${col}${rNum}`] = { val: evaluateFormula(String(val)), raw: String(val) };
+                                                    }
+                                                });
+                                            }
+                                        });
+                                        if (Object.keys(newGrid).length > 0) {
+                                            window.applyRemoteSheetUpdate(newGrid, null, 'drive');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(driveCheckErr) {}
+        }, 1200);
+    }
+    startRealtimeSheetCollabPoller();
 </script>
 
 </body>

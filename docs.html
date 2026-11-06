@@ -1306,6 +1306,11 @@
             <div class="cloud-saved-status" id="driveExportStatus" style="font-size: 0.75rem; color: #60a5fa; font-weight: 600; display: flex; align-items: center; gap: 6px; background: rgba(59, 130, 246, 0.1); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(96, 165, 250, 0.25);">
                 <i class="fa-solid fa-cloud"></i> <span>Sincronizado en la Nube (Google Drive)</span>
             </div>
+
+            <div id="collabPresenceBadge" style="display: none; align-items: center; gap: 6px; font-size: 0.72rem; padding: 4px 10px; border-radius: 16px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-weight: 600;">
+                <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
+                <span id="collabPresenceText">Colaborador en vivo</span>
+            </div>
         </div>
 
         <div class="header-mode-selector">
@@ -2714,12 +2719,20 @@
             updateOutline();
 
             const statusEl = document.getElementById('driveExportStatus');
+            const presenceEl = document.getElementById('collabPresenceBadge');
+            const presenceText = document.getElementById('collabPresenceText');
+            const sourceLabel = source === 'drive' ? 'Google Docs Web' : (source === 'tab' ? 'Pestaña activa' : 'Otro navegador');
+
             if (statusEl) {
-                const sourceLabel = source === 'drive' ? 'Google Docs' : (source === 'tab' ? 'Pestaña activa' : 'Otro navegador');
                 statusEl.innerHTML = `<i class="fa-solid fa-users" style="color: #10b981;"></i> <span>Sincronizado en tiempo real (${sourceLabel})</span>`;
                 setTimeout(() => {
                     if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Sincronizado en tiempo real en Drive</span>`;
                 }, 3000);
+            }
+
+            if (presenceEl && presenceText) {
+                presenceEl.style.display = 'inline-flex';
+                presenceText.textContent = `${sourceLabel} conectado`;
             }
         } finally {
             setTimeout(() => { window._isRemoteUpdating = false; }, 80);
