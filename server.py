@@ -17,10 +17,12 @@ class NoCacheHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Origin', '*')
         super().end_headers()
 
-socketserver.TCPServer.allow_reuse_address = True
+class MultiThreadedServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
 
-with socketserver.TCPServer(("", PORT), NoCacheHTTPRequestHandler) as httpd:
-    print(f"Myxsi Web Server running at http://localhost:{PORT} with No-Cache headers")
+with MultiThreadedServer(("", PORT), NoCacheHTTPRequestHandler) as httpd:
+    print(f"Myxsi Web Server (Multi-Threaded) running at http://localhost:{PORT} with No-Cache headers")
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

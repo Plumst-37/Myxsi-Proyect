@@ -1957,9 +1957,32 @@
                 }
 
                 window.smartDocQuill.on('text-change', () => {
+                    if (window._isRemoteUpdating) return;
                     const html = window.smartDocQuill.root.innerHTML;
                     const effectiveId = currentDocId || window.activeGoogleDocId || 'doc_current';
                     localStorage.setItem('smart_doc_content_' + effectiveId, html);
+
+                    // 1. Broadcast instantáneo local vía BroadcastChannel (multi-pestaña)
+                    if (window.docBroadcastChannel) {
+                        if (window._collabBroadcastTimer) clearTimeout(window._collabBroadcastTimer);
+                        window._collabBroadcastTimer = setTimeout(() => {
+                            try {
+                                window.docBroadcastChannel.postMessage({
+                                    type: 'DOC_REALTIME_CHANGE',
+                                    docId: effectiveId,
+                                    content: html,
+                                    title: (document.getElementById('smartDocTitle')?.value || '').trim(),
+                                    senderId: window._myDocClientId,
+                                    timestamp: Date.now()
+                                });
+                            } catch(e){}
+                        }, 120);
+                    }
+
+                    // 2. Push en tiempo real al Edge (Cloudflare D1 / Worker multi-navegador)
+                    if (typeof window.pushDocRealtimeEdge === 'function') {
+                        window.pushDocRealtimeEdge(effectiveId, (document.getElementById('smartDocTitle')?.value || '').trim(), html);
+                    }
 
                     try {
                         const localFiles = JSON.parse(localStorage.getItem('myxsi_local_files') || '[]');
@@ -2606,6 +2629,195 @@
             window.exportDocToGoogleDriveSilent();
         }
     });
+
+    // =========================================================
+    // 2.5 MOTOR DE COLABORACIÓN Y SINCRONIZACIÓN EN TIEMPO REAL MULTI-NAVEGADOR (ESTILO GOOGLE DOCS)
+    // =========================================================
+    function getCollabDocId() {
+        return window.activeGoogleDocId || new URLSearchParams(window.location.search).get('docId') || '';
+    }
+
+    window._myDocClientId = window._myDocClientId || ('client_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now());
+    window._isRemoteUpdating = false;
+    let lastRemoteUpdateTime = 0;
+    let lastRemoteVersion = 0;
+    let lastKnownDriveModifiedTime = 0;
+    let lastDriveCheckTime = 0;
+    let edgePushTimer = null;
+
+    // A. BroadcastChannel para sincronización instantánea (0ms) entre pestañas/ventanas del mismo navegador
+    try {
+        const docIdForChannel = getCollabDocId();
+        if (typeof BroadcastChannel !== 'undefined' && docIdForChannel) {
+            window.docBroadcastChannel = new BroadcastChannel('myxsi_doc_collab_' + docIdForChannel);
+            window.docBroadcastChannel.onmessage = (event) => {
+                const data = event.data;
+                const activeId = getCollabDocId();
+                if (!data || data.senderId === window._myDocClientId || data.docId !== activeId) return;
+                if (data.type === 'DOC_REALTIME_CHANGE' && typeof data.content === 'string') {
+                    window.applyRemoteDocUpdate(data.content, data.title, 'tab');
+                }
+            };
+        }
+    } catch(bcErr) {
+        console.warn("BroadcastChannel:", bcErr);
+    }
+
+    // B. Storage Event para sincronización multi-pestaña inmediata
+    window.addEventListener('storage', (e) => {
+        const activeId = getCollabDocId();
+        if (!activeId || window._isRemoteUpdating) return;
+        if (e.key === 'smart_doc_content_' + activeId && e.newValue) {
+            const newTitle = localStorage.getItem('smart_doc_title_' + activeId) || '';
+            window.applyRemoteDocUpdate(e.newValue, newTitle, 'storage');
+        }
+    });
+
+    // C. Aplicar contenido remoto preservando la posición exacta del cursor
+    window.applyRemoteDocUpdate = function(newContent, newTitle, source = 'cloud') {
+        if (!window.smartDocQuill || typeof newContent !== 'string') return;
+        const currentHtml = window.smartDocQuill.root.innerHTML;
+        if (currentHtml === newContent) return;
+
+        const activeId = getCollabDocId();
+        window._isRemoteUpdating = true;
+        try {
+            const hasFocus = window.smartDocQuill.hasFocus();
+            const selection = hasFocus ? window.smartDocQuill.getSelection() : null;
+
+            window.smartDocQuill.root.innerHTML = newContent;
+
+            if (hasFocus && selection) {
+                try {
+                    const maxLen = window.smartDocQuill.getLength();
+                    const safeIndex = Math.min(selection.index, maxLen - 1);
+                    window.smartDocQuill.setSelection(safeIndex, selection.length);
+                } catch(selErr){}
+            }
+
+            if (activeId) {
+                localStorage.setItem('smart_doc_content_' + activeId, newContent);
+                if (newTitle) {
+                    localStorage.setItem('smart_doc_title_' + activeId, newTitle);
+                }
+            }
+
+            if (newTitle) {
+                const titleInput = document.getElementById('smartDocTitle');
+                if (titleInput && titleInput.value !== newTitle && document.activeElement !== titleInput) {
+                    titleInput.value = newTitle;
+                    document.title = newTitle + ' — Myxsi Docs';
+                }
+            }
+
+            updateMetrics();
+            updateOutline();
+
+            const statusEl = document.getElementById('driveExportStatus');
+            if (statusEl) {
+                const sourceLabel = source === 'drive' ? 'Google Docs' : (source === 'tab' ? 'Pestaña activa' : 'Otro navegador');
+                statusEl.innerHTML = `<i class="fa-solid fa-users" style="color: #10b981;"></i> <span>Sincronizado en tiempo real (${sourceLabel})</span>`;
+                setTimeout(() => {
+                    if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-cloud-check" style="color: #34d399;"></i> <span>Sincronizado en tiempo real en Drive</span>`;
+                }, 3000);
+            }
+        } finally {
+            setTimeout(() => { window._isRemoteUpdating = false; }, 80);
+        }
+    };
+
+    // D. Enviar actualización en tiempo real al Edge (Cloudflare D1 / Worker)
+    window.pushDocRealtimeEdge = function(docId, title, content) {
+        const targetDocId = docId || getCollabDocId();
+        if (!targetDocId) return;
+        if (edgePushTimer) clearTimeout(edgePushTimer);
+        edgePushTimer = setTimeout(async () => {
+            try {
+                const backendUrl = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'pushDocRealtime',
+                        docId: targetDocId,
+                        title,
+                        content,
+                        clientId: window._myDocClientId,
+                        updatedAt: Date.now()
+                    })
+                });
+            } catch(e) {}
+        }, 300);
+    };
+
+    // E. Poller de sincronización activa en segundo plano (Cloudflare Edge & Google Docs Web)
+    let realtimeCollabInterval = null;
+    function startRealtimeCollabPoller() {
+        if (realtimeCollabInterval) clearInterval(realtimeCollabInterval);
+
+        realtimeCollabInterval = setInterval(async () => {
+            const activeId = getCollabDocId();
+            if (!activeId || window._isRemoteUpdating || document.visibilityState === 'hidden') return;
+
+            // 1. Consultar Edge de Cloudflare (cambios provenientes de otros navegadores)
+            try {
+                const backendUrl = window.MYXSI_BACKEND_URL || 'https://myxsi-backend.inoxwayoficial.workers.dev';
+                const res = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'pollDocRealtime',
+                        docId: activeId,
+                        sinceTime: lastRemoteUpdateTime,
+                        sinceVersion: lastRemoteVersion
+                    })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.updated && data.doc && data.doc.updatedBy !== window._myDocClientId) {
+                        lastRemoteUpdateTime = data.doc.updatedAt || Date.now();
+                        lastRemoteVersion = data.doc.version || 0;
+                        window.applyRemoteDocUpdate(data.doc.content, data.doc.title, 'cloud');
+                        return;
+                    }
+                }
+            } catch(edgeErr) {}
+
+            // 2. Consultar Google Drive cada 4s (cambios originados directamente en Google Docs web)
+            try {
+                const now = Date.now();
+                if (now - lastDriveCheckTime > 4000) {
+                    lastDriveCheckTime = now;
+                    let token = localStorage.getItem('gdrive_access_token');
+                    if (token) {
+                        const metaRes = await fetch(`https://www.googleapis.com/drive/v3/files/${activeId}?fields=modifiedTime`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        if (metaRes.ok) {
+                            const meta = await metaRes.json();
+                            const remoteModTime = new Date(meta.modifiedTime).getTime();
+                            if (lastKnownDriveModifiedTime === 0) {
+                                lastKnownDriveModifiedTime = remoteModTime;
+                            } else if (remoteModTime > lastKnownDriveModifiedTime + 2000) {
+                                lastKnownDriveModifiedTime = remoteModTime;
+                                const exportRes = await fetch(`https://www.googleapis.com/drive/v3/files/${activeId}/export?mimeType=text/html`, {
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (exportRes.ok) {
+                                    const htmlText = await exportRes.text();
+                                    const parser = new DOMParser();
+                                    const docDom = parser.parseFromString(htmlText, 'text/html');
+                                    const cleanHtml = docDom.body ? docDom.body.innerHTML : htmlText;
+                                    window.applyRemoteDocUpdate(cleanHtml, null, 'drive');
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch(driveCheckErr) {}
+        }, 1200);
+    }
+    startRealtimeCollabPoller();
 
     // =========================================================
     // 3. COPILOTO IA & CHAT EN TIEMPO REAL CON LA HOJA

@@ -267,7 +267,7 @@ async function handleD1Database(data, env, securityHeaders) {
   const uid = data.uid || '';
   const email = (data.email || '').trim().toLowerCase();
 
-  if (!uid && !email && action !== 'test' && action !== 'getAllUsers') {
+  if (!uid && !email && action !== 'test' && action !== 'getAllUsers' && action !== 'pushDocRealtime' && action !== 'pollDocRealtime') {
     return new Response(JSON.stringify({ success: false, error: 'Identificador de usuario (UID o Email) requerido.' }), {
       headers: { ...securityHeaders, 'Content-Type': 'application/json' }
     });
@@ -320,14 +320,94 @@ async function handleD1Database(data, env, securityHeaders) {
           )
         `).run().catch(()=>{});
 
+        await env.DB.prepare(`
+          CREATE TABLE IF NOT EXISTS realtime_docs (
+            docId TEXT PRIMARY KEY,
+            title TEXT,
+            content TEXT,
+            version INTEGER DEFAULT 1,
+            updatedAt INTEGER,
+            updatedBy TEXT
+          )
+        `).run().catch(()=>{});
+
         await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_messages_chatId ON messages(chatId)").run().catch(()=>{});
         await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_chats_userId ON chats(userId)").run().catch(()=>{});
+        await env.DB.prepare("CREATE INDEX IF NOT EXISTS idx_realtime_docs_updatedAt ON realtime_docs(updatedAt)").run().catch(()=>{});
 
         isMigrated = true;
       } catch (migErr) {}
     }
 
     switch (action) {
+      // SINCRONIZACIÓN COLABORATIVA DE DOCUMENTOS EN TIEMPO REAL
+      case 'pushDocRealtime': {
+        const docId = data.docId;
+        if (!docId) {
+          return new Response(JSON.stringify({ success: false, error: 'docId requerido' }), {
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const docTitle = data.title || 'Documento sin título';
+        const docContent = data.content !== undefined ? data.content : '';
+        const clientId = data.clientId || 'remote';
+        const now = Date.now();
+
+        await env.DB.prepare(`
+          INSERT INTO realtime_docs (docId, title, content, version, updatedAt, updatedBy)
+          VALUES (?, ?, ?, 1, ?, ?)
+          ON CONFLICT(docId) DO UPDATE SET
+            title = excluded.title,
+            content = excluded.content,
+            version = realtime_docs.version + 1,
+            updatedAt = excluded.updatedAt,
+            updatedBy = excluded.updatedBy
+        `).bind(docId, docTitle, docContent, now, clientId).run().catch(()=>{});
+
+        return new Response(JSON.stringify({
+          success: true,
+          docId,
+          updatedAt: now,
+          updatedBy: clientId
+        }), {
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
+      case 'pollDocRealtime': {
+        const docId = data.docId;
+        if (!docId) {
+          return new Response(JSON.stringify({ success: false, error: 'docId requerido' }), {
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+        const sinceTime = Number(data.sinceTime || 0);
+        const sinceVersion = Number(data.sinceVersion || 0);
+
+        const result = await env.DB.prepare(`
+          SELECT docId, title, content, version, updatedAt, updatedBy
+          FROM realtime_docs
+          WHERE docId = ?
+        `).bind(docId).first().catch(() => null);
+
+        if (result && (result.updatedAt > sinceTime || result.version > sinceVersion)) {
+          return new Response(JSON.stringify({
+            success: true,
+            updated: true,
+            doc: result
+          }), {
+            headers: { ...securityHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        return new Response(JSON.stringify({
+          success: true,
+          updated: false
+        }), {
+          headers: { ...securityHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       // RUTA ADMIN BLINDADA
       case 'getAllUsers': {
         const adminSecret = data.adminSecret;
